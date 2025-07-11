@@ -1,6 +1,9 @@
 from odoo import http
 from odoo.http import request
 import json
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class VicidialWebhookController(http.Controller):
 
@@ -24,7 +27,6 @@ class VicidialWebhookController(http.Controller):
 
     @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)
     def vicidial_webhook(self, **post):
-        print("hello")
         try:
             # 1. Detect and parse incoming data
             if request.httprequest.content_type == 'application/json':
@@ -35,11 +37,11 @@ class VicidialWebhookController(http.Controller):
             
 
             # 2. Extract key fields
-            print(data)
+
             phone = data.get('phone_number')
             sip_exten = data.get('SIPexten')
-           
-           
+
+
             # def get_campaign_id(campaign_name):
             #     if not campaign_name:
             #         return None
@@ -57,13 +59,11 @@ class VicidialWebhookController(http.Controller):
             user = request.env['res.users'].sudo().search([
                 ('vicidial_extension', '=', sip_exten)
             ], limit=1)
-
             if not user:
                 return http.Response(
                     json.dumps({'status': 'error', 'message': 'User not found'}),
                     content_type='application/json'
                 )
-
             lead_vals = {
                 'vicidial_lead_id': data.get('lead_id'),
                 'name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or data.get('fullname', 'Unnamed Lead'),
@@ -85,7 +85,6 @@ class VicidialWebhookController(http.Controller):
             iframe = request.env['custom.iframe'].sudo().search([
                 ('user_id', '=', user.id)
             ], limit=1)
-            
             if iframe:
                #domain = [('phone', '=', phone)]
                 domain = ['|', ('phone', '=', phone), ('vicidial_lead_id', '=', data.get('lead_id'))]
@@ -137,7 +136,7 @@ class VicidialWebhookController(http.Controller):
             if user_id:
                 domain.append(('id', '=', int(user_id)))
             elif sip_exten:
-                domain.append(('vicidial_extension', '=', sip_exten))
+                domain.append(('vicidial_extension', '=', str(sip_exten)))
             else:
                 domain.append(('id', '=', request.env.user.id))
 
@@ -147,17 +146,14 @@ class VicidialWebhookController(http.Controller):
                     json.dumps({'status': 'error', 'message': 'User not found'}),
                     content_type='application/json'
                 )
-
             iframe = request.env['custom.iframe'].sudo().search([
                 ('user_id', '=', user.id)
             ], limit=1)
-
             if not iframe:
                 return http.Response(
                     json.dumps({'status': 'error', 'message': 'No iframe session found'}),
                     content_type='application/json'
                 )
-
             leads_data = []
             for lead in iframe.lead_ids:
                 # Safely get partner name
@@ -192,7 +188,6 @@ class VicidialWebhookController(http.Controller):
                     else:
                         company_name = str(lead.company_id)
 
-                print(lead.phone)
                 leads_data.append({
                     'id': lead.id,
                     'opportunity': lead.name or '',

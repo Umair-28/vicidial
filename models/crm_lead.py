@@ -5,6 +5,8 @@ _logger = logging.getLogger(__name__)
 
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
+    external_api_id = fields.Integer("External API ID", index=True)
+    vicidial_lead_id = fields.Integer("Vicidial Lead Id")
 
     services = fields.Selection([
         ('credit_card', 'Credit Card'),
