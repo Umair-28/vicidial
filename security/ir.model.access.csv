@@ -1,2 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_custom_iframe_user,access_custom_iframe_user,model_custom_iframe,base.group_user,1,1,1,0
+access_business_loan_data_user,Business Loan Data,model_custom_business_loan_data,base.group_user,1,1,1,0
+access_credit_card_form_user,Credit Card Form,model_custom_credit_card_form,base.group_user,1,1,1,0
+access_energy_compare_form_user,Energy Compare Form,model_custom_energy_compare_form,base.group_user,1,1,1,0
+access_health_insurance_form_data_user,Health Insurance Form Data,model_custom_health_insurance_form_data,base.group_user,1,1,1,0
+access_home_loan_data_user,Home Loan Data,model_custom_home_loan_data,base.group_user,1,1,1,0
+access_home_moving_form_user,Home Moving Form,model_custom_home_moving_form,base.group_user,1,1,1,0
+access_broadband_form_data_user,Broadband Form Data,model_custom_broadband_form_data,base.group_user,1,1,1,0
+
