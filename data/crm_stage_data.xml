@@ -1,0 +1,150 @@
+<odoo>
+    <data noupdate="1">
+
+        <record id="crm_stage_a" model="crm.stage">
+            <field name="name">Answering Machine</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <record id="crm_stage_b" model="crm.stage">
+            <field name="name">Busy</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="crm_stage_callbk" model="crm.stage">
+            <field name="name">Call Back</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <record id="crm_stage_cc" model="crm.stage">
+            <field name="name">Call Congestion</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record id="crm_stage_d" model="crm.stage">
+            <field name="name">Disconnected</field>
+            <field name="sequence">50</field>
+        </record>
+
+        <record id="crm_stage_dair" model="crm.stage">
+            <field name="name">Dead Air</field>
+            <field name="sequence">60</field>
+        </record>
+
+        <record id="crm_stage_dec" model="crm.stage">
+            <field name="name">Declined Sale</field>
+            <field name="sequence">70</field>
+        </record>
+
+        <record id="crm_stage_dnc" model="crm.stage">
+            <field name="name">DO NOT CALL</field>
+            <field name="sequence">80</field>
+        </record>
+
+        <record id="crm_stage_dwtc" model="crm.stage">
+            <field name="name">Don't want to change</field>
+            <field name="sequence">90</field>
+        </record>
+
+        <record id="crm_stage_exc" model="crm.stage">
+            <field name="name">Existing Customer</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <record id="crm_stage_fl" model="crm.stage">
+            <field name="name">Foreign Language</field>
+            <field name="sequence">110</field>
+        </record>
+
+        <record id="crm_stage_hu" model="crm.stage">
+            <field name="name">Hung Up</field>
+            <field name="sequence">120</field>
+        </record>
+
+        <record id="crm_stage_huai" model="crm.stage">
+            <field name="name">Hung up after intro</field>
+            <field name="sequence">130</field>
+        </record>
+
+        <record id="crm_stage_hubi" model="crm.stage">
+            <field name="name">Hung up before intro</field>
+            <field name="sequence">140</field>
+        </record>
+
+        <record id="crm_stage_n" model="crm.stage">
+            <field name="name">No Answer</field>
+            <field name="sequence">150</field>
+        </record>
+
+        <record id="crm_stage_nat" model="crm.stage">
+            <field name="name">Not Authorized</field>
+            <field name="sequence">160</field>
+        </record>
+
+        <record id="crm_stage_ne" model="crm.stage">
+            <field name="name">Not Eligible</field>
+            <field name="sequence">170</field>
+        </record>
+
+        <record id="crm_stage_ni" model="crm.stage">
+            <field name="name">Not Interested</field>
+            <field name="sequence">180</field>
+        </record>
+
+        <record id="crm_stage_noa" model="crm.stage">
+            <field name="name">Not Available</field>
+            <field name="sequence">190</field>
+        </record>
+
+        <record id="crm_stage_np" model="crm.stage">
+            <field name="name">No Pitch No Price</field>
+            <field name="sequence">200</field>
+        </record>
+
+        <record id="crm_stage_qa" model="crm.stage">
+            <field name="name">Over Age</field>
+            <field name="sequence">210</field>
+        </record>
+
+        <record id="crm_stage_rccb" model="crm.stage">
+            <field name="name">Rates compared couldn't beat</field>
+            <field name="sequence">220</field>
+        </record>
+
+        <record id="crm_stage_sale" model="crm.stage">
+            <field name="name">Sale Made</field>
+            <field name="sequence">230</field>
+        </record>
+
+        <record id="crm_stage_sbr" model="crm.stage">
+            <field name="name">On Solar with Better Rates</field>
+            <field name="sequence">240</field>
+        </record>
+
+        <record id="crm_stage_scb" model="crm.stage">
+            <field name="name">Scheduled Callback</field>
+            <field name="sequence">250</field>
+        </record>
+
+        <record id="crm_stage_wa" model="crm.stage">
+            <field name="name">Wrong Address</field>
+            <field name="sequence">260</field>
+        </record>
+
+        <record id="crm_stage_wi" model="crm.stage">
+            <field name="name">Wrong Info</field>
+            <field name="sequence">270</field>
+        </record>
+
+        <record id="crm_stage_wn" model="crm.stage">
+            <field name="name">Wrong Name</field>
+            <field name="sequence">280</field>
+        </record>
+
+        <record id="crm_stage_xfer" model="crm.stage">
+            <field name="name">Call Transferred</field>
+            <field name="sequence">290</field>
+        </record>
+
+    </data>
+</odoo>

@@ -32,12 +32,28 @@ class VicidialWebhookController(http.Controller):
             else:
                 data = dict(request.params)
 
+            
+
             # 2. Extract key fields
             print(data)
             phone = data.get('phone_number')
             sip_exten = data.get('SIPexten')
-            
-            # 3. Match user by Vicidial extension
+           
+           
+            # def get_campaign_id(campaign_name):
+            #     if not campaign_name:
+            #         return None
+            #     campaign = request.env['crm.campaign'].search([('name', '=', campaign_name)], limit=1)
+            #     return campaign.id if campaign else None
+           
+           
+            def get_country_id(country_code):
+                if not country_code:
+                    return None
+                country = request.env['res.country'].search([('code', '=', country_code.upper())], limit=1)
+                return country.id if country else None
+
+             # 3. Match user by Vicidial extension
             user = request.env['res.users'].sudo().search([
                 ('vicidial_extension', '=', sip_exten)
             ], limit=1)
@@ -48,18 +64,38 @@ class VicidialWebhookController(http.Controller):
                     content_type='application/json'
                 )
 
+            lead_vals = {
+                'vicidial_lead_id': data.get('lead_id'),
+                'name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or data.get('fullname', 'Unnamed Lead'),
+                'contact_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip(),
+                'phone': data.get('phone_number'),
+                'mobile': data.get('alt_phone'),
+                'email_from': data.get('email'),
+                'street': data.get('address1'),
+                'city': data.get('city'),
+                'zip': data.get('postal_code'),
+                'description': data.get('comments') or f"Recording: {data.get('recording_filename', '')}",
+                #'campaign_id': get_campaign_id(data.get('campaign')),  # map to campaign record ID or None
+                'country_id': get_country_id(data.get('country_code')),  # map to country record ID or None
+                'user_id': user.id,  # map to user record ID or None
+            }
+            
+
             # 4. Get or create iframe session for user
             iframe = request.env['custom.iframe'].sudo().search([
                 ('user_id', '=', user.id)
             ], limit=1)
             
             if iframe:
-                domain = [('phone', '=', phone)]
-                leads = request.env['crm.lead'].search(domain)
+               #domain = [('phone', '=', phone)]
+                domain = ['|', ('phone', '=', phone), ('vicidial_lead_id', '=', data.get('lead_id'))]
+                leads = request.env['crm.lead'].sudo().search(domain)
                 if leads: 
-                    iframe.write({'lead_ids': [(6, 0, leads.ids)]})
-                    # import ipdb; ipdb.set_trace()  # noqa
-                    # request.env['bus.bus']._sendone((request.env.cr.dbname, 'custom.iframe', user.id),{'type': 'refresh_leads'})
+                    iframe.sudo().write({'lead_ids': [(6, 0, leads.ids)]})
+                else:
+                    new_lead = request.env['crm.lead'].sudo().create(lead_vals)
+                    iframe.sudo().write({'lead_ids': [(4, new_lead.id)]})
+
             
             return http.Response(
                 json.dumps({'status': 'success', 'iframe_id': iframe.id, 'lead_ids':str(iframe.lead_ids), 'phone':phone}),

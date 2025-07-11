@@ -76,6 +76,16 @@ async function openCustomModal(leadId) {
   }
 }
 
+// ---------------- Click Listener ----------------
+
+// document.addEventListener("click", function (e) {
+//   const row = e.target.closest(".o_data_row");
+//   if (row && row.dataset.id) {
+//     const rawId = row.dataset.id;
+//     const leadId = rawId.replace("datapoint_", "");
+//     openCustomModal(leadId);
+//   }
+// });
 
 document.addEventListener("click", async function (e) {
   const isDeleteBtn = e.target.closest(".o_list_record_remove [name='delete']");
@@ -101,7 +111,7 @@ document.addEventListener("click", async function (e) {
     try {
       const env = owl.Component.env;
       const orm = env.services.orm;
-
+      removeItem(parseInt(leadId));
       await orm.call("crm.lead", "unlink", [[parseInt(leadId)]]);
       console.log(`[lead_auto_refresh] Lead ${leadId} deleted successfully`);
 
@@ -124,7 +134,7 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
-    const res = await fetch(`${baseUrl}/vici/iframe/session?sip_exten=1001`);
+    const res = await fetch(`${baseUrl}/vici/iframe/session?sip_exten=${document.querySelector('[name=sip_exten]').innerText}`);
 
     const { lead_ids } = await res.json();
 

@@ -57,6 +57,9 @@ class CustomIframe(models.Model):
                 'user_id': self.env.user.id,
                 'sip_exten': self.env.user.vicidial_extension or '',
             })
+        else:
+            iframe.lead_ids = [(6, 0, [])]
+            iframe.sip_exten =self.env.user.vicidial_extension
         return {
             'type': 'ir.actions.act_window',
             'name': 'Vicidial',

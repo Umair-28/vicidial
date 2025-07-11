@@ -9,6 +9,7 @@
         'security/ir.model.access.csv',
         'views/custom_iframe_view.xml',
         'views/menu.xml',
+        'data/crm_stage_data.xml'
     ],
 'assets': {
     'web.assets_backend': [
