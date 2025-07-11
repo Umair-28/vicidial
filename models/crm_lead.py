@@ -61,7 +61,7 @@ class CrmLead(models.Model):
     @api.depends('services')
     def _compute_show_energy_tab(self):
         for rec in self:
-            rec.show_energy_tab = rec.services == 'energy' 
+            rec.show_energy_tab = rec.services == 'energy_upgrades' 
 
     @api.depends('services')
     def _compute_show_internet_tab(self):
