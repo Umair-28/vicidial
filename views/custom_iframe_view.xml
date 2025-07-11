@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_custom_iframe_form" model="ir.ui.view">
+        <field name="name">custom.iframe.form</field>
+        <field name="model">custom.iframe</field>
+        <field name="arch" type="xml">
+            <form string="Vicidial Iframe" create="false" edit="true">
+                <sheet>
+                    <group col="6">
+                        <group col="3">
+                            <field name="user_id" readonly="1"/>
+                        </group>
+                        <group col="3">
+                            <field name="sip_exten" readonly="1"/>
+                        </group>
+                    </group>
+                    <separator string="Vicidial Screen"/>
+                    <div name="iframe_container" class="mt16 mb16">
+                        <iframe src="https://vicidial.engagenreap.co/agc/vicidial.php" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation">
+                        </iframe>
+                    </div>
+
+                    <separator string="Matching CRM Leads"/>
+                    <field name="lead_ids" nolabel="1" mode="list" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m">
+                        <list>
+                            <field name="name"/>
+                            <field name="partner_name"/>
+                            <field name="phone"/>
+                            <field name="stage_id"/>
+                            <field name="user_id"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Create a complete CRM Lead form view with your services field -->
+    <record id="crm_lead_form_view_complete" model="ir.ui.view">
+        <field name="name">crm.lead.form.complete</field>
+        <field name="model">crm.lead</field>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <form string="Lead">
+                <header>
+                    <button name="action_set_won" type="object" string="Mark Won" class="oe_highlight" invisible="active == False"/>
+                    <button name="action_set_lost" type="object" string="Mark Lost" invisible="active == False"/>
+                    <button name="toggle_active" type="object" string="Archive" invisible="active == False"/>
+                    <button name="toggle_active" type="object" string="Unarchive" invisible="active == True"/>
+                    <field name="stage_id" widget="statusbar" clickable="True" options="{'fold_field': 'fold'}"/>
+                </header>
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Lead Name..." required="True"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+
+                            <field name="services" required="True"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Credit Card">
+                            <field name="show_credit_card_tab" invisible="1"/>
+                            <group invisible="show_credit_card_tab == False">
+                                <group>
+                                    <field name="cc_stage" widget="selection"/>
+                                </group>
+                                <!-- CREDIT CARD STAGE 1 -->
+                                <group col="1" colspan="2">
+                                    <group string="Contact's Information" col="2">
+                                        <field name="cc_prefix"/>
+                                        <field name="cc_first_name"/>
+                                        <field name="cc_last_name"/>
+                                        <field name="cc_job_title"/>
+                                        <field name="cc_phone"/>
+                                        <field name="cc_email"/>
+                                    </group>
+
+                                    <group string="Company Details" col="2">
+                                        <field name="cc_annual_revenue"/>
+                                        <field name="cc_annual_spend"/>
+                                        <field name="cc_existing_products"/>
+                                        <field name="cc_expense_tools"/>
+                                        <field name="cc_additional_info" colspan="2"/>
+                                    </group>
+
+
+                                    <group string="CONSENT" col="1" colspan="2">
+
+                                        <div class="o_row">
+                                            <label for="cc_consent_personal_info" class="o_form_label" style="display:block;">
+                                            I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
+                                            </label>
+                                            <field name="cc_consent_personal_info"/>
+                                        </div>
+
+                                        <div class="o_row" style="display:block;">
+                                            <label for="cc_consent_contact_method" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                                I have obtained the consent of above companies to contact the appointed representative via:
+                                            </label>
+                                            <field name="cc_consent_contact_method" widget="radio" style="display: inline; margin-top: 0.5rem;"/>
+                                        </div>
+
+                                        <div class="o_row" style="display:block;">
+                                            <label for="cc_contact_preference" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                                In order to best process this lead, the salesperson should contact:
+                                            </label>
+                                            <field name="cc_contact_preference" widget="radio" style="display: inline;margin-top: 0.5rem;"/>
+                                        </div>
+
+                                    </group>
+                                </group>
+                            </group>
+                        </page>
+                        <!-- MOVING HOUSE FORM -->
+                        <page string="Home Moving">
+                            <field name="show_home_moving_tab" invisible="1"/>
+                            <group invisible="show_home_moving_tab == False">
+                                <group>
+                                    <field name="hm_home_stage" widget="selection"/>
+                                </group>
+                                <!-- HOME MOVING STAGE 1 -->
+                                <group col="1" colspan="2">
+                                    <group col="1" string="Moving Details">
+                                        <div class="o_row">
+                                            <label for="hm_moving_date">Moving Date</label>
+                                            <field name="hm_moving_date"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_address">Address</label>
+                                            <field name="hm_address"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_suburb">Suburb</label>
+                                            <field name="hm_suburb"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_state">State</label>
+                                            <field name="hm_state"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_postcode">Postcode</label>
+                                            <field name="hm_postcode"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" colspan="1" string="Personal Details">
+                                        <div class="o_row">
+                                            <label for="hm_first_name">First Name</label>
+                                            <field name="hm_first_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_last_name">Last Name</label>
+                                            <field name="hm_last_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_job_title">Job Title</label>
+                                            <field name="hm_job_title"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_dob">Date of Birth</label>
+                                            <field name="hm_dob"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_friend_code">Friend Code</label>
+                                            <field name="hm_friend_code"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" string="Contact Details">
+                                        <div class="o_row">
+                                            <label for="hm_mobile">Mobile</label>
+                                            <field name="hm_mobile"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_work_phone">Work Phone</label>
+                                            <field name="hm_work_phone"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_email">Email</label>
+                                            <field name="hm_email"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_how_heard">How Did You Hear?</label>
+                                            <field name="hm_how_heard"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" string="Services to connect">
+                                        <div class="o_row">
+                                            <label for="hm_connect_electricity">Electricity</label>
+                                            <field name="hm_connect_electricity" widget="checkbox"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_connect_gas">Gas</label>
+                                            <field name="hm_connect_gas" widget="checkbox"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_connect_internet">Internet</label>
+                                            <field name="hm_connect_internet" widget="checkbox"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_connect_water">Water</label>
+                                            <field name="hm_connect_water" widget="checkbox"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_connect_tv">TV</label>
+                                            <field name="hm_connect_tv" widget="checkbox"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hm_connect_removalist">Removalist</label>
+                                            <field name="hm_connect_removalist" widget="checkbox"/>
+                                        </div>
+                                    </group>
+                                </group>
+                            </group>
+                        </page>
+                        <!-- ENERGY FORM -->
+                        <page string="Energy Plans">
+                            <field name="show_energy_tab" invisible="1"/>
+                            <group invisible="show_energy_tab == False">
+                                <group>
+                                    <field name="en_energy_stage" widget="selection"/>
+                                </group>
+                                <group col="1" colspan="2">
+                                    <group col="1" string="Compare Plans Form">
+                                        <div class="o_row">
+                                            <label for="en_current_address">Current Address</label>
+                                            <field name="en_current_address"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_what_to_compare">What are you looking to compare?</label>
+                                            <field name="en_what_to_compare"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_property_type">What type of property?</label>
+                                            <field name="en_property_type"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_moving_in">Are you moving into this property?</label>
+                                            <field name="en_moving_in"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_property_ownership">Do you own or rent this property?</label>
+                                            <field name="en_property_ownership"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" string="">
+                                        <div class="o_row">
+                                            <label for="en_usage_profile">Select your usage profile?</label>
+                                            <field name="en_usage_profile"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_require_life_support">Does anyone residing or intending to reside at your premises require life support equipment?</label>
+                                            <field name="en_require_life_support"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_concesion_card_holder">Are you a concession card holder?</label>
+                                            <field name="en_concesion_card_holder"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_electricity_provider">Do you have rooftop solar panels?</label>
+                                            <field name="en_electricity_provider"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_gas_provider">Who is your current gas provider?</label>
+                                            <field name="en_gas_provider"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" string="Personal Information">
+                                        <div class="o_row">
+                                            <label for="en_name">Your Name</label>
+                                            <field name="en_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_contact_number">Contact Number</label>
+                                            <field name="en_contact_number"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="en_email">Email</label>
+                                            <field name="en_email"/>
+                                        </div>
+                                    </group>
+
+                                    <group string="CONSENT" col="1" colspan="2">
+
+                                        <div class="o_row">
+                                            <label for="en_request_callback" class="o_form_label" style="display:block;">
+Request a call back
+                                            </label>
+                                            <field name="en_request_callback"/>
+                                        </div>
+
+                                        <div class="o_row">
+                                            <label for="en_accpeting_terms" class="o_form_label" style="display:block;">
+By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
+                                            </label>
+                                            <field name="en_accpeting_terms"/>
+                                        </div>
+
+                                    </group>
+                                </group>
+
+
+                            </group>
+                        </page>
+                        <!-- BROADBAND FORM -->
+                        <page string="Broadband Plans">
+                            <field name="show_internet_tab" invisible="1"/>
+                            <group invisible="show_internet_tab == False">
+                                <group>
+                                    <field name="in_internet_stage" widget="selection"/>
+                                </group>
+                                <group col="1" colspan="2">
+
+                                    <group col="1" string="Broadband Form">
+                                        <div class="o_row">
+                                            <label for="in_current_address">Current Address</label>
+                                            <field name="in_current_address"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_internet_usage_type">How will you use this internet?</label>
+                                            <field name="in_internet_usage_type"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_internet_users_count">How many people will be using the internet?</label>
+                                            <field name="in_internet_users_count"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_important_feature">What is the most important feature to you?</label>
+                                            <field name="in_important_feature"/>
+                                        </div>
+                                    </group>
+
+                                    <group col="1" string="Broadband Form">
+                                        <div class="o_row">
+                                            <label for="in_speed_preference">Do you have a speed preference?</label>
+                                            <field name="in_speed_preference"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_broadband_reason">Why are you looking into your broadband options?</label>
+                                            <field name="in_broadband_reason"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_when_to_connect_type">When would you like broadband connected?</label>
+                                            <field name="in_when_to_connect_type"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_when_to_connect_date">Select connection date?</label>
+                                            <field name="in_when_to_connect_date"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_compare_plans">Would you also like to comapre your energy plans to see if you could save?</label>
+                                            <field name="in_compare_plans"/>
+                                        </div>
+                                    </group>
+                                    <group col="1" string="Personal Information">
+                                        <div class="o_row">
+                                            <label for="in_name">Your name</label>
+                                            <field name="in_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_contact_number">Contact number</label>
+                                            <field name="in_contact_number"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_email">Email</label>
+                                            <field name="in_email"/>
+                                        </div>
+                                        <div class="o_row" style="display:block;">
+                                            <label for="in_request_callback" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+Request a callback:
+                                            </label>
+                                            <field name="in_request_callback" style="display: inline;margin-top: 0.5rem;"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="in_accept_terms" class="o_form_label" style="display:block;">
+By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
+                                            </label>
+                                            <field name="in_accept_terms"/>
+                                        </div>
+                                    </group>
+                                </group>
+
+
+                            </group>
+                        </page>
+                        <!-- BUSINESS LOAN FORM -->
+                        <page string="Business Loan Form">
+                            <field name="show_business_loan_tab" invisible="1"/>
+                            <group invisible="show_business_loan_tab == False">
+                                <group>
+                                    <field name="bs_business_loan_stage" widget="selection"/>
+                                </group>
+                                <group col="1" colspan="2">
+
+                                    <group col="1" string="Business Loan Form">
+                                        <div class="o_row">
+                                            <label for="bs_amount_to_borrow">How much would you like to borrow?</label>
+                                            <field name="bs_amount_to_borrow"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_business_name">Name of your business</label>
+                                            <field name="bs_business_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_trading_duration">How long have you been trading: </label>
+                                            <field name="bs_trading_duration" widget="radio"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_monthly_turnover">What is your monthly turnover</label>
+                                            <field name="bs_monthly_turnover"/>
+                                        </div>
+                                    </group>
+                                    <group col="1" string="Personal Information">
+                                        <div class="o_row">
+                                            <label for="bs_first_name">First name</label>
+                                            <field name="bs_first_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_last_name">Last name</label>
+                                            <field name="bs_last_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_email">Email</label>
+                                            <field name="bs_email"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="bs_home_owner">Are you a home owner?</label>
+                                            <field name="bs_home_owner"/>
+                                        </div>
+                                        <div class="o_row" style="display:block;">
+                                            <label for="bs_accept_terms">Accept terms and conditions</label>
+                                            <field name="bs_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
+                                        </div>
+                                    </group>
+                                </group>
+
+
+                            </group>
+                        </page>
+                        <!-- HOME LOAN FORM -->
+                        <page string="Home Loan Form">
+                            <field name="show_home_loan_tab" invisible="1"/>
+                            <group invisible="show_home_loan_tab == False">
+                                <group>
+                                    <field name="hl_home_loan_stage" widget="selection"/>
+                                </group>
+                                <group col="1" colspan="2">
+
+                                    <group col="1" string="Home Loan Form">
+                                        <div class="o_row">
+                                            <label for="hl_user_want_to">What would you like to do?</label>
+                                            <field name="hl_user_want_to"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_expected_price">What is your exptected price?</label>
+                                            <field name="hl_expected_price"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_deposit_amount">How much deposit do you have?</label>
+                                            <field name="hl_deposit_amount"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_buying_reason">What best describes your home buying situation?</label>
+                                            <field name="hl_buying_reason"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_first_home_buyer">Are you a first home buyer</label>
+                                            <field name="hl_first_home_buyer"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_property_type">What kind of property are you looking for?</label>
+                                            <field name="hl_property_type"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_property_usage">How will this property be used?</label>
+                                            <field name="hl_property_usage"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_credit_history">What do you think your credit history is?</label>
+                                            <field name="hl_credit_history"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_income_source">How do you earn your income?</label>
+                                            <field name="hl_income_source"/>
+                                        </div>
+                                    </group>
+                                    <group col="1" string="Personal Information">
+                                        <div class="o_row">
+                                            <label for="hl_first_name">First name</label>
+                                            <field name="hl_first_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_last_name">Last name</label>
+                                            <field name="hl_last_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_contact">Contact number</label>
+                                            <field name="hl_contact"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hl_email">Email</label>
+                                            <field name="hl_email"/>
+                                        </div>
+
+                                        <div class="o_row" style="display:block;">
+                                            <label for="hl_accept_terms">Accept terms and conditions</label>
+                                            <field name="hl_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
+                                        </div>
+                                    </group>
+                                </group>
+
+
+                            </group>
+                        </page>
+                        <!-- HEALTH INSURANCE FORM -->
+                        <page string="Health Insurance Form">
+                            <field name="show_health_insurance_tab" invisible="1"/>
+                            <group invisible="show_health_insurance_tab == False">
+                                <group>
+                                    <field name="hi_stage" widget="selection"/>
+                                </group>
+                                <group col="1" colspan="2">
+
+                                    <group col="1" string="Health Insurance Form">
+                                        <div class="o_row">
+                                            <label for="hi_current_address">Current address</label>
+                                            <field name="hi_current_address"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_cover_type">Select type of cover</label>
+                                            <field name="hi_cover_type" widget="radio"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_have_insurance_cover">Do you have health inssurance cover?</label>
+                                            <field name="hi_have_insurance_cover" widget="radio"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_insurance_considerations">What are your main considerations when looking for a new health insurance cover?</label>
+                                            <field name="hi_insurance_considerations" widget="radio"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_dob">What is your date of birth?</label>
+                                            <field name="hi_dob"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_annual_taxable_income">What is your annual taxable income?</label>
+                                            <field name="hi_annual_taxable_income" widget="radio"/>
+                                        </div>
+                                    </group>
+                                    <group col="1" string="Personal Information">
+                                        <div class="o_row">
+                                            <label for="hi_full_name">Full name</label>
+                                            <field name="hi_full_name"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_contact_number">Contact number</label>
+                                            <field name="hi_contact_number"/>
+                                        </div>
+                                        <div class="o_row">
+                                            <label for="hi_email">Email</label>
+                                            <field name="hi_email"/>
+                                        </div>
+
+                                    </group>
+                                </group>
+
+
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Make this the default form view for crm.lead -->
+    <record id="crm_lead_form_action" model="ir.actions.act_window">
+        <field name="name">Leads</field>
+        <field name="res_model">crm.lead</field>
+        <field name="view_mode">tree,form,kanban,calendar,pivot,graph,activity</field>
+        <field name="view_id" ref="crm_lead_form_view_complete"/>
+        <field name="context">{'default_type': 'lead'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new lead
+            </p>
+        </field>
+    </record>
+
+</odoo>

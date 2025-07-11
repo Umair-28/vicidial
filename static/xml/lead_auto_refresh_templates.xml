@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="lead_auto_refresh.LeadAutoRefreshWithButton" owl="1">
+        <div class="o_lead_refresh_wrapper">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <button class="btn btn-sm btn-primary" 
+                        t-on-click="onRefreshClick"
+                        t-att-disabled="refreshState.isRefreshing">
+                    <i t-if="refreshState.isRefreshing" class="fa fa-spinner fa-spin me-1"/>
+                    <i t-if="!refreshState.isRefreshing" class="fa fa-refresh me-1"/>
+                    <t t-if="!refreshState.isRefreshing">Refresh List</t>
+                    <t t-if="refreshState.isRefreshing">Refreshing...</t>
+                </button>
+                <small class="text-muted" t-if="refreshState.lastRefresh">
+                    Last updated: <t t-esc="refreshState.lastRefresh"/>
+                </small>
+            </div>
+            
+            <div t-if="refreshState.changed" class="alert alert-success alert-dismissible fade show py-2" role="alert">
+                <i class="fa fa-check-circle me-1"/>
+                List updated with latest data
+            </div>
+            
+            <!-- Render the actual X2Many field content -->
+            <t t-call="{{ constructor.components.X2ManyField.template }}"/>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,17 @@
+.o_dialog.o_modal_fullscreen {
+  max-width: 90% !important;
+  width: 90% !important;
+}
+
+.o_form_view input,
+/* .o_form_view .o_field_widget select, */
+.o_form_view .o_field_widget textarea {
+    border-bottom: 1px solid #6366f1;
+    border-radius: 1px;
+    padding: 3px 7px;
+    background-color: #f9fafb;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+
+
