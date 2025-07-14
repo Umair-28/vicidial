@@ -77,81 +77,76 @@ class CrmLead(models.Model):
         for rec in self:
             rec.show_credit_card_tab = rec.services == 'credit_card'
 
-    # @api.onchange('services')
-    # def _onchange_services_set_credit_card_stage(self):
-    #     _logger.info("🟢 lead ID is %s %s", self._origin.id, self.services)
-    #     if self.services != 'credit_card':
-    #         return
+    @api.model
+    def default_get(self, fields):
+        defaults = super().default_get(fields)
 
-    #     submitted_stages = self.env['custom.credit.card.form'].search([
-    #         ('lead_id', '=', self._origin.id),
-    #     ]).mapped('stage')
-    #     _logger.info("submitted stages are %s ", submitted_stages)
-    #     # 🧼 Sanitize the stage values (remove Nones and non-numeric)
-    #     submitted_stages = [s for s in submitted_stages if s and s.isdigit()]
-        
-    #     if not submitted_stages:
-    #         self.cc_stage = '1'
-    #     else:
-    #         max_stage = max(int(s) for s in submitted_stages)
-    #         next_stage = min(max_stage + 1, 5)
-    #         self.cc_stage = str(next_stage)
+        _logger.info("🧠 default_get context: %s", self._context)
+
+        if self._context.get('force_reset_services'):
+            _logger.info("🔁 Forcing services reset from context")
+            defaults['services'] = 'empty_value'
+
+        return defaults
+
 
 
 
     @api.onchange('services')
     def _onchange_services_set_stage_dynamic(self):
-        _logger.info("🟢 lead ID: %s | service: %s", self._origin.id, self.services)
+            _logger.info("🟢 lead ID: %s | service: %s", self._origin.id, self.services)
+            if not self.services or self.services == 'empty_value':
+                _logger.info("🚫 Skipping stage setup for empty or invalid service.")
+                return
 
-        if not self.services:
-            return
+            if not self.services:
+                return
+            
+            
+            # 🚫 Prevent running for credit_card if it's just default and lead not yet saved
+            if self.services == 'credit_card' and not self._origin.id:
+                _logger.info("⚠️ Skipping credit_card stage auto-set (default selection on new lead)")
+                return
+
+            # Map each service to its corresponding model and stage field
+            service_model_map = {
+                'credit_card': ('custom.credit.card.form', 'cc_stage'),
+                'moving_home': ('custom.home.moving.form', 'hm_home_stage'),
+                'energy': ('custom.energy.compare.form', 'en_energy_stage'),
+                'broadband': ('custom.broadband.form.data', 'in_internet_stage'),
+                'business_loan': ('custom.business.loan.data', 'bs_business_loan_stage'),
+                'insurance': ('custom.health.insurance.form.data', 'hi_stage'),
+                'home_loan': ('custom.home.loan.data', 'hl_home_loan_stage')
+            }
+
+            # Get model name and stage field dynamically
+            model_info = service_model_map.get(self.services)
+            if not model_info:
+                _logger.warning("⚠️ No model mapping for service: %s", self.services)
+                return
+
+            model_name, stage_field = model_info
+
+            # 🔍 Search for submitted records
+            submitted_stages = self.env[model_name].search([
+                ('lead_id', '=', self._origin.id),
+            ]).mapped('stage')
+
+            _logger.info("📥 Submitted stages for %s: %s", model_name, submitted_stages)
+
+            submitted_stages = [s for s in submitted_stages if s and s.isdigit()]
+
+            # Determine next stage
+            if not submitted_stages:
+                next_stage = '1'
+            else:
+                max_stage = max(int(s) for s in submitted_stages)
+                next_stage = str(min(max_stage + 1, 5))
+
+            setattr(self, stage_field, next_stage)
+            _logger.info("✅ Set %s = %s", stage_field, next_stage)
+
         
-         # 🚫 Prevent running for credit_card if it's just default and lead not yet saved
-        if self.services == 'credit_card' and not self._origin.id:
-            _logger.info("⚠️ Skipping credit_card stage auto-set (default selection on new lead)")
-            return
-
-        # Map each service to its corresponding model and stage field
-        service_model_map = {
-            'credit_card': ('custom.credit.card.form', 'cc_stage'),
-            'moving_home': ('custom.home.moving.form', 'hm_home_stage'),
-            'energy': ('custom.energy.compare.form', 'en_energy_stage'),
-            'broadband':('custom.broadband.form.data','in_internet_stage'),
-            'business_loan':('custom.business.loan.data','bs_business_loan_stage'),
-            'insurance':('custom.health.insurance.form.data','hi_stage'),
-            'home_loan':('custom.home.loan.data','hl_home_loan_stage')
-
-
-
-        }
-
-        # Get model name and stage field dynamically
-        model_info = service_model_map.get(self.services)
-        if not model_info:
-            _logger.warning("⚠️ No model mapping for service: %s", self.services)
-            return
-
-        model_name, stage_field = model_info
-
-
-        # 🔍 Search for submitted records
-        submitted_stages = self.env[model_name].search([
-            ('lead_id', '=', self._origin.id),
-        ]).mapped('stage')
-
-        _logger.info("📥 Submitted stages for %s: %s", model_name, submitted_stages)
-
-        submitted_stages = [s for s in submitted_stages if s and s.isdigit()]
-
-        # Determine next stage
-        if not submitted_stages:
-            next_stage = '1'
-        else:
-            max_stage = max(int(s) for s in submitted_stages)
-            next_stage = str(min(max_stage + 1, 5))
-
-        setattr(self, stage_field, next_stage)
-        _logger.info("✅ Set %s = %s", stage_field, next_stage)
 
 
 
@@ -1099,7 +1094,7 @@ class CrmLead(models.Model):
     # HEALTH INSURANCE DATA   
     hi_stage = fields.Selection([
         ('1', 'Stage 1'), ('2', 'Stage 2'), ('3', 'Stage 3'), ('4', 'Stage 4'), ('5', 'Stage 5')],
-    string="Home Loan Plans Stage", default="1")               
+    string="Health Insurance Plans Stage", default="1")               
     hi_current_address = fields.Char(string="Current address")
     hi_cover_type = fields.Selection([
         ("hospital_extras", "Hospital + Extras"),

@@ -58,11 +58,28 @@ async function showModalWithLeadData(leadId) {
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(leadId),
+      res_id: parseInt(leadId), // works for both new & existing leads
       views: [[false, "form"]],
-      target: "new", // This opens as modal
+      target: "new",
       fullscreen: true,
+      context: {
+        default_services: "empty_value",
+        force_reset_services: true,
+      },
     });
+
+    setTimeout(() => {
+      console.log("running settimeout methods!!!!!!!");
+
+      const select = document.querySelector('select[name="services"]');
+      if (select) {
+        select.value = "empty_value";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        console.info("✅ Service dropdown forcibly reset to 'empty_value'");
+      } else {
+        console.warn("⚠️ Dropdown field not found");
+      }
+    }, 2000); // may increase to 700ms if needed
   } catch (error) {
     console.error("[lead_modal] Error loading form modal:", error);
   }
@@ -123,7 +140,6 @@ document.addEventListener("click", async function (e) {
   }
 });
 
-
 // ---------------- Polling Refresh ----------------
 
 let previousRenderedHTML = "";
@@ -134,7 +150,11 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
-    const res = await fetch(`${baseUrl}/vici/iframe/session?sip_exten=${document.querySelector('[name=sip_exten]').innerText}`);
+    const res = await fetch(
+      `${baseUrl}/vici/iframe/session?sip_exten=${
+        document.querySelector("[name=sip_exten]").innerText
+      }`
+    );
 
     const { lead_ids } = await res.json();
 

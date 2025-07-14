@@ -19,7 +19,9 @@
                         <iframe src="https://vicidial.engagenreap.co/agc/vicidial.php" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe>
                     </div>
                     <separator string="Matching CRM Leads"/>
-                    <field name="lead_ids" nolabel="1" mode="list" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m">
+                    <!-- <field name="lead_ids" nolabel="1" mode="list" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m"> -->
+                    <field name="lead_ids" context="{'default_user_id': user_id, 'default_services': 'empty_value', 'force_reset_services': True}" create="true" edit="true" widget="lead_auto_refresh_m2m">
+
                         <list>
                             <field name="name"/>
                             <field name="partner_name"/>
@@ -57,7 +59,7 @@
                     <group>
                         <group>
 
-                            <field name="services" required="True"/>
+                            <field name="services" required="True" default="empty_value"/>
                         </group>
                     </group>
                     <notebook>
@@ -423,7 +425,7 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                         </div>
                                     </group>
                                 </group>
-                           </group>
+                            </group>
                             <!-- HOME LOAN FORM -->
                             <group invisible="show_home_loan_tab == False">
                                 <group>
