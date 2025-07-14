@@ -7,17 +7,41 @@ class CrmLead(models.Model):
     _inherit = 'crm.lead'
     external_api_id = fields.Integer("External API ID", index=True)
     vicidial_lead_id = fields.Integer("Vicidial Lead Id")
+    selected_tab = fields.Char("Selected Tab", compute="_compute_selected_tab", store=False)
+
 
     services = fields.Selection([
+        ("empty_value" , "Select a service"),
         ('credit_card', 'Credit Card'),
         ('energy', 'Energy (compare plans from leading retailers)'),
         ('broadband', 'Broadband (fast broadband at lower cost)'),
         ('business_loan', 'Business Loan'),
         ('insurance', 'Health Insurance'),
         ('home_loan', 'Home Loan'),
-        ('energy_upgrades', 'Victorian Energy Upgrades'),
+        # ('energy_upgrades', 'Victorian Energy Upgrades'),
         ('moving_home', 'New Connection (Moving Home)'),
-    ], string="Utility Services", default='energy')
+    ], string="Utility Services : ", default="empty_value", required=True)
+
+    @api.onchange('services')
+    def _compute_selected_tab(self):
+        for rec in self:
+            rec.selected_tab = ''
+            if rec.services == 'credit_card':
+                rec.selected_tab = 'credit_card_tab'
+
+            elif rec.services == 'energy':
+                rec.selected_tab = 'energy_tab'
+            elif rec.services == 'moving_home':
+                rec.selected_tab = 'home_moving_tab'
+            elif rec.services == 'broadband':
+                rec.selected_tab == 'broadband_tab'
+            elif rec.services == 'business_loan':
+                rec.selected_tab =  'business_loan_tab'
+            elif rec.services == 'insurance':
+                rec.selected_tab = 'insurance_tab'
+            elif rec.services == 'home_loan':
+                rec.selected_tab = 'home_loab_tab'           
+
 
 
     show_credit_card_tab = fields.Boolean(
@@ -53,15 +77,97 @@ class CrmLead(models.Model):
         for rec in self:
             rec.show_credit_card_tab = rec.services == 'credit_card'
 
+    # @api.onchange('services')
+    # def _onchange_services_set_credit_card_stage(self):
+    #     _logger.info("🟢 lead ID is %s %s", self._origin.id, self.services)
+    #     if self.services != 'credit_card':
+    #         return
+
+    #     submitted_stages = self.env['custom.credit.card.form'].search([
+    #         ('lead_id', '=', self._origin.id),
+    #     ]).mapped('stage')
+    #     _logger.info("submitted stages are %s ", submitted_stages)
+    #     # 🧼 Sanitize the stage values (remove Nones and non-numeric)
+    #     submitted_stages = [s for s in submitted_stages if s and s.isdigit()]
+        
+    #     if not submitted_stages:
+    #         self.cc_stage = '1'
+    #     else:
+    #         max_stage = max(int(s) for s in submitted_stages)
+    #         next_stage = min(max_stage + 1, 5)
+    #         self.cc_stage = str(next_stage)
+
+
+
+    @api.onchange('services')
+    def _onchange_services_set_stage_dynamic(self):
+        _logger.info("🟢 lead ID: %s | service: %s", self._origin.id, self.services)
+
+        if not self.services:
+            return
+        
+         # 🚫 Prevent running for credit_card if it's just default and lead not yet saved
+        if self.services == 'credit_card' and not self._origin.id:
+            _logger.info("⚠️ Skipping credit_card stage auto-set (default selection on new lead)")
+            return
+
+        # Map each service to its corresponding model and stage field
+        service_model_map = {
+            'credit_card': ('custom.credit.card.form', 'cc_stage'),
+            'moving_home': ('custom.home.moving.form', 'hm_home_stage'),
+            'energy': ('custom.energy.compare.form', 'en_energy_stage'),
+            'broadband':('custom.broadband.form.data','in_internet_stage'),
+            'business_loan':('custom.business.loan.data','bs_business_loan_stage'),
+            'insurance':('custom.health.insurance.form.data','hi_stage'),
+            'home_loan':('custom.home.loan.data','hl_home_loan_stage')
+
+
+
+        }
+
+        # Get model name and stage field dynamically
+        model_info = service_model_map.get(self.services)
+        if not model_info:
+            _logger.warning("⚠️ No model mapping for service: %s", self.services)
+            return
+
+        model_name, stage_field = model_info
+
+
+        # 🔍 Search for submitted records
+        submitted_stages = self.env[model_name].search([
+            ('lead_id', '=', self._origin.id),
+        ]).mapped('stage')
+
+        _logger.info("📥 Submitted stages for %s: %s", model_name, submitted_stages)
+
+        submitted_stages = [s for s in submitted_stages if s and s.isdigit()]
+
+        # Determine next stage
+        if not submitted_stages:
+            next_stage = '1'
+        else:
+            max_stage = max(int(s) for s in submitted_stages)
+            next_stage = str(min(max_stage + 1, 5))
+
+        setattr(self, stage_field, next_stage)
+        _logger.info("✅ Set %s = %s", stage_field, next_stage)
+
+
+
+
+
+
     @api.depends('services')
     def _compute_show_home_moving_tab(self):
         for rec in self:
             rec.show_home_moving_tab = rec.services == 'moving_home'
+            
 
     @api.depends('services')
     def _compute_show_energy_tab(self):
         for rec in self:
-            rec.show_energy_tab = rec.services == 'energy_upgrades' 
+            rec.show_energy_tab = rec.services == 'energy' 
 
     @api.depends('services')
     def _compute_show_internet_tab(self):
@@ -111,7 +217,7 @@ class CrmLead(models.Model):
                 lead._sync_health_insurance_form_to_stage()
             elif lead.services == 'home_loan':
                 lead._sync_home_loan_form_to_stage()
-            elif lead.services == 'energy_upgrades':
+            elif lead.services == 'energy':
                 lead._save_energy_stage_data()
             else:
                 _logger.warning("⚠️ No handler defined for service: %s", lead.services)                                  
@@ -1085,8 +1191,6 @@ class CrmLead(models.Model):
             ('lead_id', '=', self._origin.id),
             ('stage', '=', self.hi_stage)
         ], limit=1)
-
-        _logger.info("health insurance lead id is %s", self._origin.id)
 
         if existing:
             self.hi_current_address = existing.current_address

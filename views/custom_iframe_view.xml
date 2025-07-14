@@ -61,7 +61,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Credit Card">
+                        <page string="Form">
                             <field name="show_credit_card_tab" invisible="1"/>
                             <group invisible="show_credit_card_tab == False">
                                 <group>
@@ -113,10 +113,7 @@
                                     </group>
                                 </group>
                             </group>
-                        </page>
-                        <!-- MOVING HOUSE FORM -->
-                        <page string="Home Moving">
-                            <field name="show_home_moving_tab" invisible="1"/>
+                            <!-- HOME MOVING FORM -->
                             <group invisible="show_home_moving_tab == False">
                                 <group>
                                     <field name="hm_home_stage" widget="selection"/>
@@ -216,10 +213,7 @@
                                     </group>
                                 </group>
                             </group>
-                        </page>
-                        <!-- ENERGY FORM -->
-                        <page string="Energy Plans">
-                            <field name="show_energy_tab" invisible="1"/>
+                            <!-- ENERGY FORM -->
                             <group invisible="show_energy_tab == False">
                                 <group>
                                     <field name="en_energy_stage" widget="selection"/>
@@ -304,13 +298,8 @@ By submitting your details you agree that you have read and agreed to the Terms 
 
                                     </group>
                                 </group>
-
-
                             </group>
-                        </page>
-                        <!-- BROADBAND FORM -->
-                        <page string="Broadband Plans">
-                            <field name="show_internet_tab" invisible="1"/>
+                            <!-- BROADBAND FORM -->
                             <group invisible="show_internet_tab == False">
                                 <group>
                                     <field name="in_internet_stage" widget="selection"/>
@@ -385,13 +374,8 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                         </div>
                                     </group>
                                 </group>
-
-
                             </group>
-                        </page>
-                        <!-- BUSINESS LOAN FORM -->
-                        <page string="Business Loan Form">
-                            <field name="show_business_loan_tab" invisible="1"/>
+                            <!-- BUSINESS LOAN FORM -->
                             <group invisible="show_business_loan_tab == False">
                                 <group>
                                     <field name="bs_business_loan_stage" widget="selection"/>
@@ -439,13 +423,8 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                         </div>
                                     </group>
                                 </group>
-
-
-                            </group>
-                        </page>
-                        <!-- HOME LOAN FORM -->
-                        <page string="Home Loan Form">
-                            <field name="show_home_loan_tab" invisible="1"/>
+                           </group>
+                            <!-- HOME LOAN FORM -->
                             <group invisible="show_home_loan_tab == False">
                                 <group>
                                     <field name="hl_home_loan_stage" widget="selection"/>
@@ -514,13 +493,8 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                         </div>
                                     </group>
                                 </group>
-
-
                             </group>
-                        </page>
-                        <!-- HEALTH INSURANCE FORM -->
-                        <page string="Health Insurance Form">
-                            <field name="show_health_insurance_tab" invisible="1"/>
+                            <!-- HEALTH INSURNACE FORM -->
                             <group invisible="show_health_insurance_tab == False">
                                 <group>
                                     <field name="hi_stage" widget="selection"/>
@@ -569,8 +543,6 @@ By submitting your details you agree that you have read and agreed to the Terms 
 
                                     </group>
                                 </group>
-
-
                             </group>
                         </page>
 
