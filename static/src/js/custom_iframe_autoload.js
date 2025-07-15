@@ -148,6 +148,8 @@ const interval = setInterval(async () => {
     //       : "1001"
     //   }  `
     // );
+    console.log(document.querySelector("[name=sip_exten]").innerText);
+    
     const res = await fetch(
       `${baseUrl}/vici/iframe/session?sip_exten=${
         document.querySelector("[name=sip_exten]").innerText
