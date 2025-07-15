@@ -139,8 +139,8 @@ class VicidialWebhookController(http.Controller):
             domain = []
             if user_id:
                 domain.append(('id', '=', request.env.user.id))
-            elif sip_exten:
-                domain.append(('vicidial_extension', '=', str(sip_exten)))
+            # elif sip_exten:
+            #     domain.append(('vicidial_extension', '=', str(sip_exten)))
             else:
                 domain.append(('id', '=', int(user_id)))
             _logger.info("domain....?? %s", domain)
