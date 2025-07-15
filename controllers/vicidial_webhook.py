@@ -131,7 +131,9 @@ class VicidialWebhookController(http.Controller):
         try:
             sip_exten = kwargs.get('sip_exten')
             user_id = kwargs.get('user_id')
-
+            print("sip_exten ", sip_exten)
+            print("userID", user_id)
+            print(request.env.user.id)
             domain = []
             if user_id:
                 domain.append(('id', '=', int(user_id)))
@@ -139,8 +141,9 @@ class VicidialWebhookController(http.Controller):
                 domain.append(('vicidial_extension', '=', str(sip_exten)))
             else:
                 domain.append(('id', '=', request.env.user.id))
-
+            print("domain....?? ", domain)
             user = request.env['res.users'].sudo().search(domain, limit=1)
+            print("user id >>> ",user.id)
             if not user:
                 return http.Response(
                     json.dumps({'status': 'error', 'message': 'User not found'}),
@@ -202,7 +205,7 @@ class VicidialWebhookController(http.Controller):
                     'company_id': company_name,
                     'iframe_id': lead.iframe_id.id if hasattr(lead, 'iframe_id') and lead.iframe_id else None,
                 })
-
+            # print("leads data is ", leads_data)
             return http.Response(
                 json.dumps({
                     'status': 'success',

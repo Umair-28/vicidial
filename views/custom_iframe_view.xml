@@ -20,7 +20,7 @@
                     </div>
                     <separator string="Matching CRM Leads"/>
                     <!-- <field name="lead_ids" nolabel="1" mode="list" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m"> -->
-                    <field name="lead_ids" context="{'default_user_id': user_id, 'default_services': 'empty_value', 'force_reset_services': True}" create="true" edit="true" widget="lead_auto_refresh_m2m">
+                    <field name="lead_ids" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m">
 
                         <list>
                             <field name="name"/>
@@ -59,11 +59,18 @@
                     <group>
                         <group>
 
-                            <field name="services" required="True" default="empty_value"/>
+                            <field name="services"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Form">
+                        <field name="show_nothing_tab" invisible="1"/>
+                            <group invisible="show_nothing_tab == False">
+                                <div class="o_form_label text-muted">
+                                Please select a service to continue...  
+                                </div>
+                            </group>
+
                             <field name="show_credit_card_tab" invisible="1"/>
                             <group invisible="show_credit_card_tab == False">
                                 <group>

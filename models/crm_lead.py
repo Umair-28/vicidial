@@ -11,7 +11,7 @@ class CrmLead(models.Model):
 
 
     services = fields.Selection([
-        ("empty_value" , "Select a service"),
+        ("false" , "Select a service"),
         ('credit_card', 'Credit Card'),
         ('energy', 'Energy (compare plans from leading retailers)'),
         ('broadband', 'Broadband (fast broadband at lower cost)'),
@@ -20,7 +20,7 @@ class CrmLead(models.Model):
         ('home_loan', 'Home Loan'),
         # ('energy_upgrades', 'Victorian Energy Upgrades'),
         ('moving_home', 'New Connection (Moving Home)'),
-    ], string="Utility Services : ", default="empty_value", required=True)
+    ], string="Utility Services : ", default="false", required=True)
 
     @api.onchange('services')
     def _compute_selected_tab(self):
@@ -28,6 +28,8 @@ class CrmLead(models.Model):
             rec.selected_tab = ''
             if rec.services == 'credit_card':
                 rec.selected_tab = 'credit_card_tab'
+            elif rec.services == 'false':
+                rec.selected_tab = 'nothing_tab'    
 
             elif rec.services == 'energy':
                 rec.selected_tab = 'energy_tab'
@@ -46,6 +48,10 @@ class CrmLead(models.Model):
 
     show_credit_card_tab = fields.Boolean(
         compute="_compute_show_credit_card_tab"
+    )
+
+    show_nothing_tab = fields.Boolean(
+        compute = "_compute_show_nothing_tab"
     )
 
     show_home_moving_tab = fields.Boolean(
@@ -77,36 +83,23 @@ class CrmLead(models.Model):
         for rec in self:
             rec.show_credit_card_tab = rec.services == 'credit_card'
 
-    @api.model
-    def default_get(self, fields):
-        defaults = super().default_get(fields)
-
-        _logger.info("🧠 default_get context: %s", self._context)
-
-        if self._context.get('force_reset_services'):
-            _logger.info("🔁 Forcing services reset from context")
-            defaults['services'] = 'empty_value'
-
-        return defaults
-
-
 
 
     @api.onchange('services')
     def _onchange_services_set_stage_dynamic(self):
             _logger.info("🟢 lead ID: %s | service: %s", self._origin.id, self.services)
-            if not self.services or self.services == 'empty_value':
-                _logger.info("🚫 Skipping stage setup for empty or invalid service.")
-                return
+            # if not self.services or self.services == "":
+            #     _logger.info("🚫 Skipping stage setup for empty or invalid service.")
+            #     return
 
-            if not self.services:
-                return
+            # if not self.services:
+                # return
             
             
             # 🚫 Prevent running for credit_card if it's just default and lead not yet saved
-            if self.services == 'credit_card' and not self._origin.id:
-                _logger.info("⚠️ Skipping credit_card stage auto-set (default selection on new lead)")
-                return
+            # if self.services == 'credit_card' and not self._origin.id:
+            #     _logger.info("⚠️ Skipping credit_card stage auto-set (default selection on new lead)")
+            #     return
 
             # Map each service to its corresponding model and stage field
             service_model_map = {
@@ -157,6 +150,12 @@ class CrmLead(models.Model):
     def _compute_show_home_moving_tab(self):
         for rec in self:
             rec.show_home_moving_tab = rec.services == 'moving_home'
+
+
+    @api.depends('services')
+    def _compute_show_nothing_tab(self):
+        for rec in self:
+            rec.show_nothing_tab = rec.services == "false"        
             
 
     @api.depends('services')
@@ -387,16 +386,6 @@ class CrmLead(models.Model):
     hm_accept_terms = fields.Boolean("I accept the Terms and Conditions")
     hm_recaptcha_checked = fields.Boolean("I'm not a robot")
 
-    # @api.model
-    # def create(self, vals):
-    #     lead = super().create(vals)
-    #     lead._save_home_moving_stage_data()
-    #     return lead
-
-    # def write(self, vals):
-    #     res = super().write(vals)
-    #     self._save_home_moving_stage_data()
-    #     return res
 
     def _save_home_moving_stage_data(self):
         _logger.info("running home moving form data......")

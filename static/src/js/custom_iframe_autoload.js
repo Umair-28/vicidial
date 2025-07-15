@@ -58,32 +58,35 @@ async function showModalWithLeadData(leadId) {
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(leadId), // works for both new & existing leads
+      res_id: parseInt(leadId),
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
       context: {
-        default_services: "empty_value",
-        force_reset_services: true,
+        default_services: "false",
       },
     });
 
-    setTimeout(() => {
-      console.log("running settimeout methods!!!!!!!");
+    // Use recursive retry to wait for field to appear
+    const waitForFieldAndSetValue = () => {
+      const select = document.querySelector("#services_0");
 
-      const select = document.querySelector('select[name="services"]');
       if (select) {
-        select.value = "empty_value";
+        select.value = "false";
         select.dispatchEvent(new Event("change", { bubbles: true }));
-        console.info("✅ Service dropdown forcibly reset to 'empty_value'");
+        console.info("✅ 'services' field forcibly reset to 'false'");
       } else {
-        console.warn("⚠️ Dropdown field not found");
+        console.warn("⏳ Waiting for services field...");
+        setTimeout(waitForFieldAndSetValue, 100); // keep retrying every 100ms
       }
-    }, 2000); // may increase to 700ms if needed
+    };
+
+    waitForFieldAndSetValue();
   } catch (error) {
     console.error("[lead_modal] Error loading form modal:", error);
   }
 }
+
 
 async function openCustomModal(leadId) {
   try {
@@ -92,17 +95,6 @@ async function openCustomModal(leadId) {
     console.error("[modal] Failed to open lead modal:", err);
   }
 }
-
-// ---------------- Click Listener ----------------
-
-// document.addEventListener("click", function (e) {
-//   const row = e.target.closest(".o_data_row");
-//   if (row && row.dataset.id) {
-//     const rawId = row.dataset.id;
-//     const leadId = rawId.replace("datapoint_", "");
-//     openCustomModal(leadId);
-//   }
-// });
 
 document.addEventListener("click", async function (e) {
   const isDeleteBtn = e.target.closest(".o_list_record_remove [name='delete']");
@@ -153,7 +145,9 @@ const interval = setInterval(async () => {
     const res = await fetch(
       `${baseUrl}/vici/iframe/session?sip_exten=${
         document.querySelector("[name=sip_exten]").innerText
-      }`
+          ? document.querySelector("[name=sip_exten]").innerText
+          : "1001"
+      }  `
     );
 
     const { lead_ids } = await res.json();
