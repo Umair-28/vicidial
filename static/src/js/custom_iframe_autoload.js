@@ -141,18 +141,25 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    // const res = await fetch(
+    //   `${baseUrl}/vici/iframe/session?sip_exten=${
+    //     document.querySelector("[name=sip_exten]").innerText
+    //       ? document.querySelector("[name=sip_exten]").innerText
+    //       : "1001"
+    //   }  `
+    // );
+
     const res = await fetch(
       `${baseUrl}/vici/iframe/session?sip_exten=${
         document.querySelector("[name=sip_exten]").innerText
           ? document.querySelector("[name=sip_exten]").innerText
-          : "1001"
+          : "55101"
       }  `
     );
 
-    
     const { lead_ids } = await res.json();
     console.log("leads IDS are ", lead_ids.lenth);
-    
+
     const newRenderedHTML = lead_ids.map(renderer).join("\n");
 
     if (newRenderedHTML !== previousRenderedHTML) {
