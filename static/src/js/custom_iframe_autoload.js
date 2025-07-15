@@ -153,7 +153,7 @@ const interval = setInterval(async () => {
       `${baseUrl}/vici/iframe/session?sip_exten=${
         document.querySelector("[name=sip_exten]").innerText
           ? document.querySelector("[name=sip_exten]").innerText
-          : "55101"
+          : ""
       }  `
     );
 
