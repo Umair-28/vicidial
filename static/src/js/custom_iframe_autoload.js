@@ -87,7 +87,6 @@ async function showModalWithLeadData(leadId) {
   }
 }
 
-
 async function openCustomModal(leadId) {
   try {
     await showModalWithLeadData(leadId);
@@ -142,11 +141,18 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    // const res = await fetch(
+    //   `${baseUrl}/vici/iframe/session?sip_exten=${
+    //     document.querySelector("[name=sip_exten]").innerText
+    //       ? document.querySelector("[name=sip_exten]").innerText
+    //       : "1001"
+    //   }  `
+    // );
     const res = await fetch(
       `${baseUrl}/vici/iframe/session?sip_exten=${
         document.querySelector("[name=sip_exten]").innerText
           ? document.querySelector("[name=sip_exten]").innerText
-          : "1001"
+          : "55101"
       }  `
     );
 
