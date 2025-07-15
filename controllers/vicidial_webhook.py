@@ -146,6 +146,8 @@ class VicidialWebhookController(http.Controller):
             _logger.info("domain....?? %s", domain)
             user = request.env['res.users'].sudo().search(domain, limit=1)
             _logger.info("user id >>> %s",user.id)
+            _logger.info("user vicidial_entension is  >>> %s",user.vicidial_extension)
+
             if not user:
                 return http.Response(
                     json.dumps({'status': 'error', 'message': 'User not found'}),
