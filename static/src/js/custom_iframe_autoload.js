@@ -158,7 +158,7 @@ const interval = setInterval(async () => {
     );
 
     const { lead_ids } = await res.json();
-    console.log("leads IDS are ", lead_ids.lenth);
+    // console.log("leads IDS are ", lead_ids.lenth);
 
     const newRenderedHTML = lead_ids.map(renderer).join("\n");
 
