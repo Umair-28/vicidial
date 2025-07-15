@@ -133,7 +133,7 @@ class VicidialWebhookController(http.Controller):
             user_id = kwargs.get('user_id')
             print("sip_exten ", sip_exten)
             print("userID", user_id)
-            print(request.env.user.id)
+            print("env user ID ", request.env.user.id)
             domain = []
             if user_id:
                 domain.append(('id', '=', int(user_id)))
@@ -205,7 +205,7 @@ class VicidialWebhookController(http.Controller):
                     'company_id': company_name,
                     'iframe_id': lead.iframe_id.id if hasattr(lead, 'iframe_id') and lead.iframe_id else None,
                 })
-            # print("leads data is ", leads_data)
+            print("leads data is ", leads_data)
             return http.Response(
                 json.dumps({
                     'status': 'success',
