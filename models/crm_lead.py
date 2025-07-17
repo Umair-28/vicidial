@@ -20,7 +20,7 @@ class CrmLead(models.Model):
         ('home_loan', 'Home Loan'),
         # ('energy_upgrades', 'Victorian Energy Upgrades'),
         ('moving_home', 'New Connection (Moving Home)'),
-    ], string="Utility Services : ", default="false", required=True)
+    ], string="Utility Services", default="false", required=True)
 
     @api.onchange('services')
     def _compute_selected_tab(self):

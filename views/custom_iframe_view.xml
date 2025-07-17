@@ -35,10 +35,10 @@
         </field>
     </record>
 
-    <!-- Create a complete CRM Lead form view with your services field -->
     <record id="crm_lead_form_view_complete" model="ir.ui.view">
         <field name="name">crm.lead.form.complete</field>
         <field name="model">crm.lead</field>
+        <!-- <field name="inherit_id" ref="crm.crm_lead_view_form"/> -->
         <field name="priority">10</field>
         <field name="arch" type="xml">
             <form string="Lead">
@@ -58,16 +58,76 @@
                     </div>
                     <group>
                         <group>
+                            <field name="partner_id" context="{'default_is_company': False}" options="{'always_reload': True}" domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
+                            <field name="contact_name"/>
+                            <field name="phone"/>
+                            <field name="mobile"/>
+                            <field name="email_from"/>
+                            <field name="function"/>
+                            <field name="title"/>
+                            <field name="website"/>
+                        </group>
+
+                        <group>
+                            <field name="user_id"/>
+                            <field name="team_id"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="type"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="referred"/>
+                            <field name="lang_id"/>
+                            <field name="automated_probability"/>
+                        </group>    
+                    </group>
+                    <group>
+                        <group string="Address Information">
+                            <field name="street"/>
+                            <field name="street2"/>
+                            <field name="city"/>
+                            <field name="state_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="zip"/>
+                            <field name="country_id" options="{'no_open': True, 'no_create': True}"/>
+                        </group>
+
+                        <group string="Sales Information">
+                            <field name="expected_revenue"/>
+                            <field name="probability"/>
+                            <field name="automated_probability" invisible="1"/>
+                            <field name="date_deadline"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                            <field name="recurring_revenue"/>
+                            <field name="recurring_plan"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Tracking">
+                            <field name="date_open"/>
+                            <field name="date_closed"/>
+                            <field name="day_open"/>
+                            <field name="day_close"/>
+                            <field name="date_last_stage_update"/>
+                        </group>
+
+                        <group string="Assignment">
+                            <field name="date_conversion"/>
+                            <field name="active" invisible="1"/>
+                            <!-- <field name="won_status"/> -->
+                            <field name="reveal_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
 
                             <field name="services"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Form">
-                        <field name="show_nothing_tab" invisible="1"/>
+                            <field name="show_nothing_tab" invisible="1"/>
                             <group invisible="show_nothing_tab == False">
                                 <div class="o_form_label text-muted">
-                                Please select a service to continue...  
+Please select a service to continue...
                                 </div>
                             </group>
 
@@ -100,21 +160,21 @@
 
                                         <div class="o_row">
                                             <label for="cc_consent_personal_info" class="o_form_label" style="display:block;">
-                                            I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
+I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
                                             </label>
                                             <field name="cc_consent_personal_info"/>
                                         </div>
 
                                         <div class="o_row" style="display:block;">
                                             <label for="cc_consent_contact_method" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                                                I have obtained the consent of above companies to contact the appointed representative via:
+I have obtained the consent of above companies to contact the appointed representative via:
                                             </label>
                                             <field name="cc_consent_contact_method" widget="radio" style="display: inline; margin-top: 0.5rem;"/>
                                         </div>
 
                                         <div class="o_row" style="display:block;">
                                             <label for="cc_contact_preference" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                                                In order to best process this lead, the salesperson should contact:
+In order to best process this lead, the salesperson should contact:
                                             </label>
                                             <field name="cc_contact_preference" widget="radio" style="display: inline;margin-top: 0.5rem;"/>
                                         </div>
@@ -554,12 +614,39 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                 </group>
                             </group>
                         </page>
+                        <page string="Internal Notes">
+                            <field name="description" placeholder="Add internal notes..."/>
+                        </page>
+
+                        <page string="Extra Information">
+                            <group>
+                                <!-- <group string="Marketing">
+                                    <field name="utm_campaign_id"/>
+                                    <field name="utm_source_id"/>
+                                    <field name="utm_medium_id"/>
+                                    <field name="utm_term"/>
+                                    <field name="utm_content"/>
+                                </group> -->
+
+                                <group string="Misc">
+                                    <field name="lost_reason_id" invisible="active == True"/>
+                                    <field name="color"/>
+                                    <field name="lang_id"/>
+                                </group>
+                            </group>
+                        </page>
 
                     </notebook>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread"/>
+                </div>
             </form>
         </field>
     </record>
+
 
     <!-- Make this the default form view for crm.lead -->
     <record id="crm_lead_form_action" model="ir.actions.act_window">
