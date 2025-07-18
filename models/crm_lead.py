@@ -8,6 +8,23 @@ class CrmLead(models.Model):
     external_api_id = fields.Integer("External API ID", index=True)
     vicidial_lead_id = fields.Integer("Vicidial Lead Id")
     selected_tab = fields.Char("Selected Tab", compute="_compute_selected_tab", store=False)
+    partner_latitude = fields.Float(
+        string='Latitude',
+        related='partner_id.partner_latitude',
+        store=True
+    )
+
+    partner_longitude = fields.Float(
+        string='Longitude',
+        related='partner_id.partner_longitude',
+        store=True
+    )
+
+    # Example: Custom field for automatic assignment logic
+    assignation_id = fields.Many2one(
+        'res.partner',
+        string='Automatically Assigned Partner'
+    )
 
 
     services = fields.Selection([
@@ -20,7 +37,7 @@ class CrmLead(models.Model):
         ('home_loan', 'Home Loan'),
         # ('energy_upgrades', 'Victorian Energy Upgrades'),
         ('moving_home', 'New Connection (Moving Home)'),
-    ], string="Utility Services", default="false", required=True)
+    ], string="Select Service", default="false", required=True)
 
     @api.onchange('services')
     def _compute_selected_tab(self):
