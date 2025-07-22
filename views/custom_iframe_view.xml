@@ -362,32 +362,14 @@ BROADBAND FORM
                                                 <field name="in_compare_plans"/>
                                             </div>
                                         </group>
-                                        <group col="1" string="Personal Information">
-                                            <div class="o_row">
-                                                <label for="in_name">Your name</label>
-                                                <field name="in_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="in_contact_number">Contact number</label>
-                                                <field name="in_contact_number"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="in_email">Email</label>
-                                                <field name="in_email"/>
-                                            </div>
-                                            <div class="o_row" style="display:block;">
-                                                <label for="in_request_callback" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-Request a callback:
-                                                </label>
-                                                <field name="in_request_callback" style="display: inline;margin-top: 0.5rem;"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="in_accept_terms" class="o_form_label" style="display:block;">
-By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
-                                                </label>
-                                                <field name="in_accept_terms"/>
-                                            </div>
+                                        <group string="Personal Information" col="2">
+                                            <field name="in_name"/>
+                                            <field name="in_contact_number"/>
+                                            <field name="in_email"/>
+                                            <field name="in_request_callback"/>
+                                            <field name="in_accept_terms"/>
                                         </group>
+
                                     </group>
                                 </group>
 BUSINESS LOAN FORM
@@ -415,28 +397,14 @@ BUSINESS LOAN FORM
                                                 <field name="bs_monthly_turnover"/>
                                             </div>
                                         </group>
-                                        <group col="1" string="Personal Information">
-                                            <div class="o_row">
-                                                <label for="bs_first_name">First name</label>
-                                                <field name="bs_first_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="bs_last_name">Last name</label>
-                                                <field name="bs_last_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="bs_email">Email</label>
-                                                <field name="bs_email"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="bs_home_owner">Are you a home owner?</label>
-                                                <field name="bs_home_owner"/>
-                                            </div>
-                                            <div class="o_row" style="display:block;">
-                                                <label for="bs_accept_terms">Accept terms and conditions</label>
-                                                <field name="bs_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
-                                            </div>
+                                        <group string="Personal Information" col="2">
+                                            <field name="bs_first_name"/>
+                                            <field name="bs_last_name" />
+                                            <field name="bs_email"/>
+                                            <field name="bs_home_owner"/>
+                                            <field name="bs_accept_terms"/>
                                         </group>
+
                                     </group>
                                 </group>
 HOME LOAN FORM
@@ -484,29 +452,14 @@ HOME LOAN FORM
                                                 <field name="hl_income_source"/>
                                             </div>
                                         </group>
-                                        <group col="1" string="Personal Information">
-                                            <div class="o_row">
-                                                <label for="hl_first_name">First name</label>
-                                                <field name="hl_first_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hl_last_name">Last name</label>
-                                                <field name="hl_last_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hl_contact">Contact number</label>
-                                                <field name="hl_contact"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hl_email">Email</label>
-                                                <field name="hl_email"/>
-                                            </div>
-
-                                            <div class="o_row" style="display:block;">
-                                                <label for="hl_accept_terms">Accept terms and conditions</label>
-                                                <field name="hl_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
-                                            </div>
+                                        <group string="Personal Information" col="2">
+                                            <field name="hl_first_name" />
+                                            <field name="hl_last_name"/>
+                                            <field name="hl_contact" />
+                                            <field name="hl_email" />
+                                            <field name="hl_accept_terms"/>
                                         </group>
+
                                     </group>
                                 </group>
 HEALTH INSURNACE FORM
@@ -542,21 +495,12 @@ HEALTH INSURNACE FORM
                                                 <field name="hi_annual_taxable_income" widget="radio"/>
                                             </div>
                                         </group>
-                                        <group col="1" string="Personal Information">
-                                            <div class="o_row">
-                                                <label for="hi_full_name">Full name</label>
-                                                <field name="hi_full_name"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hi_contact_number">Contact number</label>
-                                                <field name="hi_contact_number"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hi_email">Email</label>
-                                                <field name="hi_email"/>
-                                            </div>
-
+                                        <group string="Personal Information" col="2">
+                                            <field name="hi_full_name"/>
+                                            <field name="hi_contact_number"/>
+                                            <field name="hi_email" />
                                         </group>
+
                                     </group>
                                 </group>
                             </page>

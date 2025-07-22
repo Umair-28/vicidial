@@ -356,11 +356,11 @@ class CrmLead(models.Model):
                 rec.cc_contact_preference = record.contact_preference
             else:
                 rec.cc_prefix = False
-                rec.cc_first_name = False
+                rec.cc_first_name = rec.contact_name or  False
                 rec.cc_last_name = False
                 rec.cc_job_title = False
-                rec.cc_phone = False
-                rec.cc_email = False
+                rec.cc_phone = rec.phone_sanitized or False
+                rec.cc_email = rec.email_normalized or  False
                 rec.cc_annual_revenue = False
                 rec.cc_annual_spend = False
                 rec.cc_existing_products = False
@@ -504,8 +504,8 @@ class CrmLead(models.Model):
                 rec.hm_friend_code = False
 
                 rec.hm_mobile = False
-                rec.hm_work_phone = False
-                rec.hm_email = False
+                rec.hm_work_phone = rec.phone_sanitized or  False
+                rec.hm_email = rec.email_normalized or False
                 rec.hm_how_heard = False
 
                 rec.hm_connect_electricity = False
@@ -702,9 +702,9 @@ class CrmLead(models.Model):
             rec.en_rooftop_solar = False
             rec.en_electricity_provider = False
             rec.en_gas_provider = False
-            rec.en_name = False
-            rec.en_contact_number = False
-            rec.en_email = False
+            rec.en_name = rec.contact_name or False
+            rec.en_contact_number = rec.phone_sanitized or  False
+            rec.en_email = rec.email_normalized or  False
             rec.en_request_callback = False
             rec.en_accpeting_terms = False
 
@@ -810,45 +810,46 @@ class CrmLead(models.Model):
         """
         Load saved broadband form data for selected stage into the current lead
         """
-        if not self.in_internet_stage:
-            return
+        for rec in self:
+            if not rec.in_internet_stage:
+                return
 
-        broadband_data = self.env['custom.broadband.form.data'].search([
-            ('lead_id', '=', self._origin.id),
-            ('stage', '=', self.in_internet_stage)
-        ], limit=1)
+            broadband_data = self.env['custom.broadband.form.data'].search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.in_internet_stage)
+            ], limit=1)
 
-        if broadband_data:
-            self.in_current_address = broadband_data.current_address
-            self.in_internet_usage_type = broadband_data.internet_usage_type
-            self.in_internet_users_count = broadband_data.internet_users_count
-            self.in_important_feature = broadband_data.important_feature
-            self.in_speed_preference = broadband_data.speed_preference
-            self.in_broadband_reason = broadband_data.broadband_reason
-            self.in_when_to_connect_type = broadband_data.when_to_connect_type
-            self.in_when_to_connect_date = broadband_data.when_to_connect_date
-            self.in_compare_plans = broadband_data.compare_plans
-            self.in_name = broadband_data.name
-            self.in_contact_number = broadband_data.contact_number
-            self.in_email = broadband_data.email
-            self.in_request_callback = broadband_data.request_callback
-            self.in_accept_terms = broadband_data.accept_terms
-        else:
-            # Optional: clear fields if no data is saved for the new stage
-            self.in_current_address = False
-            self.in_internet_usage_type = False
-            self.in_internet_users_count = False
-            self.in_important_feature = False
-            self.in_speed_preference = False
-            self.in_broadband_reason = False
-            self.in_when_to_connect_type = False
-            self.in_when_to_connect_date = False
-            self.in_compare_plans = False
-            self.in_name = False
-            self.in_contact_number = False
-            self.in_email = False
-            self.in_request_callback = False
-            self.in_accept_terms = False                
+            if broadband_data:
+                rec.in_current_address = broadband_data.current_address
+                rec.in_internet_usage_type = broadband_data.internet_usage_type
+                rec.in_internet_users_count = broadband_data.internet_users_count
+                rec.in_important_feature = broadband_data.important_feature
+                rec.in_speed_preference = broadband_data.speed_preference
+                rec.in_broadband_reason = broadband_data.broadband_reason
+                rec.in_when_to_connect_type = broadband_data.when_to_connect_type
+                rec.in_when_to_connect_date = broadband_data.when_to_connect_date
+                rec.in_compare_plans = broadband_data.compare_plans
+                rec.in_name = broadband_data.name
+                rec.in_contact_number = broadband_data.contact_number
+                rec.in_email = broadband_data.email
+                rec.in_request_callback = broadband_data.request_callback
+                rec.in_accept_terms = broadband_data.accept_terms
+            else:
+                # Optional: clear fields if no data is saved for the new stage
+                rec.in_current_address = False
+                rec.in_internet_usage_type = False
+                rec.in_internet_users_count = False
+                rec.in_important_feature = False
+                rec.in_speed_preference = False
+                rec.in_broadband_reason = False
+                rec.in_when_to_connect_type = False
+                rec.in_when_to_connect_date = False
+                rec.in_compare_plans = False
+                rec.in_name = rec.contact_name or False  # Added default value
+                rec.in_contact_number = rec.phone_sanitized or False
+                rec.in_email = rec.email_normalized or False
+                rec.in_request_callback = False
+                rec.in_accept_terms = False              
 
     # UNSECURED BUSINESS LOAN
     bs_business_loan_stage = fields.Selection([
@@ -922,37 +923,38 @@ class CrmLead(models.Model):
         """
         Auto-load previously saved business loan form data when stage changes
         """
-        if not self.bs_business_loan_stage:
-            return
+        for rec in self:
+            if not rec.bs_business_loan_stage:
+                return
 
-        BusinessLoanForm = self.env['custom.business.loan.data']
+            BusinessLoanForm = self.env['custom.business.loan.data']
 
-        existing = BusinessLoanForm.search([
-            ('lead_id', '=', self._origin.id),
-            ('stage', '=', self.bs_business_loan_stage)
-        ], limit=1)
+            existing = BusinessLoanForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.bs_business_loan_stage)
+            ], limit=1)
 
-        if existing:
-            self.bs_amount_to_borrow = existing.amount_to_borrow
-            self.bs_business_name = existing.business_name
-            self.bs_trading_duration = existing.trading_duration
-            self.bs_monthly_turnover = existing.monthly_turnover
-            self.bs_first_name = existing.first_name
-            self.bs_last_name = existing.last_name
-            self.bs_email = existing.email
-            self.bs_home_owner = existing.home_owner
-            self.bs_accept_terms = existing.accept_terms
-        else:
-            # Clear the fields if no record exists for this stage
-            self.bs_amount_to_borrow = False
-            self.bs_business_name = False
-            self.bs_trading_duration = False
-            self.bs_monthly_turnover = False
-            self.bs_first_name = False
-            self.bs_last_name = False
-            self.bs_email = False
-            self.bs_home_owner = False
-            self.bs_accept_terms = False   
+            if existing:
+                rec.bs_amount_to_borrow = existing.amount_to_borrow
+                rec.bs_business_name = existing.business_name
+                rec.bs_trading_duration = existing.trading_duration
+                rec.bs_monthly_turnover = existing.monthly_turnover
+                rec.bs_first_name = existing.first_name
+                rec.bs_last_name = existing.last_name
+                rec.bs_email = existing.email
+                rec.bs_home_owner = existing.home_owner
+                rec.bs_accept_terms = existing.accept_terms
+            else:
+                # Clear the fields if no record exists for this stage
+                rec.bs_amount_to_borrow = False
+                rec.bs_business_name = False
+                rec.bs_trading_duration = False
+                rec.bs_monthly_turnover = False
+                rec.bs_first_name = rec.contact_name or False  # Added default value
+                rec.bs_last_name = False
+                rec.bs_email = rec.email_normalized or False  # Added default value
+                rec.bs_home_owner = False
+                rec.bs_accept_terms = False  
 
 #    HOME LOAN FORM DATA
     hl_home_loan_stage = fields.Selection([
@@ -1056,46 +1058,48 @@ class CrmLead(models.Model):
         """
         Load Home Loan form data from saved stage when the user changes stage.
         """
-        if not self.hl_home_loan_stage:
-            return
+        for rec in self:
+            if not rec.hl_home_loan_stage:
+                return
 
-        HomeLoanForm = self.env['custom.home.loan.data']
-        existing = HomeLoanForm.search([
-            ('lead_id', '=', self._origin.id),
-            ('stage', '=', self.hl_home_loan_stage)
-        ], limit=1)
-        _logger.info("home loan id is %s ", self._origin.id)
-        if existing:
-            self.hl_user_want_to = existing.user_want_to
-            self.hl_expected_price = existing.expected_price
-            self.hl_deposit_amount = existing.deposit_amount
-            self.hl_buying_reason = existing.buying_reason
-            self.hl_first_home_buyer = existing.first_home_buyer
-            self.hl_property_type = existing.property_type
-            self.hl_property_usage = existing.property_usage
-            self.hl_credit_history = existing.credit_history
-            self.hl_income_source = existing.income_source
-            self.hl_first_name = existing.first_name
-            self.hl_last_name = existing.last_name
-            self.hl_contact = existing.contact
-            self.hl_email = existing.email
-            self.hl_accept_terms = existing.accept_terms
-        else:
-            # Reset fields if no existing data is found
-            self.hl_user_want_to = False
-            self.hl_expected_price = False
-            self.hl_deposit_amount = False
-            self.hl_buying_reason = False
-            self.hl_first_home_buyer = False
-            self.hl_property_type = False
-            self.hl_property_usage = False
-            self.hl_credit_history = False
-            self.hl_income_source = False
-            self.hl_first_name = False
-            self.hl_last_name = False
-            self.hl_contact = False
-            self.hl_email = False
-            self.hl_accept_terms = False    
+            HomeLoanForm = self.env['custom.home.loan.data']
+            existing = HomeLoanForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.hl_home_loan_stage)
+            ], limit=1)
+            _logger.info("home loan id is %s ", rec._origin.id)
+            
+            if existing:
+                rec.hl_user_want_to = existing.user_want_to
+                rec.hl_expected_price = existing.expected_price
+                rec.hl_deposit_amount = existing.deposit_amount
+                rec.hl_buying_reason = existing.buying_reason
+                rec.hl_first_home_buyer = existing.first_home_buyer
+                rec.hl_property_type = existing.property_type
+                rec.hl_property_usage = existing.property_usage
+                rec.hl_credit_history = existing.credit_history
+                rec.hl_income_source = existing.income_source
+                rec.hl_first_name = existing.first_name
+                rec.hl_last_name = existing.last_name
+                rec.hl_contact = existing.contact
+                rec.hl_email = existing.email
+                rec.hl_accept_terms = existing.accept_terms
+            else:
+                # Reset fields if no existing data is found
+                rec.hl_user_want_to = False
+                rec.hl_expected_price = False
+                rec.hl_deposit_amount = False
+                rec.hl_buying_reason = False
+                rec.hl_first_home_buyer = False
+                rec.hl_property_type = False
+                rec.hl_property_usage = False
+                rec.hl_credit_history = False
+                rec.hl_income_source = False
+                rec.hl_first_name = rec.contact_name or False  # Added default value
+                rec.hl_last_name = False
+                rec.hl_contact = rec.phone_sanitized or False  # Added default value
+                rec.hl_email = rec.email_normalized or False  # Added default value
+                rec.hl_accept_terms = False   
 
     # HEALTH INSURANCE DATA   
     hi_stage = fields.Selection([
@@ -1184,37 +1188,37 @@ class CrmLead(models.Model):
         """
         Load Health Insurance form data from saved stage when the user changes stage.
         """
-        if not self.hi_stage:
-            return
+        for rec in self:
+            if not rec.hi_stage:
+                return
 
-        HealthInsuranceForm = self.env['custom.health.insurance.form.data']
-        existing = HealthInsuranceForm.search([
-            ('lead_id', '=', self._origin.id),
-            ('stage', '=', self.hi_stage)
-        ], limit=1)
+            HealthInsuranceForm = self.env['custom.health.insurance.form.data']
+            existing = HealthInsuranceForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.hi_stage)
+            ], limit=1)
 
-        if existing:
-            self.hi_current_address = existing.current_address
-            self.hi_cover_type = existing.cover_type
-            self.hi_have_insurance_cover = existing.have_insurance_cover
-            self.hi_insurance_considerations = existing.insurance_considerations
-            self.hi_dob = existing.dob
-            self.hi_annual_taxable_income = existing.annual_taxable_income
-            self.hi_full_name = existing.full_name
-            self.hi_contact_number = existing.contact_number
-            self.hi_email = existing.email
-        else:
-            # Reset fields if no existing data is found
-            self.hi_current_address = False
-            self.hi_cover_type = False
-            self.hi_have_insurance_cover = False
-            self.hi_insurance_considerations = False
-            self.hi_dob = False
-            self.hi_annual_taxable_income = False
-            self.hi_full_name = False
-            self.hi_contact_number = False
-            self.hi_email = False            
-
+            if existing:
+                rec.hi_current_address = existing.current_address
+                rec.hi_cover_type = existing.cover_type
+                rec.hi_have_insurance_cover = existing.have_insurance_cover
+                rec.hi_insurance_considerations = existing.insurance_considerations
+                rec.hi_dob = existing.dob
+                rec.hi_annual_taxable_income = existing.annual_taxable_income
+                rec.hi_full_name = existing.full_name
+                rec.hi_contact_number = existing.contact_number
+                rec.hi_email = existing.email
+            else:
+                # Reset fields if no existing data is found
+                rec.hi_current_address = False
+                rec.hi_cover_type = False
+                rec.hi_have_insurance_cover = False
+                rec.hi_insurance_considerations = False
+                rec.hi_dob = False
+                rec.hi_annual_taxable_income = False
+                rec.hi_full_name = rec.contact_name or False  # Added default value
+                rec.hi_contact_number = rec.phone_sanitized or False  # Added default value
+                rec.hi_email = rec.email_normalized or False  # Added default value
            
 
 
