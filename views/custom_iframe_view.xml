@@ -16,7 +16,9 @@
                     </group>
                     <separator string="Vicidial Screen"/>
                     <div name="iframe_container" class="mt16 mb16">
-                        <iframe src="https://vicidial.engagenreap.co/agc/vicidial.php" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe>
+                        <!-- <iframe src="https://vicidial.engagenreap.co/agc/vicidial.php" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe> -->
+                        <iframe src="http://125.18.143.132/" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe>
+
                     </div>
                     <separator string="Matching CRM Leads"/>
                     <!-- <field name="lead_ids" nolabel="1" mode="list" context="{'default_user_id': user_id}" create="true" edit="true" widget="lead_auto_refresh_m2m"> -->
