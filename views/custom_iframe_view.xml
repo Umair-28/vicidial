@@ -17,7 +17,7 @@
                     <separator string="Vicidial Screen"/>
                     <div name="iframe_container" class="mt16 mb16">
                         <!-- <iframe src="https://vicidial.engagenreap.co/agc/vicidial.php" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe> -->
-                        <iframe src="http://125.18.143.132/" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe>
+                        <iframe src="https://vicidial.utilityhub.com.au/" allow="camera; microphone" width="100%" height="300" style="border:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"></iframe>
 
                     </div>
                     <separator string="Matching CRM Leads"/>
@@ -130,12 +130,12 @@ In order to best process this lead, the salesperson should contact:
                                         </group>
                                     </group>
                                 </group>
-HOME MOVING FORM
+                                HOME MOVING FORM
                                 <group invisible="show_home_moving_tab == False">
                                     <group>
                                         <field name="hm_home_stage" widget="selection"/>
                                     </group>
-    HOME MOVING STAGE 1
+                                HOME MOVING STAGE 1
                                     <group col="1" colspan="2">
                                         <group col="1" string="Moving Details">
                                             <div class="o_row">
@@ -230,7 +230,7 @@ HOME MOVING FORM
                                         </group>
                                     </group>
                                 </group>
-ENERGY FORM
+                                ENERGY FORM
                                 <group invisible="show_energy_tab == False">
                                     <group>
                                         <field name="en_energy_stage" widget="selection"/>
@@ -301,14 +301,14 @@ ENERGY FORM
 
                                             <div class="o_row">
                                                 <label for="en_request_callback" class="o_form_label" style="display:block;">
-Request a call back
+                                Request a call back
                                                 </label>
                                                 <field name="en_request_callback"/>
                                             </div>
 
                                             <div class="o_row">
                                                 <label for="en_accpeting_terms" class="o_form_label" style="display:block;">
-By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
+                                                    By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
                                                 </label>
                                                 <field name="en_accpeting_terms"/>
                                             </div>
@@ -316,7 +316,7 @@ By submitting your details you agree that you have read and agreed to the Terms 
                                         </group>
                                     </group>
                                 </group>
-BROADBAND FORM
+                                BROADBAND FORM
                                 <group invisible="show_internet_tab == False">
                                     <group>
                                         <field name="in_internet_stage" widget="selection"/>
@@ -374,7 +374,7 @@ BROADBAND FORM
 
                                     </group>
                                 </group>
-BUSINESS LOAN FORM
+                                BUSINESS LOAN FORM
                                 <group invisible="show_business_loan_tab == False">
                                     <group>
                                         <field name="bs_business_loan_stage" widget="selection"/>
@@ -409,7 +409,7 @@ BUSINESS LOAN FORM
 
                                     </group>
                                 </group>
-HOME LOAN FORM
+                                HOME LOAN FORM
                                 <group invisible="show_home_loan_tab == False">
                                     <group>
                                         <field name="hl_home_loan_stage" widget="selection"/>
@@ -464,7 +464,7 @@ HOME LOAN FORM
 
                                     </group>
                                 </group>
-HEALTH INSURNACE FORM
+                                <!-- HEALTH INSURNACE FORM -->
                                 <group invisible="show_health_insurance_tab == False">
                                     <group>
                                         <field name="hi_stage" widget="selection"/>
@@ -505,10 +505,516 @@ HEALTH INSURNACE FORM
 
                                     </group>
                                 </group>
+                                <!-- DODO NBN FORM -->
+                                <group invisible="show_dodo_nbn_tab == False">
+                                    <!-- Stage -->
+                                    <group>
+                                        <field name="dodo_form_stage" widget="selection"/>
+                                    </group>
+
+                                    <!-- Customer Info -->
+                                    <group colspan="2">
+                                        <group string="Customer Info" colspan="1">
+                                            <field name="do_title"/>
+                                            <field name="do_first_name"/>
+                                            <field name="do_last_name"/>
+                                            <field name="do_mobile_no"/>
+                                        </group>
+
+                                        <group string="Service Details" colspan="1">
+                                            <field name="do_dodo_receipt_no"/>
+                                            <field name="do_service_type"/>
+                                            <field name="do_plan_sold_with_dodo"/>
+                                            <field name="do_current_provider"/>
+                                            <field name="do_current_provider_acc_no"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Address Info -->
+                                    <group colspan="2">
+                                        <group string="Installation Address" colspan="1">
+                                            <field name="do_installation_address"/>
+                                            <field name="do_house_number"/>
+                                            <field name="do_street_name"/>
+                                            <field name="do_street_type"/>
+                                            <field name="do_suburb"/>
+                                            <field name="do_state"/>
+                                            <field name="do_post_code"/>
+                                        </group>
+
+                                        <group string="Sales Info" colspan="1">
+                                            <field name="do_sale_date"/>
+                                            <field name="do_center_name"/>
+                                            <field name="do_closer_name"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Compliance -->
+                                    <group colspan="2">
+                                        <group string="DNC / Audit" colspan="1">
+                                            <field name="do_dnc_ref_no"/>
+                                            <field name="do_dnc_exp_date"/>
+                                            <field name="do_audit_1"/>
+                                            <field name="do_audit_2"/>
+                                        </group>
+
+                                        <!-- Empty group for proper alignment -->
+                                        <group/>
+                                    </group>
+                                </group>
+
+                                <!-- OPTUS NBN FORM -->
+
+                                <group invisible="show_optus_nbn_tab == False">
+                                    <!-- Stage -->
+                                    <group>
+                                        <field name="optus_form_stage" widget="selection"/>
+                                    </group>
+
+                                    <!-- Customer Info -->
+                                    <group colspan="2">
+                                        <group string="Customer Info" colspan="1">
+                                            <field name="op_customer_name"/>
+                                            <field name="op_contact_number"/>
+                                            <field name="op_email"/>
+                                        </group>
+
+                                        <group string="Service Details" colspan="1">
+                                            <field name="op_order_no"/>
+                                            <field name="op_service"/>
+                                            <field name="op_plan"/>
+                                            <field name="op_cost_per_month"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Address Info -->
+                                    <group colspan="2">
+                                        <group string="Service Address" colspan="1">
+                                            <field name="op_service_address"/>
+                                        </group>
+
+                                        <group string="Sales Info" colspan="1">
+                                            <field name="op_sale_date"/>
+                                            <field name="op_activation_date"/>
+                                            <field name="op_center"/>
+                                            <field name="op_sales_person"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Compliance -->
+                                    <group colspan="2">
+                                        <group string="DNC / Audit" colspan="1">
+                                            <field name="op_dnc_ref_no"/>
+                                            <field name="op_audit_1"/>
+                                            <field name="op_audit_2"/>
+                                        </group>
+                                        <group string="Notes" colspan="1">
+                                            <field name="op_notes"/>
+                                        </group>
+                                    </group>
+                                </group>
+
+                                <!-- FIRST ENERGY FORM -->
+
+                                <group invisible="show_first_energy_tab == False">
+                                    <group>
+                                        <field name="first_energy_form_stage"/>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Sale Info -->
+                                        <group string="Sale Info" colspan="1">
+                                            <field name="fe_internal_dnc_checked"/>
+                                            <field name="fe_existing_sale"/>
+                                            <field name="fe_online_enquiry_form"/>
+                                            <field name="fe_vendor_id"/>
+                                            <field name="fe_agent"/>
+                                            <field name="fe_channel_ref"/>
+                                            <field name="fe_sale_ref"/>
+                                            <field name="fe_lead_ref"/>
+                                            <field name="fe_incentive"/>
+                                            <field name="fe_sale_date"/>
+                                            <field name="fe_campaign_ref"/>
+                                            <field name="fe_promo_code"/>
+                                        </group>
+
+                                        <!-- Customer Info -->
+                                        <group string="Customer Info" colspan="1">
+                                            <field name="fe_current_elec_retailer"/>
+                                            <field name="fe_current_gas_retailer"/>
+                                            <field name="fe_multisite"/>
+                                            <field name="fe_existing_customer"/>
+                                            <field name="fe_customer_account_no"/>
+                                            <field name="fe_customer_type"/>
+                                            <field name="fe_account_name"/>
+                                            <field name="fe_abn"/>
+                                            <field name="fe_acn"/>
+                                            <field name="fe_business_name"/>
+                                            <field name="fe_trustee_name"/>
+                                            <field name="fe_trading_name"/>
+                                            <field name="fe_position"/>
+                                            <field name="fe_sale_type"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Primary Contact -->
+                                        <group string="Primary Contact" colspan="1">
+                                            <field name="fe_title"/>
+                                            <field name="fe_first_name"/>
+                                            <field name="fe_last_name"/>
+                                            <field name="fe_phone_landline"/>
+                                            <field name="fe_phone_mobile"/>
+                                            <field name="fe_auth_date_of_birth"/>
+                                            <field name="fe_auth_expiry"/>
+                                            <field name="fe_auth_no"/>
+                                            <field name="fe_auth_type"/>
+                                            <field name="fe_email"/>
+                                        </group>
+
+                                        <!-- Concessions -->
+                                        <group string="Concessions" colspan="1">
+                                            <field name="fe_life_support"/>
+                                            <field name="fe_concessioner_number"/>
+                                            <field name="fe_concession_expiry"/>
+                                            <field name="fe_concession_flag"/>
+                                            <field name="fe_concession_start_date"/>
+                                            <field name="fe_concession_type"/>
+                                            <field name="fe_conc_first_name"/>
+                                            <field name="fe_conc_last_name"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+
+                                        <!-- Secondary Contact -->
+                                        <group string="Secondary Contact" colspan="1">
+                                            <field name="fe_secondary_title"/>
+                                            <field name="fe_sec_first_name"/>
+                                            <field name="fe_sec_last_name"/>
+                                            <field name="fe_sec_auth_date_of_birth"/>
+                                            <field name="fe_sec_auth_no"/>
+                                            <field name="fe_sec_auth_type"/>
+                                            <field name="fe_sec_auth_expiry"/>
+                                            <field name="fe_sec_email"/>
+                                            <field name="fe_sec_phone_home"/>
+                                            <field name="fe_sec_mobile_number"/>
+                                        </group>
+
+                                        <!-- Site Address -->
+                                        <group string="Site Address" colspan="1">
+                                            <field name="fe_site_apartment_no"/>
+                                            <field name="fe_site_apartment_type"/>
+                                            <field name="fe_site_building_name"/>
+                                            <field name="fe_site_floor_no"/>
+                                            <field name="fe_site_floor_type"/>
+                                            <field name="fe_site_location_description"/>
+                                            <field name="fe_site_lot_number"/>
+                                            <field name="fe_site_street_number"/>
+                                            <field name="fe_site_street_number_suffix"/>
+                                            <field name="fe_site_street_name"/>
+                                            <field name="fe_site_street_type"/>
+                                            <field name="fe_site_street_suffix"/>
+                                            <field name="fe_site_suburb"/>
+                                            <field name="fe_site_state"/>
+                                            <field name="fe_site_post_code"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Gas Site Address -->
+                                        <group string="Gas Site Address" colspan="1">
+                                            <field name="fe_gas_site_apartment_number"/>
+                                            <field name="fe_gas_site_apartment_type"/>
+                                            <field name="fe_gas_site_building_name"/>
+                                            <field name="fe_gas_site_floor_number"/>
+                                            <field name="fe_gas_site_floor_type"/>
+                                            <field name="fe_gas_site_location_description"/>
+                                            <field name="fe_gas_site_lot_number"/>
+                                            <field name="fe_gas_site_street_number"/>
+                                            <field name="fe_gas_site_street_number_suffix"/>
+                                            <field name="fe_gas_site_street_name"/>
+                                            <field name="fe_gas_site_street_type"/>
+                                            <field name="fe_gas_site_street_suffix"/>
+                                            <field name="fe_gas_site_suburb"/>
+                                            <field name="fe_gas_site_state"/>
+                                            <field name="fe_gas_site_post_code"/>
+                                        </group>
+
+                                        <!-- Meter & Product -->
+                                        <group string="Meter And Product Info" colspan="1">
+                                            <field name="fe_network_tariff_code"/>
+                                            <field name="fe_nmi"/>
+                                            <field name="fe_mirn"/>
+                                            <field name="fe_fuel"/>
+                                            <field name="fe_feed_in"/>
+                                            <field name="fe_annual_usage"/>
+                                            <field name="fe_gas_annual_usage"/>
+                                            <field name="fe_product_code"/>
+                                            <field name="fe_gas_product_code"/>
+                                            <field name="fe_offer_description"/>
+                                            <field name="fe_gas_offer_description"/>
+                                            <field name="fe_green_percent"/>
+                                            <field name="fe_proposed_transfer_date"/>
+                                            <field name="fe_gas_proposed_transfer_date"/>
+                                            <field name="fe_bill_cycle_code"/>
+                                            <field name="fe_gas_bill_cycle_code"/>
+                                            <field name="fe_average_monthly_spend"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Billing & Postal -->
+                                        <group string="Billing And Postal" colspan="1">
+                                            <field name="fe_is_owner"/>
+                                            <field name="fe_has_accepted_marketing"/>
+                                            <field name="fe_email_account_notice"/>
+                                            <field name="fe_email_invoice"/>
+                                            <field name="fe_billing_email"/>
+                                            <field name="fe_postal_building_name"/>
+                                            <field name="fe_postal_apartment_number"/>
+                                            <field name="fe_postal_apartment_type"/>
+                                            <field name="fe_postal_floor_number"/>
+                                            <field name="fe_postal_floor_type"/>
+                                            <field name="fe_postal_lot_no"/>
+                                            <field name="fe_postal_street_number"/>
+                                            <field name="fe_postal_street_number_suffix"/>
+                                            <field name="fe_postal_street_name"/>
+                                            <field name="fe_postal_street_type"/>
+                                            <field name="fe_postal_street_suffix"/>
+                                            <field name="fe_postal_suburb"/>
+                                            <field name="fe_postal_post_code"/>
+                                            <field name="fe_postal_state"/>
+                                        </group>
+
+                                        <!-- Additional Info -->
+                                        <group string="Additional Info" colspan="1">
+                                            <field name="fe_comments"/>
+                                            <field name="fe_transfer_special_instructions"/>
+                                            <field name="fe_medical_cooling"/>
+                                            <field name="fe_medical_cooling_energy_rebate"/>
+                                            <field name="fe_benefit_end_date"/>
+                                            <field name="fe_sales_class"/>
+                                            <field name="fe_bill_group_code"/>
+                                            <field name="fe_gas_meter_number"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Admin & QC -->
+                                    <group string="QC / Admin Info" colspan="2">
+                                        <field name="fe_centre_name"/>
+                                        <field name="fe_qc_name"/>
+                                        <field name="fe_verifiers_name"/>
+                                        <field name="fe_tl_name"/>
+                                        <field name="fe_dnc_ref_no"/>
+                                        <field name="fe_audit_2"/>
+                                        <field name="fe_welcome_call"/>
+                                    </group>
+                                </group>
+                                <!-- DOOD POWER AND GAS FORM -->
+                                <group invisible="show_dodo_power_tab == False">
+                                    <!-- Power Stage Selection -->
+                                    <group>
+                                        <field name="dodo_power_stage"/>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Compliance / Internal -->
+                                        <group string="Compliance / Internal" colspan="1">
+                                            <field name="dp_internal_dnc_checked"/>
+                                            <field name="dp_existing_sale"/>
+                                            <field name="dp_online_enquiry_form"/>
+                                        </group>
+
+                                        <!-- Sales Info -->
+                                        <group string="Sales Info" colspan="1">
+                                            <field name="dp_sales_name"/>
+                                            <field name="dp_sales_reference"/>
+                                            <field name="dp_agreement_date"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Site / Address -->
+                                        <group string="Site / Address" colspan="1">
+                                            <field name="dp_site_address_postcode"/>
+                                            <field name="dp_site_addr_unit_type"/>
+                                            <field name="dp_site_addr_unit_no"/>
+                                            <field name="dp_site_addr_floor_type"/>
+                                            <field name="dp_site_addr_floor_no"/>
+                                            <field name="dp_site_addr_street_no"/>
+                                            <field name="dp_site_addr_street_no_suffix"/>
+                                            <field name="dp_site_addr_street_name"/>
+                                            <field name="dp_site_addr_street_type"/>
+                                            <field name="dp_site_addr_suburb"/>
+                                            <field name="dp_site_addr_state"/>
+                                            <field name="dp_site_addr_postcode"/>
+                                            <field name="dp_site_addr_desc"/>
+                                            <field name="dp_site_access"/>
+                                            <field name="dp_site_more_than_12_months"/>
+                                        </group>
+
+                                        <!-- Previous Address -->
+                                        <group string="Previous Address" colspan="1">
+                                            <field name="dp_prev_addr_1"/>
+                                            <field name="dp_prev_addr_2"/>
+                                            <field name="dp_prev_addr_state"/>
+                                            <field name="dp_prev_addr_postcode"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Billing Address -->
+                                        <group string="Billing Address" colspan="1">
+                                            <field name="dp_billing_address"/>
+                                            <field name="dp_bill_addr_1"/>
+                                            <field name="dp_bill_addr_2"/>
+                                            <field name="dp_bill_addr_state"/>
+                                            <field name="dp_bill_addr_postcode"/>
+                                        </group>
+
+                                        <!-- Customer Info -->
+                                        <group string="Customer Info" colspan="1">
+                                            <field name="dp_customer_salutation"/>
+                                            <field name="dp_first_name"/>
+                                            <field name="dp_last_name"/>
+                                            <field name="dp_date_of_birth"/>
+                                            <field name="dp_email_contact"/>
+                                            <field name="dp_contact_number"/>
+                                            <field name="dp_hearing_impaired"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Secondary Contact -->
+                                        <group string="Secondary Contact" colspan="1">
+                                            <field name="dp_secondary_contact"/>
+                                            <field name="dp_secondary_salutation"/>
+                                            <field name="dp_secondary_first_name"/>
+                                            <field name="dp_secondary_last_name"/>
+                                            <field name="dp_secondary_date_of_birth"/>
+                                            <field name="dp_secondary_email"/>
+                                        </group>
+
+                                        <!-- Customer Identity -->
+                                        <group string="Customer Identity" colspan="1">
+                                            <field name="dp_customer_dlicense"/>
+                                            <field name="dp_customer_dlicense_state"/>
+                                            <field name="dp_customer_dlicense_exp"/>
+                                            <field name="dp_customer_passport"/>
+                                            <field name="dp_customer_passport_exp"/>
+                                            <field name="dp_customer_medicare"/>
+                                            <field name="dp_customer_medicare_ref"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Employment -->
+                                        <group string="Employment" colspan="1">
+                                            <field name="dp_position_at_current_employer"/>
+                                            <field name="dp_employment_status"/>
+                                            <field name="dp_current_employer"/>
+                                            <field name="dp_employer_contact_number"/>
+                                            <field name="dp_years_in_employment"/>
+                                            <field name="dp_months_in_employment"/>
+                                            <field name="dp_employment_confirmation"/>
+                                        </group>
+
+                                        <!-- Concessions -->
+                                        <group string="Concessions" colspan="1">
+                                            <field name="dp_concession"/>
+                                            <field name="dp_concession_card_type"/>
+                                            <field name="dp_concession_card_no"/>
+                                            <field name="dp_concession_start_date"/>
+                                            <field name="dp_concession_exp_date"/>
+                                            <field name="dp_concession_first_name"/>
+                                            <field name="dp_concession_middle_name"/>
+                                            <field name="dp_concession_last_name"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Product / Energy Details -->
+                                        <group string="Product / Energy Details" colspan="1">
+                                            <field name="dp_product_code"/>
+                                            <field name="dp_meter_type"/>
+                                            <field name="dp_kwh_usage_per_day"/>
+                                            <field name="dp_how_many_people"/>
+                                            <field name="dp_how_many_bedrooms"/>
+                                            <field name="dp_solar_power"/>
+                                            <field name="dp_solar_type"/>
+                                            <field name="dp_solar_output"/>
+                                            <field name="dp_green_energy"/>
+                                            <field name="dp_winter_gas_usage"/>
+                                            <field name="dp_summer_gas_usage"/>
+                                            <field name="dp_monthly_winter_spend"/>
+                                            <field name="dp_monthly_summer_spend"/>
+                                        </group>
+
+                                        <!-- Energy Identifiers -->
+                                        <group string="Energy Identifiers" colspan="1">
+                                            <field name="dp_nmi"/>
+                                            <field name="dp_nmi_source"/>
+                                            <field name="dp_mirn"/>
+                                            <field name="dp_mirn_source"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="3">
+                                        <!-- Connection Info -->
+                                        <group string="Connection Info" colspan="1">
+                                            <field name="dp_connection_date"/>
+                                            <field name="dp_electricity_connection"/>
+                                            <field name="dp_gas_connection"/>
+                                            <field name="dp_12_month_disconnection"/>
+                                        </group>
+
+                                        <!-- Life Support -->
+                                        <group string="Life Support" colspan="1">
+                                            <field name="dp_life_support"/>
+                                            <field name="dp_life_support_machine_type"/>
+                                            <field name="dp_life_support_details"/>
+                                        </group>
+
+                                        <!-- Invoice -->
+                                        <group string="Invoice" colspan="1">
+                                            <field name="dp_invoice_method"/>
+                                        </group>
+                                    </group>
+
+                                    <group colspan="2">
+                                        <!-- Referral / Login -->
+                                        <group string="Referral / Login" colspan="1">
+                                            <field name="dp_referral_code"/>
+                                            <field name="dp_new_username"/>
+                                            <field name="dp_new_password"/>
+                                        </group>
+
+                                        <!-- Certificates -->
+                                        <group string="Certificates" colspan="1">
+                                            <field name="dp_cert_electrical_safety"/>
+                                            <field name="dp_cert_electrical_safety_id"/>
+                                            <field name="dp_cert_electrical_safety_sent"/>
+                                        </group>
+                                    </group>
+
+                                    <!-- Consent -->
+                                    <group string="Consent" colspan="2">
+                                        <field name="dp_explicit_informed_consent"/>
+                                    </group>
+
+                                    <!-- Compliance / Audit -->
+                                    <group string="Compliance / Audit" colspan="2">
+                                        <field name="dp_center_name"/>
+                                        <field name="dp_closer_name"/>
+                                        <field name="dp_dnc_wash_number"/>
+                                        <field name="dp_dnc_exp_date"/>
+                                        <field name="dp_audit_1"/>
+                                        <field name="dp_audit_2"/>
+                                        <field name="dp_welcome_call"/>
+                                    </group>
+                                </group>
                             </page>
-
-
-
                         </notebook>
                     </group>
                 </page>
@@ -521,613 +1027,6 @@ HEALTH INSURNACE FORM
 
 
 
-
-
-<!-- <record id="crm_lead_form_view_complete" model="ir.ui.view">
-<field name="name">crm.lead.form.complete</field>
-<field name="model">crm.lead</field>
-<field name="inherit_id" ref="crm.crm_lead_view_form"/>
-<field name="priority">10</field>
-<field name="arch" type="xml">
-<form string="Lead">
-<header>
-<button name="action_set_won" type="object" string="Mark Won" class="oe_highlight" invisible="active == False"/>
-<button name="action_set_lost" type="object" string="Mark Lost" invisible="active == False"/>
-<button name="toggle_active" type="object" string="Archive" invisible="active == False"/>
-<button name="toggle_active" type="object" string="Unarchive" invisible="active == True"/>
-<field name="stage_id" widget="statusbar" clickable="True" options="{'fold_field': 'fold'}"/>
-</header>
-<sheet>
-
-<div class="oe_title">
-<h1>
-<field name="name" placeholder="Lead Name..." required="True"/>
-</h1>
-</div>
-<group>
-<group>
-<field name="partner_id" context="{'default_is_company': False}" options="{'always_reload': True}" domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
-<field name="contact_name"/>
-<field name="phone"/>
-<field name="mobile"/>
-<field name="email_from"/>
-<field name="function"/>
-<field name="title"/>
-<field name="website"/>
-</group>
-
-<group>
-<field name="user_id"/>
-<field name="team_id"/>
-<field name="priority" widget="priority"/>
-<field name="type"/>
-<field name="company_id" groups="base.group_multi_company"/>
-<field name="referred"/>
-<field name="lang_id"/>
-<field name="automated_probability"/>
-</group>
-</group>
-<group>
-<group string="Address Information">
-<field name="street"/>
-<field name="street2"/>
-<field name="city"/>
-<field name="state_id" options="{'no_open': True, 'no_create': True}"/>
-<field name="zip"/>
-<field name="country_id" options="{'no_open': True, 'no_create': True}"/>
-</group>
-
-<group string="Sales Information">
-<field name="expected_revenue"/>
-<field name="probability"/>
-<field name="automated_probability" invisible="1"/>
-<field name="date_deadline"/>
-<field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
-<field name="recurring_revenue"/>
-<field name="recurring_plan"/>
-</group>
-</group>
-
-<group>
-<group string="Tracking">
-<field name="date_open"/>
-<field name="date_closed"/>
-<field name="day_open"/>
-<field name="day_close"/>
-<field name="date_last_stage_update"/>
-</group>
-
-<group string="Assignment">
-<field name="date_conversion"/>
-<field name="active" invisible="1"/>
-<field name="won_status"/>
-<field name="reveal_id"/>
-</group>
-</group>
-<group>
-<group>
-
-<field name="services"/>
-</group>
-</group>
-<notebook>
-<page string="Form">
-<field name="show_nothing_tab" invisible="1"/>
-<group invisible="show_nothing_tab == False">
-    <div class="o_form_label text-muted">
-Please select a service to continue...
-    </div>
-</group>
-
-<field name="show_credit_card_tab" invisible="1"/>
-<group invisible="show_credit_card_tab == False">
-    <group>
-        <field name="cc_stage" widget="selection"/>
-    </group>
-    CREDIT CARD STAGE 1
-    <group col="1" colspan="2">
-        <group string="Contact's Information" col="2">
-            <field name="cc_prefix"/>
-            <field name="cc_first_name"/>
-            <field name="cc_last_name"/>
-            <field name="cc_job_title"/>
-            <field name="cc_phone"/>
-            <field name="cc_email"/>
-        </group>
-
-        <group string="Company Details" col="2">
-            <field name="cc_annual_revenue"/>
-            <field name="cc_annual_spend"/>
-            <field name="cc_existing_products"/>
-            <field name="cc_expense_tools"/>
-            <field name="cc_additional_info" colspan="2"/>
-        </group>
-
-
-        <group string="CONSENT" col="1" colspan="2">
-
-            <div class="o_row">
-                <label for="cc_consent_personal_info" class="o_form_label" style="display:block;">
-I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
-                </label>
-                <field name="cc_consent_personal_info"/>
-            </div>
-
-            <div class="o_row" style="display:block;">
-                <label for="cc_consent_contact_method" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-I have obtained the consent of above companies to contact the appointed representative via:
-                </label>
-                <field name="cc_consent_contact_method" widget="radio" style="display: inline; margin-top: 0.5rem;"/>
-            </div>
-
-            <div class="o_row" style="display:block;">
-                <label for="cc_contact_preference" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-In order to best process this lead, the salesperson should contact:
-                </label>
-                <field name="cc_contact_preference" widget="radio" style="display: inline;margin-top: 0.5rem;"/>
-            </div>
-
-        </group>
-    </group>
-</group>
-HOME MOVING FORM
-<group invisible="show_home_moving_tab == False">
-    <group>
-        <field name="hm_home_stage" widget="selection"/>
-    </group>
-    HOME MOVING STAGE 1
-    <group col="1" colspan="2">
-        <group col="1" string="Moving Details">
-            <div class="o_row">
-                <label for="hm_moving_date">Moving Date</label>
-                <field name="hm_moving_date"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_address">Address</label>
-                <field name="hm_address"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_suburb">Suburb</label>
-                <field name="hm_suburb"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_state">State</label>
-                <field name="hm_state"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_postcode">Postcode</label>
-                <field name="hm_postcode"/>
-            </div>
-        </group>
-
-        <group col="1" colspan="1" string="Personal Details">
-            <div class="o_row">
-                <label for="hm_first_name">First Name</label>
-                <field name="hm_first_name"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_last_name">Last Name</label>
-                <field name="hm_last_name"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_job_title">Job Title</label>
-                <field name="hm_job_title"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_dob">Date of Birth</label>
-                <field name="hm_dob"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_friend_code">Friend Code</label>
-                <field name="hm_friend_code"/>
-            </div>
-        </group>
-
-        <group col="1" string="Contact Details">
-            <div class="o_row">
-                <label for="hm_mobile">Mobile</label>
-                <field name="hm_mobile"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_work_phone">Work Phone</label>
-                <field name="hm_work_phone"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_email">Email</label>
-                <field name="hm_email"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_how_heard">How Did You Hear?</label>
-                <field name="hm_how_heard"/>
-            </div>
-        </group>
-
-        <group col="1" string="Services to connect">
-            <div class="o_row">
-                <label for="hm_connect_electricity">Electricity</label>
-                <field name="hm_connect_electricity" widget="checkbox"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_connect_gas">Gas</label>
-                <field name="hm_connect_gas" widget="checkbox"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_connect_internet">Internet</label>
-                <field name="hm_connect_internet" widget="checkbox"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_connect_water">Water</label>
-                <field name="hm_connect_water" widget="checkbox"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_connect_tv">TV</label>
-                <field name="hm_connect_tv" widget="checkbox"/>
-            </div>
-            <div class="o_row">
-                <label for="hm_connect_removalist">Removalist</label>
-                <field name="hm_connect_removalist" widget="checkbox"/>
-            </div>
-        </group>
-    </group>
-</group>
-ENERGY FORM
-<group invisible="show_energy_tab == False">
-    <group>
-        <field name="en_energy_stage" widget="selection"/>
-    </group>
-    <group col="1" colspan="2">
-        <group col="1" string="Compare Plans Form">
-            <div class="o_row">
-                <label for="en_current_address">Current Address</label>
-                <field name="en_current_address"/>
-            </div>
-            <div class="o_row">
-                <label for="en_what_to_compare">What are you looking to compare?</label>
-                <field name="en_what_to_compare"/>
-            </div>
-            <div class="o_row">
-                <label for="en_property_type">What type of property?</label>
-                <field name="en_property_type"/>
-            </div>
-            <div class="o_row">
-                <label for="en_moving_in">Are you moving into this property?</label>
-                <field name="en_moving_in"/>
-            </div>
-            <div class="o_row">
-                <label for="en_property_ownership">Do you own or rent this property?</label>
-                <field name="en_property_ownership"/>
-            </div>
-        </group>
-
-        <group col="1" string="">
-            <div class="o_row">
-                <label for="en_usage_profile">Select your usage profile?</label>
-                <field name="en_usage_profile"/>
-            </div>
-            <div class="o_row">
-                <label for="en_require_life_support">Does anyone residing or intending to reside at your premises require life support equipment?</label>
-                <field name="en_require_life_support"/>
-            </div>
-            <div class="o_row">
-                <label for="en_concesion_card_holder">Are you a concession card holder?</label>
-                <field name="en_concesion_card_holder"/>
-            </div>
-            <div class="o_row">
-                <label for="en_electricity_provider">Do you have rooftop solar panels?</label>
-                <field name="en_electricity_provider"/>
-            </div>
-            <div class="o_row">
-                <label for="en_gas_provider">Who is your current gas provider?</label>
-                <field name="en_gas_provider"/>
-            </div>
-        </group>
-
-        <group col="1" string="Personal Information">
-            <div class="o_row">
-                <label for="en_name">Your Name</label>
-                <field name="en_name"/>
-            </div>
-            <div class="o_row">
-                <label for="en_contact_number">Contact Number</label>
-                <field name="en_contact_number"/>
-            </div>
-            <div class="o_row">
-                <label for="en_email">Email</label>
-                <field name="en_email"/>
-            </div>
-        </group>
-
-        <group string="CONSENT" col="1" colspan="2">
-
-            <div class="o_row">
-                <label for="en_request_callback" class="o_form_label" style="display:block;">
-Request a call back
-                </label>
-                <field name="en_request_callback"/>
-            </div>
-
-            <div class="o_row">
-                <label for="en_accpeting_terms" class="o_form_label" style="display:block;">
-By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
-                </label>
-                <field name="en_accpeting_terms"/>
-            </div>
-
-        </group>
-    </group>
-</group>
-BROADBAND FORM
-<group invisible="show_internet_tab == False">
-    <group>
-        <field name="in_internet_stage" widget="selection"/>
-    </group>
-    <group col="1" colspan="2">
-
-        <group col="1" string="Broadband Form">
-            <div class="o_row">
-                <label for="in_current_address">Current Address</label>
-                <field name="in_current_address"/>
-            </div>
-            <div class="o_row">
-                <label for="in_internet_usage_type">How will you use this internet?</label>
-                <field name="in_internet_usage_type"/>
-            </div>
-            <div class="o_row">
-                <label for="in_internet_users_count">How many people will be using the internet?</label>
-                <field name="in_internet_users_count"/>
-            </div>
-            <div class="o_row">
-                <label for="in_important_feature">What is the most important feature to you?</label>
-                <field name="in_important_feature"/>
-            </div>
-        </group>
-
-        <group col="1" string="Broadband Form">
-            <div class="o_row">
-                <label for="in_speed_preference">Do you have a speed preference?</label>
-                <field name="in_speed_preference"/>
-            </div>
-            <div class="o_row">
-                <label for="in_broadband_reason">Why are you looking into your broadband options?</label>
-                <field name="in_broadband_reason"/>
-            </div>
-            <div class="o_row">
-                <label for="in_when_to_connect_type">When would you like broadband connected?</label>
-                <field name="in_when_to_connect_type"/>
-            </div>
-            <div class="o_row">
-                <label for="in_when_to_connect_date">Select connection date?</label>
-                <field name="in_when_to_connect_date"/>
-            </div>
-            <div class="o_row">
-                <label for="in_compare_plans">Would you also like to comapre your energy plans to see if you could save?</label>
-                <field name="in_compare_plans"/>
-            </div>
-        </group>
-        <group col="1" string="Personal Information">
-            <div class="o_row">
-                <label for="in_name">Your name</label>
-                <field name="in_name"/>
-            </div>
-            <div class="o_row">
-                <label for="in_contact_number">Contact number</label>
-                <field name="in_contact_number"/>
-            </div>
-            <div class="o_row">
-                <label for="in_email">Email</label>
-                <field name="in_email"/>
-            </div>
-            <div class="o_row" style="display:block;">
-                <label for="in_request_callback" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-Request a callback:
-                </label>
-                <field name="in_request_callback" style="display: inline;margin-top: 0.5rem;"/>
-            </div>
-            <div class="o_row">
-                <label for="in_accept_terms" class="o_form_label" style="display:block;">
-By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.
-                </label>
-                <field name="in_accept_terms"/>
-            </div>
-        </group>
-    </group>
-</group>
-BUSINESS LOAN FORM
-<group invisible="show_business_loan_tab == False">
-    <group>
-        <field name="bs_business_loan_stage" widget="selection"/>
-    </group>
-    <group col="1" colspan="2">
-
-        <group col="1" string="Business Loan Form">
-            <div class="o_row">
-                <label for="bs_amount_to_borrow">How much would you like to borrow?</label>
-                <field name="bs_amount_to_borrow"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_business_name">Name of your business</label>
-                <field name="bs_business_name"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_trading_duration">How long have you been trading: </label>
-                <field name="bs_trading_duration" widget="radio"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_monthly_turnover">What is your monthly turnover</label>
-                <field name="bs_monthly_turnover"/>
-            </div>
-        </group>
-        <group col="1" string="Personal Information">
-            <div class="o_row">
-                <label for="bs_first_name">First name</label>
-                <field name="bs_first_name"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_last_name">Last name</label>
-                <field name="bs_last_name"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_email">Email</label>
-                <field name="bs_email"/>
-            </div>
-            <div class="o_row">
-                <label for="bs_home_owner">Are you a home owner?</label>
-                <field name="bs_home_owner"/>
-            </div>
-            <div class="o_row" style="display:block;">
-                <label for="bs_accept_terms">Accept terms and conditions</label>
-                <field name="bs_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
-            </div>
-        </group>
-    </group>
-</group>
-HOME LOAN FORM
-<group invisible="show_home_loan_tab == False">
-    <group>
-        <field name="hl_home_loan_stage" widget="selection"/>
-    </group>
-    <group col="1" colspan="2">
-
-        <group col="1" string="Home Loan Form">
-            <div class="o_row">
-                <label for="hl_user_want_to">What would you like to do?</label>
-                <field name="hl_user_want_to"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_expected_price">What is your exptected price?</label>
-                <field name="hl_expected_price"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_deposit_amount">How much deposit do you have?</label>
-                <field name="hl_deposit_amount"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_buying_reason">What best describes your home buying situation?</label>
-                <field name="hl_buying_reason"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_first_home_buyer">Are you a first home buyer</label>
-                <field name="hl_first_home_buyer"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_property_type">What kind of property are you looking for?</label>
-                <field name="hl_property_type"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_property_usage">How will this property be used?</label>
-                <field name="hl_property_usage"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_credit_history">What do you think your credit history is?</label>
-                <field name="hl_credit_history"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_income_source">How do you earn your income?</label>
-                <field name="hl_income_source"/>
-            </div>
-        </group>
-        <group col="1" string="Personal Information">
-            <div class="o_row">
-                <label for="hl_first_name">First name</label>
-                <field name="hl_first_name"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_last_name">Last name</label>
-                <field name="hl_last_name"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_contact">Contact number</label>
-                <field name="hl_contact"/>
-            </div>
-            <div class="o_row">
-                <label for="hl_email">Email</label>
-                <field name="hl_email"/>
-            </div>
-
-            <div class="o_row" style="display:block;">
-                <label for="hl_accept_terms">Accept terms and conditions</label>
-                <field name="hl_accept_terms" style="display: inline;margin-top: 0.5rem;"/>
-            </div>
-        </group>
-    </group>
-</group>
-HEALTH INSURNACE FORM
-<group invisible="show_health_insurance_tab == False">
-    <group>
-        <field name="hi_stage" widget="selection"/>
-    </group>
-    <group col="1" colspan="2">
-
-        <group col="1" string="Health Insurance Form">
-            <div class="o_row">
-                <label for="hi_current_address">Current address</label>
-                <field name="hi_current_address"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_cover_type">Select type of cover</label>
-                <field name="hi_cover_type" widget="radio"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_have_insurance_cover">Do you have health inssurance cover?</label>
-                <field name="hi_have_insurance_cover" widget="radio"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_insurance_considerations">What are your main considerations when looking for a new health insurance cover?</label>
-                <field name="hi_insurance_considerations" widget="radio"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_dob">What is your date of birth?</label>
-                <field name="hi_dob"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_annual_taxable_income">What is your annual taxable income?</label>
-                <field name="hi_annual_taxable_income" widget="radio"/>
-            </div>
-        </group>
-        <group col="1" string="Personal Information">
-            <div class="o_row">
-                <label for="hi_full_name">Full name</label>
-                <field name="hi_full_name"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_contact_number">Contact number</label>
-                <field name="hi_contact_number"/>
-            </div>
-            <div class="o_row">
-                <label for="hi_email">Email</label>
-                <field name="hi_email"/>
-            </div>
-
-        </group>
-    </group>
-</group>
-</page>
-<page string="Internal Notes">
-<field name="description" placeholder="Add internal notes..."/>
-</page>
-
-<page string="Extra Information">
-<group>
-     
-
-    <group string="Misc">
-        <field name="lost_reason_id" invisible="active == True"/>
-        <field name="color"/>
-        <field name="lang_id"/>
-    </group>
-</group>
-</page>
-
-</notebook>
-</sheet>
-<div class="oe_chatter">
-<field name="message_follower_ids" widget="mail_followers"/>
-<field name="activity_ids" widget="mail_activity"/>
-<field name="message_ids" widget="mail_thread"/>
-</div>
-</form>
-</field>
-</record> -->
 
 
 

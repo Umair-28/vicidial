@@ -37,6 +37,10 @@ class CrmLead(models.Model):
         ('home_loan', 'Home Loan'),
         # ('energy_upgrades', 'Victorian Energy Upgrades'),
         ('moving_home', 'New Connection (Moving Home)'),
+        ('dodo_nbn', 'DODO NBN Form'),
+        ('optus_nbn', 'Optus NBN Form'),
+        ('first_energy', 'First Energy Form'),
+        ('dodo_power', 'DODO Power And Gas Form')
     ], string="Select Service", default="false", required=True)
 
     @api.onchange('services')
@@ -59,7 +63,15 @@ class CrmLead(models.Model):
             elif rec.services == 'insurance':
                 rec.selected_tab = 'insurance_tab'
             elif rec.services == 'home_loan':
-                rec.selected_tab = 'home_loab_tab'           
+                rec.selected_tab = 'home_loab_tab' 
+            elif rec.services == 'dodo_nbn':
+                rec.selected_tab = 'dodo_nbn_tab' 
+            elif rec.services == 'optus_nbn':
+                rec.selected_tab = 'optus_nbn_tab' 
+            elif rec.services == 'first_energy':
+                rec.selected_tab = 'first_energy_tab'  
+            elif rec.services == 'dodo_power':
+                rec.selected_tab = 'dodo_power_tab'                          
 
 
 
@@ -93,7 +105,23 @@ class CrmLead(models.Model):
 
     show_health_insurance_tab = fields.Boolean(
         compute = "_compute_show_health_insurance_tab"
+    ) 
+
+    show_dodo_nbn_tab = fields.Boolean(
+        compute = "_compute_show_dodo_nbn_tab"
+    )
+
+    show_optus_nbn_tab = fields.Boolean(
+        compute = "_compute_show_optus_nbn_tab"
+    )
+
+    show_first_energy_tab = fields.Boolean(
+        compute = "_compute_show_first_energy_tab"
     )  
+
+    show_dodo_power_tab = fields.Boolean(
+        compute = "_compute_show_dodo_power_tab"
+    )    
 
     @api.depends('services')
     def _compute_show_credit_card_tab(self):
@@ -126,7 +154,11 @@ class CrmLead(models.Model):
                 'broadband': ('custom.broadband.form.data', 'in_internet_stage'),
                 'business_loan': ('custom.business.loan.data', 'bs_business_loan_stage'),
                 'insurance': ('custom.health.insurance.form.data', 'hi_stage'),
-                'home_loan': ('custom.home.loan.data', 'hl_home_loan_stage')
+                'home_loan': ('custom.home.loan.data', 'hl_home_loan_stage'),
+                'dodo_nbn':('custom.dodo.nbn.form', 'dodo_form_stage'),
+                'optus_nbn':('custom.optus.nbn.form', 'optus_form_stage'),
+                'first_energy':('custom.first.energy.form', 'first_energy_form_stage'),
+                'dodo_power':('custom.dodo.power.form', 'dodo_power_stage')
             }
 
             # Get model name and stage field dynamically
@@ -198,7 +230,27 @@ class CrmLead(models.Model):
     @api.depends('services')
     def _compute_show_health_insurance_tab(self):
         for rec in self:
-            rec.show_health_insurance_tab = rec.services == 'insurance'   
+            rec.show_health_insurance_tab = rec.services == 'insurance'
+
+    @api.depends('services')
+    def _compute_show_dodo_nbn_tab(self):
+        for rec in self:
+            rec.show_dodo_nbn_tab = rec.services == 'dodo_nbn'
+
+    @api.depends('services')
+    def _compute_show_optus_nbn_tab(self):
+        for rec in self:
+            rec.show_optus_nbn_tab = rec.services ==  'optus_nbn'  
+
+    @api.depends('services')
+    def _compute_show_first_energy_tab(self):
+        for rec in self:
+            rec.show_first_energy_tab = rec.services ==  'first_energy' 
+
+    @api.depends('services')
+    def _compute_show_dodo_power_tab(self):
+        for rec in self:
+            rec.show_dodo_power_tab = rec.services ==  'dodo_power'                                  
 
     def create(self, vals):
         _logger.info("🔄 CREATE triggered with vals: %s", vals)
@@ -230,6 +282,14 @@ class CrmLead(models.Model):
                 lead._sync_home_loan_form_to_stage()
             elif lead.services == 'energy':
                 lead._save_energy_stage_data()
+            elif lead.services == 'dodo_nbn':
+                lead._save_dodo_nbn_data()
+            elif lead.services == 'optus_nbn':
+                lead._save_optus_nbn_data() 
+            elif lead.services == 'first_energy':
+                lead._save_first_energy_data() 
+            elif lead.services == 'dodo_power':
+                lead._save_dodo_power_data()                   
             else:
                 _logger.warning("⚠️ No handler defined for service: %s", lead.services)                                  
 
@@ -1136,16 +1196,6 @@ class CrmLead(models.Model):
     hi_contact_number = fields.Char(string="Contact Number")
     hi_email = fields.Char(string="Email")
 
-    # @api.model
-    # def create(self, vals):
-    #     lead = super().create(vals)
-    #     lead._sync_health_insurance_form_to_stage()
-    #     return lead
-
-    # def write(self, vals):
-    #     result = super().write(vals)
-    #     self._sync_health_insurance_form_to_stage()
-    #     return result
 
     def _sync_health_insurance_form_to_stage(self):
         """
@@ -1219,6 +1269,1407 @@ class CrmLead(models.Model):
                 rec.hi_full_name = rec.contact_name or False  # Added default value
                 rec.hi_contact_number = rec.phone_sanitized or False  # Added default value
                 rec.hi_email = rec.email_normalized or False  # Added default value
+
+#  DODO FORM DATA
+
+    dodo_form_stage = fields.Selection([
+        ('1', 'Stage 1'),
+        ('2', 'Stage 2'),
+        ('3', 'Stage 3'),
+        ('4', 'Stage 4'),
+        ('5', 'Stage 5')
+    ], string='Stage', required=True)
+    do_dodo_receipt_no = fields.Char(string="DODO Receipt Number")
+    do_service_type = fields.Char(string="Service Type")
+    do_plan_sold_with_dodo = fields.Char(string="Plan With DODO")
+    do_current_provider = fields.Char(string="Current Provider")
+    do_current_provider_acc_no = fields.Char(string="Current Provider Account No")
+    do_title = fields.Selection([
+        ("mr", "MR"),
+        ("mrs", "MRS"),
+    ],string="Title")   
+    do_first_name = fields.Char(string="First Name")
+    do_last_name = fields.Char(string="Last Name")
+    do_mobile_no = fields.Char(string="Mobile No")
+    do_installation_address = fields.Char(string="Installation Address - Unit/Flat Number")
+    do_house_number = fields.Char(string="House No")
+    do_street_name = fields.Char(string="Street Name")
+    do_street_type = fields.Char(string="Street Type")
+    do_suburb = fields.Char(string="Installation address-Suburb")
+    do_state = fields.Char(string="State")
+    do_post_code = fields.Char("Post Code")
+    do_sale_date = fields.Date(string="Sale Date")
+    do_center_name = fields.Char(string="Center Name")
+    do_closer_name = fields.Char(string="Closer Name")
+    do_dnc_ref_no = fields.Char(string="DNC Reference No")
+    do_dnc_exp_date = fields.Date(string="DNC Expiry Date")
+    do_audit_1 = fields.Char(string="Audit 1")
+    do_audit_2 = fields.Char(string="Audit 2")   
+
+    def _save_dodo_nbn_data(self):
+        """
+        Save DODO NBN form data per stage in custom.dodo.nbn.form
+        """
+        for lead in self:
+            stage = lead.dodo_form_stage
+            if not stage:
+                continue
+
+            DodoForm = self.env['custom.dodo.nbn.form']
+
+            # Check if record for this lead and stage exists
+            existing = DodoForm.search([
+                ('lead_id', '=', lead.id),
+                ('stage', '=', stage)
+            ], limit=1)
+
+            dodo_vals = {
+                'lead_id': lead.id,
+                'stage': stage,
+                'dodo_receipt_no': lead.do_dodo_receipt_no,
+                'service_type': lead.do_service_type,
+                'plan_sold_with_dodo': lead.do_plan_sold_with_dodo,
+                'current_provider': lead.do_current_provider,
+                'current_provider_acc_no': lead.do_current_provider_acc_no,
+                'title': lead.do_title,
+                'first_name': lead.do_first_name,
+                'last_name': lead.do_last_name,
+                'mobile_no': lead.do_mobile_no,
+                'installation_address': lead.do_installation_address,
+                'house_number': lead.do_house_number,
+                'street_name': lead.do_street_name,
+                'street_type': lead.do_street_type,
+                'suburb': lead.do_suburb,
+                'state': lead.do_state,
+                'post_code': lead.do_post_code,
+                'sale_date': lead.do_sale_date,
+                'center_name': lead.do_center_name,
+                'closer_name': lead.do_closer_name,
+                'dnc_ref_no': lead.do_dnc_ref_no,
+                'dnc_exp_date': lead.do_dnc_exp_date,
+                'audit_1': lead.do_audit_1,
+                'audit_2': lead.do_audit_2,
+            }
+
+            if existing:
+                existing.write(dodo_vals)
+            else:
+                DodoForm.create(dodo_vals)
+
+    # ------------------------
+    # LOAD METHOD (ONCHANGE)
+    # ------------------------
+    @api.onchange('dodo_form_stage')
+    def _onchange_dodo_form_stage(self):
+        """
+        Load DODO NBN form data from saved stage when the user changes stage.
+        """
+        for rec in self:
+            if not rec.dodo_form_stage:
+                return
+
+            DodoForm = self.env['custom.dodo.nbn.form']
+            existing = DodoForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.dodo_form_stage)
+            ], limit=1)
+
+            if existing:
+                rec.do_dodo_receipt_no = existing.dodo_receipt_no
+                rec.do_service_type = existing.service_type
+                rec.do_plan_sold_with_dodo = existing.plan_sold_with_dodo
+                rec.do_current_provider = existing.current_provider
+                rec.do_current_provider_acc_no = existing.current_provider_acc_no
+                rec.do_title = existing.title
+                rec.do_first_name = existing.first_name
+                rec.do_last_name = existing.last_name
+                rec.do_mobile_no = existing.mobile_no
+                rec.do_installation_address = existing.installation_address
+                rec.do_house_number = existing.house_number
+                rec.do_street_name = existing.street_name
+                rec.do_street_type = existing.street_type
+                rec.do_suburb = existing.suburb
+                rec.do_state = existing.state
+                rec.do_post_code = existing.post_code
+                rec.do_sale_date = existing.sale_date
+                rec.do_center_name = existing.center_name
+                rec.do_closer_name = existing.closer_name
+                rec.do_dnc_ref_no = existing.dnc_ref_no
+                rec.do_dnc_exp_date = existing.dnc_exp_date
+                rec.do_audit_1 = existing.audit_1
+                rec.do_audit_2 = existing.audit_2
+            else:
+                # Reset fields if no existing data is found
+                rec.do_dodo_receipt_no = False
+                rec.do_service_type = False
+                rec.do_plan_sold_with_dodo = False
+                rec.do_current_provider = False
+                rec.do_current_provider_acc_no = False
+                rec.do_title = False
+                rec.do_first_name = rec.contact_name or False  # default
+                rec.do_last_name = False
+                rec.do_mobile_no = rec.phone_sanitized or False  # default
+                rec.do_installation_address = False
+                rec.do_house_number = False
+                rec.do_street_name = False
+                rec.do_street_type = False
+                rec.do_suburb = False
+                rec.do_state = False
+                rec.do_post_code = False
+                rec.do_sale_date = False
+                rec.do_center_name = False
+                rec.do_closer_name = False
+                rec.do_dnc_ref_no = False
+                rec.do_dnc_exp_date = False
+                rec.do_audit_1 = False
+                rec.do_audit_2 = False 
+
+    # OPTUS NBN FORM
+    
+    optus_form_stage = fields.Selection([
+        ('1', 'Stage 1'),
+        ('2', 'Stage 2'),
+        ('3', 'Stage 3'),
+        ('4', 'Stage 4'),
+        ('5', 'Stage 5')
+    ], string='Stage', required=True)
+    op_sale_date = fields.Date(string="Sale Date")
+    op_activation_date = fields.Date(string="Activation Date")
+    op_order_no = fields.Char(string="Order Number")
+    op_customer_name = fields.Char(string="Customer Name")
+    op_service_address = fields.Char(string="Service Address")
+    op_service = fields.Char(string="Service")
+    op_plan = fields.Char(string="Plan")
+    op_cost_per_month = fields.Float(string="Cost Per Month")  # better numeric
+    op_center = fields.Char(string="Center")
+    op_sales_person = fields.Char(string="Sales Person")
+    op_contact_number = fields.Char(string="Contact Number")
+    op_email = fields.Char(string="Email")
+    op_notes = fields.Text(string="Notes")   # changed to Text
+    op_dnc_ref_no = fields.Char(string="DNC Reference No")
+    op_audit_1 = fields.Char(string="Audit 1")
+    op_audit_2 = fields.Char(string="Audit 2")       
+
+
+    @api.model
+    def _save_optus_nbn_data(self):
+        """
+        Save Optus BNB form data per stage in custom.optus.nbn.form
+        """
+        for lead in self:
+            stage = lead.optus_form_stage
+            if not stage:
+                continue
+
+            OptusBNBForm = self.env['custom.optus.nbn.form']
+
+            # Check if record for this lead and stage exists
+            existing = OptusBNBForm.search([
+                ('lead_id', '=', lead.id),
+                ('stage', '=', stage)
+            ], limit=1)
+
+            op_vals = {
+                'lead_id': lead.id,
+                'stage': stage,
+                'sale_date': lead.op_sale_date,
+                'activation_date': lead.op_activation_date,
+                'order_no': lead.op_order_no,
+                'customer_name': lead.op_customer_name,
+                'service_address': lead.op_service_address,
+                'service': lead.op_service,
+                'plan': lead.op_plan,
+                'cost_per_month': lead.op_cost_per_month,
+                'center': lead.op_center,
+                'sales_person': lead.op_sales_person,
+                'contact_number': lead.op_contact_number,
+                'email': lead.op_email,
+                'notes': lead.op_notes,
+                'dnc_ref_no': lead.op_dnc_ref_no,
+                'audit_1': lead.op_audit_1,
+                'audit_2': lead.op_audit_2,
+            }
+
+            if existing:
+                existing.write(op_vals)
+            else:
+                OptusBNBForm.create(op_vals)
+
+    @api.onchange('optus_form_stage')
+    def _onchange_optus_form_stage(self):
+        """
+        Load Optus BNB form data from saved stage when user changes stage
+        """
+        for rec in self:
+            if not rec.optus_form_stage:
+                return
+
+            OptusBNBForm = self.env['custom.optus.nbn.form']
+            existing = OptusBNBForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.optus_form_stage)
+            ], limit=1)
+
+            if existing:
+                rec.op_sale_date = existing.sale_date
+                rec.op_activation_date = existing.activation_date
+                rec.op_order_no = existing.order_no
+                rec.op_customer_name = existing.customer_name
+                rec.op_service_address = existing.service_address
+                rec.op_service = existing.service
+                rec.op_plan = existing.plan
+                rec.op_cost_per_month = existing.cost_per_month
+                rec.op_center = existing.center
+                rec.op_sales_person = existing.sales_person
+                rec.op_contact_number = existing.contact_number
+                rec.op_email = existing.email
+                rec.op_notes = existing.notes
+                rec.op_dnc_ref_no = existing.dnc_ref_no
+                rec.op_audit_1 = existing.audit_1
+                rec.op_audit_2 = existing.audit_2
+            else:
+                # Reset fields if no existing data is found
+                rec.op_sale_date = False
+                rec.op_activation_date = False
+                rec.op_order_no = False
+                rec.op_customer_name = False
+                rec.op_service_address = False
+                rec.op_service = False
+                rec.op_plan = False
+                rec.op_cost_per_month = 0.0
+                rec.op_center = False
+                rec.op_sales_person = False
+                rec.op_contact_number = rec.phone_sanitized or False  # default from lead
+                rec.op_email = rec.email_normalized or False          # default from lead
+                rec.op_notes = False
+                rec.op_dnc_ref_no = False
+                rec.op_audit_1 = False
+                rec.op_audit_2 = False     
+
+
+    # FIRST ENERGY FORM
+    first_energy_form_stage = fields.Selection([
+        ('1', 'Stage 1'),
+        ('2', 'Stage 2'),
+        ('3', 'Stage 3'),
+        ('4', 'Stage 4'),
+        ('5', 'Stage 5')
+    ], string='Stage', required=True)
+    fe_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
+    fe_existing_sale = fields.Char(string="Existing Sale with NMI & Phone Number")
+    fe_online_enquiry_form = fields.Char(string="Online Enquiry Form")
+    fe_vendor_id = fields.Char(string="Vendor ID")
+    fe_agent = fields.Char(string="Agent")
+    fe_channel_ref = fields.Char(string="Channel Reference")
+    fe_sale_ref = fields.Char(string="Sale Reference")
+    fe_lead_ref = fields.Char(string="Lead Ref (External)")  # renamed to avoid clash
+    fe_incentive = fields.Char(string="Incentive")
+    fe_sale_date = fields.Date(string="Date of Sale")
+    fe_campaign_ref = fields.Char(string="Campaign Reference")
+    fe_promo_code = fields.Char(string="Promo Code")
+    fe_current_elec_retailer = fields.Char(string="Current Electric Retailer")
+    fe_current_gas_retailer = fields.Char(string="Current Gas Retailer")
+    fe_multisite = fields.Boolean(string="Multisite")
+    fe_existing_customer = fields.Boolean(string="Existing Customer")
+    fe_customer_account_no = fields.Char(string="Customer Account Number")
+    fe_customer_type = fields.Selection([
+        ('resident', 'Resident'),
+        ('company', 'Company'),
+    ], string='Customer Type', default="resident")
+    fe_account_name = fields.Char(string="Account Name")
+    fe_abn = fields.Char(string="ABN")
+    fe_acn = fields.Char(string="ACN")
+    fe_business_name = fields.Char(string="Business Name")
+    fe_trustee_name = fields.Char(string="Trustee Name")
+    fe_trading_name = fields.Char(string="Trading Name")
+    fe_position = fields.Char(string="Position")
+    fe_sale_type = fields.Selection([
+        ('transfer', 'Transfer'),
+        ('movein', 'Movein')
+    ], string="Sale Type", default="transfer")
+    fe_title = fields.Char(string="Title")
+    fe_first_name = fields.Char(string="First Name")
+    fe_last_name = fields.Char(string="Last Name")
+    fe_phone_landline = fields.Char(string="Phone Landline")
+    fe_phone_mobile = fields.Char(string="Mobile Number")
+    fe_auth_date_of_birth = fields.Date(string="Authentication Date of Birth")
+    fe_auth_expiry = fields.Date(string="Authentication Expiry")
+    fe_auth_no = fields.Char(string="Authentication No")
+    fe_auth_type = fields.Char(string="Authentication Type")
+    fe_email = fields.Char(string="Email")
+    fe_life_support = fields.Boolean(string="Life Support", default=False)
+    fe_concessioner_number = fields.Char(string="Concessioner Number")
+    fe_concession_expiry = fields.Date(string="Concession Expiry Date")
+    fe_concession_flag = fields.Boolean(string="Concession Flag", default=False)
+    fe_concession_start_date = fields.Date(string="Concession Start Date")
+    fe_concession_type = fields.Char(string="Concession Type")
+    fe_conc_first_name = fields.Char(string="Concession First Name")
+    fe_conc_last_name = fields.Char(string="Concession Last Name")
+    fe_secondary_title = fields.Char(string="Secondary Title")
+    fe_sec_first_name = fields.Char(string="Secondary First Name")
+    fe_sec_last_name = fields.Char(string="Secondary Last Name")
+    fe_sec_auth_date_of_birth = fields.Date(string="Secondary Authentication DOB")
+    fe_sec_auth_no = fields.Char(string="Secondary Authentication No")
+    fe_sec_auth_type = fields.Char(string="Secondary Authentication Type")
+    fe_sec_auth_expiry = fields.Date(string="Secondary Authentication Expiry")
+    fe_sec_email = fields.Char(string="Secondary Email")
+    fe_sec_phone_home = fields.Char(string="Secondary Phone Home")
+    fe_sec_mobile_number = fields.Char(string="Secondary Mobile Number")
+    fe_site_apartment_no = fields.Char(string="Site Apartment Number")
+    fe_site_apartment_type = fields.Char(string="Site Apartment Type")
+    fe_site_building_name = fields.Char(string="Site Building Name")
+    fe_site_floor_no = fields.Char(string="Site Floor Number")
+    fe_site_floor_type = fields.Char(string="Site Floor Type")
+    fe_site_location_description = fields.Text(string="Site Location Description")
+    fe_site_lot_number = fields.Char(string="Site Lot Number")
+    fe_site_street_number = fields.Char(string="Site Street Number")
+    fe_site_street_name = fields.Char(string="Site Street Name")
+    fe_site_street_number_suffix = fields.Char(string="Site Street Number Suffix")
+    fe_site_street_type = fields.Char(string="Site Street Type")
+    fe_site_street_suffix = fields.Char(string="Site Street Suffix")
+    fe_site_suburb = fields.Char(string="Site Suburb")
+    fe_site_state = fields.Char(string="Site State")
+    fe_site_post_code = fields.Char(string="Site Post Code")
+    fe_gas_site_apartment_number = fields.Char(string="Gas Site Apartment Number")
+    fe_gas_site_apartment_type = fields.Char(string="Gas Site Apartment Type")
+    fe_gas_site_building_name = fields.Char(string="Gas Site Building Name")
+    fe_gas_site_floor_number = fields.Char(string="Gas Site Floor Number")
+    fe_gas_site_floor_type = fields.Char(string="Gas Site Floor Type")
+    fe_gas_site_location_description = fields.Char(string="Gas Site Location Description")
+    fe_gas_site_lot_number = fields.Char(string="Gas Site Lot Number")
+    fe_gas_site_street_name = fields.Char(string="Gas Site Street Name")
+    fe_gas_site_street_number = fields.Char(string="Gas Site Street Number")
+    fe_gas_site_street_number_suffix = fields.Char(string="Gas Site Street Number Suffix")  # typo fixed
+    fe_gas_site_street_type = fields.Char(string="Gas Site Street Type")
+    fe_gas_site_street_suffix = fields.Char("Gas Site Street Suffix")
+    fe_gas_site_suburb = fields.Char("Gas Site Suburb")
+    fe_gas_site_state = fields.Char("Gas Site State")
+    fe_gas_site_post_code = fields.Char("Gas Site Post Code")
+    fe_network_tariff_code = fields.Char("Network Tariff Code")
+    fe_nmi = fields.Char("NMI")
+    fe_mirn = fields.Char("MIRN")
+    fe_fuel = fields.Char("Fuel")
+    fe_feed_in = fields.Char("Feed In")
+    fe_annual_usage = fields.Float("Annual Usage")
+    fe_gas_annual_usage = fields.Float("Gas Annual Usage")
+    fe_product_code = fields.Char("Product Code")
+    fe_gas_product_code = fields.Char("Gas Product Code")
+    fe_offer_description = fields.Text("Offer Description")
+    fe_gas_offer_description = fields.Text("Gas Offer Description")
+    fe_green_percent = fields.Float("Green Percent")
+    fe_proposed_transfer_date = fields.Date("Proposed Transfer Date")
+    fe_gas_proposed_transfer_date = fields.Date("Gas Proposed Transfer Date")
+    fe_bill_cycle_code = fields.Char("Bill Cycle Code")
+    fe_gas_bill_cycle_code = fields.Char("Gas Bill Cycle Code")
+    fe_average_monthly_spend = fields.Float("Average Monthly Spend")
+    fe_is_owner = fields.Boolean("Is Owner")
+    fe_has_accepted_marketing = fields.Boolean("Has Accepted Marketing")
+    fe_email_account_notice = fields.Boolean("Email Account Notice")
+    fe_email_invoice = fields.Boolean("Email Invoice")
+    fe_billing_email = fields.Char("Billing Email")
+    fe_postal_building_name = fields.Char("Postal Building Name")
+    fe_postal_apartment_number = fields.Char("Postal Apartment Number")
+    fe_postal_apartment_type = fields.Char("Postal Apartment Type")
+    fe_postal_floor_number = fields.Char("Postal Floor Number")
+    fe_postal_floor_type = fields.Char("Postal Floor Type")
+    fe_postal_lot_no = fields.Char("Postal Lot No")
+    fe_postal_street_number = fields.Char("Postal Street Number")
+    fe_postal_street_number_suffix = fields.Char("Postal Street Number Suffix")
+    fe_postal_street_name = fields.Char("Postal Street Name")
+    fe_postal_street_type = fields.Char("Postal Street Type")
+    fe_postal_street_suffix = fields.Char("Postal Street Suffix")
+    fe_postal_suburb = fields.Char("Postal Suburb")
+    fe_postal_post_code = fields.Char("Postal Post Code")
+    fe_postal_state = fields.Char("Postal State")
+    fe_comments = fields.Text("Comments")
+    fe_transfer_special_instructions = fields.Text("Transfer Special Instructions")
+    fe_medical_cooling = fields.Boolean("Medical Cooling")
+    fe_medical_cooling_energy_rebate = fields.Boolean("Medical Cooling Energy Rebate")
+    fe_benefit_end_date = fields.Date("Benefit End Date")
+    fe_sales_class = fields.Char("Sales Class")
+    fe_bill_group_code = fields.Char("Bill Group Code")
+    fe_gas_meter_number = fields.Char("Gas Meter Number")
+    fe_centre_name = fields.Char("Centre Name")
+    fe_qc_name = fields.Char("QC Name")
+    fe_verifiers_name = fields.Char("Verifier’s Name")
+    fe_tl_name = fields.Char("TL Name")
+    fe_dnc_ref_no = fields.Char("DNC Ref No")
+    fe_audit_2 = fields.Char("Audit-2")
+    fe_welcome_call = fields.Boolean("Welcome Call")    
+
+
+    @api.model
+    def _save_first_energy_data(self):
+        """
+        Save First Energy form data per stage into custom.first.energy.form.
+        Looks up by (lead_id, stage) and writes or creates a record.
+        """
+        FirstEnergyForm = self.env['custom.first.energy.form']
+
+        for lead in self:
+            stage = lead.first_energy_form_stage
+            if not stage:
+                continue
+
+            existing = FirstEnergyForm.search([
+                ('lead_id', '=', lead.id),
+                ('stage', '=', stage)
+            ], limit=1)
+
+            fe_vals = {
+                'lead_id': lead.id,
+                'stage': stage,
+
+                # Header / meta
+                'internal_dnc_checked': lead.fe_internal_dnc_checked,
+                'existing_sale': lead.fe_existing_sale,
+                'online_enquiry_form': lead.fe_online_enquiry_form,
+                'vendor_id': lead.fe_vendor_id,
+                'agent': lead.fe_agent,
+                'channel_ref': lead.fe_channel_ref,
+                'sale_ref': lead.fe_sale_ref,
+                'lead_ref': lead.fe_lead_ref,
+                'incentive': lead.fe_incentive,
+                'sale_date': lead.fe_sale_date,
+                'campaign_ref': lead.fe_campaign_ref,
+                'promo_code': lead.fe_promo_code,
+
+                # Current retailers / flags
+                'current_elec_retailer': lead.fe_current_elec_retailer,
+                'current_gas_retailer': lead.fe_current_gas_retailer,
+                'multisite': lead.fe_multisite,
+                'existing_customer': lead.fe_existing_customer,
+                'customer_account_no': lead.fe_customer_account_no,
+
+                # Customer / business identity
+                'customer_type': lead.fe_customer_type,
+                'account_name': lead.fe_account_name,
+                'abn': lead.fe_abn,
+                'acn': lead.fe_acn,
+                'business_name': lead.fe_business_name,
+                'trustee_name': lead.fe_trustee_name,
+                'trading_name': lead.fe_trading_name,
+                'position': lead.fe_position,
+                'sale_type': lead.fe_sale_type,
+
+                # Primary contact / auth
+                'title': lead.fe_title,
+                'first_name': lead.fe_first_name,
+                'last_name': lead.fe_last_name,
+                'phone_landline': lead.fe_phone_landline,
+                'phone_mobile': lead.fe_phone_mobile,
+                'auth_date_of_birth': lead.fe_auth_date_of_birth,
+                'auth_expiry': lead.fe_auth_expiry,
+                'auth_no': lead.fe_auth_no,
+                'auth_type': lead.fe_auth_type,
+                'email': lead.fe_email,
+                'life_support': lead.fe_life_support,
+
+                # Concession
+                'concessioner_number': lead.fe_concessioner_number,
+                'concession_expiry': lead.fe_concession_expiry,
+                'concession_flag': lead.fe_concession_flag,
+                'concession_start_date': lead.fe_concession_start_date,
+                'concession_type': lead.fe_concession_type,
+                'conc_first_name': lead.fe_conc_first_name,
+                'conc_last_name': lead.fe_conc_last_name,
+
+                # Secondary contact
+                'secondary_title': lead.fe_secondary_title,
+                'sec_first_name': lead.fe_sec_first_name,
+                'sec_last_name': lead.fe_sec_last_name,
+                'sec_auth_date_of_birth': lead.fe_sec_auth_date_of_birth,
+                'sec_auth_no': lead.fe_sec_auth_no,
+                'sec_auth_type': lead.fe_sec_auth_type,
+                'sec_auth_expiry': lead.fe_sec_auth_expiry,
+                'sec_email': lead.fe_sec_email,
+                'sec_phone_home': lead.fe_sec_phone_home,
+                'sec_mobile_number': lead.fe_sec_mobile_number,
+
+                # Electricity site address
+                'site_apartment_no': lead.fe_site_apartment_no,
+                'site_apartment_type': lead.fe_site_apartment_type,
+                'site_building_name': lead.fe_site_building_name,
+                'site_floor_no': lead.fe_site_floor_no,
+                'site_floor_type': lead.fe_site_floor_type,
+                'site_location_description': lead.fe_site_location_description,
+                'site_lot_number': lead.fe_site_lot_number,
+                'site_street_number': lead.fe_site_street_number,
+                'site_street_name': lead.fe_site_street_name,
+                'site_street_number_suffix': lead.fe_site_street_number_suffix,
+                'site_street_type': lead.fe_site_street_type,
+                'site_street_suffix': lead.fe_site_street_suffix,
+                'site_suburb': lead.fe_site_suburb,
+                'site_state': lead.fe_site_state,
+                'site_post_code': lead.fe_site_post_code,
+
+                # Gas site address
+                'gas_site_apartment_number': lead.fe_gas_site_apartment_number,
+                'gas_site_apartment_type': lead.fe_gas_site_apartment_type,
+                'gas_site_building_name': lead.fe_gas_site_building_name,
+                'gas_site_floor_number': lead.fe_gas_site_floor_number,
+                'gas_site_floor_type': lead.fe_gas_site_floor_type,
+                'gas_site_location_description': lead.fe_gas_site_location_description,
+                'gas_site_lot_number': lead.fe_gas_site_lot_number,
+                'gas_site_street_name': lead.fe_gas_site_street_name,
+                'gas_site_street_number': lead.fe_gas_site_street_number,
+                'gas_site_street_number_suffix': lead.fe_gas_site_street_number_suffix,
+                'gas_site_street_type': lead.fe_gas_site_street_type,
+                'gas_site_street_suffix': lead.fe_gas_site_street_suffix,
+                'gas_site_suburb': lead.fe_gas_site_suburb,
+                'gas_site_state': lead.fe_gas_site_state,
+                'gas_site_post_code': lead.fe_gas_site_post_code,
+
+                # Metering / products / usage
+                'network_tariff_code': lead.fe_network_tariff_code,
+                'nmi': lead.fe_nmi,
+                'mirn': lead.fe_mirn,
+                'fuel': lead.fe_fuel,
+                'feed_in': lead.fe_feed_in,
+                'annual_usage': lead.fe_annual_usage,
+                'gas_annual_usage': lead.fe_gas_annual_usage,
+                'product_code': lead.fe_product_code,
+                'gas_product_code': lead.fe_gas_product_code,
+                'offer_description': lead.fe_offer_description,
+                'gas_offer_description': lead.fe_gas_offer_description,
+                'green_percent': lead.fe_green_percent,
+                'proposed_transfer_date': lead.fe_proposed_transfer_date,
+                'gas_proposed_transfer_date': lead.fe_gas_proposed_transfer_date,
+                'bill_cycle_code': lead.fe_bill_cycle_code,
+                'gas_bill_cycle_code': lead.fe_gas_bill_cycle_code,
+                'average_monthly_spend': lead.fe_average_monthly_spend,
+
+                # Ownership / comms prefs
+                'is_owner': lead.fe_is_owner,
+                'has_accepted_marketing': lead.fe_has_accepted_marketing,
+                'email_account_notice': lead.fe_email_account_notice,
+                'email_invoice': lead.fe_email_invoice,
+                'billing_email': lead.fe_billing_email,
+
+                # Postal
+                'postal_building_name': lead.fe_postal_building_name,
+                'postal_apartment_number': lead.fe_postal_apartment_number,
+                'postal_apartment_type': lead.fe_postal_apartment_type,
+                'postal_floor_number': lead.fe_postal_floor_number,
+                'postal_floor_type': lead.fe_postal_floor_type,
+                'postal_lot_no': lead.fe_postal_lot_no,
+                'postal_street_number': lead.fe_postal_street_number,
+                'postal_street_number_suffix': lead.fe_postal_street_number_suffix,
+                'postal_street_name': lead.fe_postal_street_name,
+                'postal_street_type': lead.fe_postal_street_type,
+                'postal_street_suffix': lead.fe_postal_street_suffix,
+                'postal_suburb': lead.fe_postal_suburb,
+                'postal_post_code': lead.fe_postal_post_code,
+                'postal_state': lead.fe_postal_state,
+
+                # Notes / special / rebates
+                'comments': lead.fe_comments,
+                'transfer_special_instructions': lead.fe_transfer_special_instructions,
+                'medical_cooling': lead.fe_medical_cooling,
+                'medical_cooling_energy_rebate': lead.fe_medical_cooling_energy_rebate,
+                'benefit_end_date': lead.fe_benefit_end_date,
+
+                # Ops
+                'sales_class': lead.fe_sales_class,
+                'bill_group_code': lead.fe_bill_group_code,
+                'gas_meter_number': lead.fe_gas_meter_number,
+                'centre_name': lead.fe_centre_name,
+                'qc_name': lead.fe_qc_name,
+                'verifiers_name': lead.fe_verifiers_name,
+                'tl_name': lead.fe_tl_name,
+                'dnc_ref_no': lead.fe_dnc_ref_no,
+                'audit_2': lead.fe_audit_2,
+                'welcome_call': lead.fe_welcome_call,
+            }
+
+            if existing:
+                existing.write(fe_vals)
+            else:
+                FirstEnergyForm.create(fe_vals)  
+
+    @api.onchange('first_energy_form_stage')
+    def _onchange_first_energy_form_stage(self):
+        """
+        Load First Energy form data from saved stage when user changes stage
+        """
+        for rec in self:
+            if not rec.first_energy_form_stage:
+                return
+
+            FirstEnergyForm = self.env['custom.first.energy.form']
+            existing = FirstEnergyForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.first_energy_form_stage)
+            ], limit=1)
+
+            if existing:
+                rec.fe_internal_dnc_checked = existing.internal_dnc_checked
+                rec.fe_existing_sale = existing.existing_sale
+                rec.fe_online_enquiry_form = existing.online_enquiry_form
+                rec.fe_vendor_id = existing.vendor_id
+                rec.fe_agent = existing.agent
+                rec.fe_channel_ref = existing.channel_ref
+                rec.fe_sale_ref = existing.sale_ref
+                rec.fe_lead_ref = existing.lead_ref
+                rec.fe_incentive = existing.incentive
+                rec.fe_sale_date = existing.sale_date
+                rec.fe_campaign_ref = existing.campaign_ref
+                rec.fe_promo_code = existing.promo_code
+                rec.fe_current_elec_retailer = existing.current_elec_retailer
+                rec.fe_current_gas_retailer = existing.current_gas_retailer
+                rec.fe_multisite = existing.multisite
+                rec.fe_existing_customer = existing.existing_customer
+                rec.fe_customer_account_no = existing.customer_account_no
+                rec.fe_customer_type = existing.customer_type
+                rec.fe_account_name = existing.account_name
+                rec.fe_abn = existing.abn
+                rec.fe_acn = existing.acn
+                rec.fe_business_name = existing.business_name
+                rec.fe_trustee_name = existing.trustee_name
+                rec.fe_trading_name = existing.trading_name
+                rec.fe_position = existing.position
+                rec.fe_sale_type = existing.sale_type
+                rec.fe_title = existing.title
+                rec.fe_first_name = existing.first_name
+                rec.fe_last_name = existing.last_name
+                rec.fe_phone_landline = existing.phone_landline
+                rec.fe_phone_mobile = existing.phone_mobile
+                rec.fe_auth_date_of_birth = existing.auth_date_of_birth
+                rec.fe_auth_expiry = existing.auth_expiry
+                rec.fe_auth_no = existing.auth_no
+                rec.fe_auth_type = existing.auth_type
+                rec.fe_email = existing.email
+                rec.fe_life_support = existing.life_support
+                rec.fe_concessioner_number = existing.concessioner_number
+                rec.fe_concession_expiry = existing.concession_expiry
+                rec.fe_concession_flag = existing.concession_flag
+                rec.fe_concession_start_date = existing.concession_start_date
+                rec.fe_concession_type = existing.concession_type
+                rec.fe_conc_first_name = existing.conc_first_name
+                rec.fe_conc_last_name = existing.conc_last_name
+                rec.fe_secondary_title = existing.secondary_title
+                rec.fe_sec_first_name = existing.sec_first_name
+                rec.fe_sec_last_name = existing.sec_last_name
+                rec.fe_sec_auth_date_of_birth = existing.sec_auth_date_of_birth
+                rec.fe_sec_auth_no = existing.sec_auth_no
+                rec.fe_sec_auth_type = existing.sec_auth_type
+                rec.fe_sec_auth_expiry = existing.sec_auth_expiry
+                rec.fe_sec_email = existing.sec_email
+                rec.fe_sec_phone_home = existing.sec_phone_home
+                rec.fe_sec_mobile_number = existing.sec_mobile_number
+                rec.fe_site_apartment_no = existing.site_apartment_no
+                rec.fe_site_apartment_type = existing.site_apartment_type
+                rec.fe_site_building_name = existing.site_building_name
+                rec.fe_site_floor_no = existing.site_floor_no
+                rec.fe_site_floor_type = existing.site_floor_type
+                rec.fe_site_location_description = existing.site_location_description
+                rec.fe_site_lot_number = existing.site_lot_number
+                rec.fe_site_street_number = existing.site_street_number
+                rec.fe_site_street_name = existing.site_street_name
+                rec.fe_site_street_number_suffix = existing.site_street_number_suffix
+                rec.fe_site_street_type = existing.site_street_type
+                rec.fe_site_street_suffix = existing.site_street_suffix
+                rec.fe_site_suburb = existing.site_suburb
+                rec.fe_site_state = existing.site_state
+                rec.fe_site_post_code = existing.site_post_code
+                rec.fe_gas_site_apartment_number = existing.gas_site_apartment_number
+                rec.fe_gas_site_apartment_type = existing.gas_site_apartment_type
+                rec.fe_gas_site_building_name = existing.gas_site_building_name
+                rec.fe_gas_site_floor_number = existing.gas_site_floor_number
+                rec.fe_gas_site_floor_type = existing.gas_site_floor_type
+                rec.fe_gas_site_location_description = existing.gas_site_location_description
+                rec.fe_gas_site_lot_number = existing.gas_site_lot_number
+                rec.fe_gas_site_street_name = existing.gas_site_street_name
+                rec.fe_gas_site_street_number = existing.gas_site_street_number
+                rec.fe_gas_site_street_number_suffix = existing.gas_site_street_number_suffix
+                rec.fe_gas_site_street_type = existing.gas_site_street_type
+                rec.fe_gas_site_street_suffix = existing.gas_site_street_suffix
+                rec.fe_gas_site_suburb = existing.gas_site_suburb
+                rec.fe_gas_site_state = existing.gas_site_state
+                rec.fe_gas_site_post_code = existing.gas_site_post_code
+                rec.fe_network_tariff_code = existing.network_tariff_code
+                rec.fe_nmi = existing.nmi
+                rec.fe_mirn = existing.mirn
+                rec.fe_fuel = existing.fuel
+                rec.fe_feed_in = existing.feed_in
+                rec.fe_annual_usage = existing.annual_usage
+                rec.fe_gas_annual_usage = existing.gas_annual_usage
+                rec.fe_product_code = existing.product_code
+                rec.fe_gas_product_code = existing.gas_product_code
+                rec.fe_offer_description = existing.offer_description
+                rec.fe_gas_offer_description = existing.gas_offer_description
+                rec.fe_green_percent = existing.green_percent
+                rec.fe_proposed_transfer_date = existing.proposed_transfer_date
+                rec.fe_gas_proposed_transfer_date = existing.gas_proposed_transfer_date
+                rec.fe_bill_cycle_code = existing.bill_cycle_code
+                rec.fe_gas_bill_cycle_code = existing.gas_bill_cycle_code
+                rec.fe_average_monthly_spend = existing.average_monthly_spend
+                rec.fe_is_owner = existing.is_owner
+                rec.fe_has_accepted_marketing = existing.has_accepted_marketing
+                rec.fe_email_account_notice = existing.email_account_notice
+                rec.fe_email_invoice = existing.email_invoice
+                rec.fe_billing_email = existing.billing_email
+                rec.fe_postal_building_name = existing.postal_building_name
+                rec.fe_postal_apartment_number = existing.postal_apartment_number
+                rec.fe_postal_apartment_type = existing.postal_apartment_type
+                rec.fe_postal_floor_number = existing.postal_floor_number
+                rec.fe_postal_floor_type = existing.postal_floor_type
+                rec.fe_postal_lot_no = existing.postal_lot_no
+                rec.fe_postal_street_number = existing.postal_street_number
+                rec.fe_postal_street_number_suffix = existing.postal_street_number_suffix
+                rec.fe_postal_street_name = existing.postal_street_name
+                rec.fe_postal_street_type = existing.postal_street_type
+                rec.fe_postal_street_suffix = existing.postal_street_suffix
+                rec.fe_postal_suburb = existing.postal_suburb
+                rec.fe_postal_post_code = existing.postal_post_code
+                rec.fe_postal_state = existing.postal_state
+                rec.fe_comments = existing.comments
+                rec.fe_transfer_special_instructions = existing.transfer_special_instructions
+                rec.fe_medical_cooling = existing.medical_cooling
+                rec.fe_medical_cooling_energy_rebate = existing.medical_cooling_energy_rebate
+                rec.fe_benefit_end_date = existing.benefit_end_date
+                rec.fe_sales_class = existing.sales_class
+                rec.fe_bill_group_code = existing.bill_group_code
+                rec.fe_gas_meter_number = existing.gas_meter_number
+                rec.fe_centre_name = existing.centre_name
+                rec.fe_qc_name = existing.qc_name
+                rec.fe_verifiers_name = existing.verifiers_name
+                rec.fe_tl_name = existing.tl_name
+                rec.fe_dnc_ref_no = existing.dnc_ref_no
+                rec.fe_audit_2 = existing.audit_2
+                rec.fe_welcome_call = existing.welcome_call
+
+            else:
+                # Reset fields if no existing data is found
+                rec.fe_internal_dnc_checked = False
+                rec.fe_existing_sale = False
+                rec.fe_online_enquiry_form = False
+                rec.fe_vendor_id = False
+                rec.fe_agent = False
+                rec.fe_channel_ref = False
+                rec.fe_sale_ref = False
+                rec.fe_lead_ref = False
+                rec.fe_incentive = False
+                rec.fe_sale_date = False
+                rec.fe_campaign_ref = False
+                rec.fe_promo_code = False
+                rec.fe_current_elec_retailer = False
+                rec.fe_current_gas_retailer = False
+                rec.fe_multisite = False
+                rec.fe_existing_customer = False
+                rec.fe_customer_account_no = False
+                rec.fe_customer_type = False
+                rec.fe_account_name = False
+                rec.fe_abn = False
+                rec.fe_acn = False
+                rec.fe_business_name = False
+                rec.fe_trustee_name = False
+                rec.fe_trading_name = False
+                rec.fe_position = False
+                rec.fe_sale_type = False
+                rec.fe_title = False
+                rec.fe_first_name = False
+                rec.fe_last_name = False
+                rec.fe_phone_landline = False
+                rec.fe_phone_mobile = rec.phone_sanitized or False   # default from lead
+                rec.fe_auth_date_of_birth = False
+                rec.fe_auth_expiry = False
+                rec.fe_auth_no = False
+                rec.fe_auth_type = False
+                rec.fe_email = rec.email_normalized or False         # default from lead
+                rec.fe_life_support = False
+                rec.fe_concessioner_number = False
+                rec.fe_concession_expiry = False
+                rec.fe_concession_flag = False
+                rec.fe_concession_start_date = False
+                rec.fe_concession_type = False
+                rec.fe_conc_first_name = False
+                rec.fe_conc_last_name = False
+                rec.fe_secondary_title = False
+                rec.fe_sec_first_name = False
+                rec.fe_sec_last_name = False
+                rec.fe_sec_auth_date_of_birth = False
+                rec.fe_sec_auth_no = False
+                rec.fe_sec_auth_type = False
+                rec.fe_sec_auth_expiry = False
+                rec.fe_sec_email = False
+                rec.fe_sec_phone_home = False
+                rec.fe_sec_mobile_number = False
+                rec.fe_site_apartment_no = False
+                rec.fe_site_apartment_type = False
+                rec.fe_site_building_name = False
+                rec.fe_site_floor_no = False
+                rec.fe_site_floor_type = False
+                rec.fe_site_location_description = False
+                rec.fe_site_lot_number = False
+                rec.fe_site_street_number = False
+                rec.fe_site_street_name = False
+                rec.fe_site_street_number_suffix = False
+                rec.fe_site_street_type = False
+                rec.fe_site_street_suffix = False
+                rec.fe_site_suburb = False
+                rec.fe_site_state = False
+                rec.fe_site_post_code = False
+                rec.fe_gas_site_apartment_number = False
+                rec.fe_gas_site_apartment_type = False
+                rec.fe_gas_site_building_name = False
+                rec.fe_gas_site_floor_number = False
+                rec.fe_gas_site_floor_type = False
+                rec.fe_gas_site_location_description = False
+                rec.fe_gas_site_lot_number = False
+                rec.fe_gas_site_street_name = False
+                rec.fe_gas_site_street_number = False
+                rec.fe_gas_site_street_number_suffix = False
+                rec.fe_gas_site_street_type = False
+                rec.fe_gas_site_street_suffix = False
+                rec.fe_gas_site_suburb = False
+                rec.fe_gas_site_state = False
+                rec.fe_gas_site_post_code = False
+                rec.fe_network_tariff_code = False
+                rec.fe_nmi = False
+                rec.fe_mirn = False
+                rec.fe_fuel = False
+                rec.fe_feed_in = False
+                rec.fe_annual_usage = 0.0
+                rec.fe_gas_annual_usage = 0.0
+                rec.fe_product_code = False
+                rec.fe_gas_product_code = False
+                rec.fe_offer_description = False
+                rec.fe_gas_offer_description = False
+                rec.fe_green_percent = 0.0
+                rec.fe_proposed_transfer_date = False
+                rec.fe_gas_proposed_transfer_date = False
+                rec.fe_bill_cycle_code = False
+                rec.fe_gas_bill_cycle_code = False
+                rec.fe_average_monthly_spend = 0.0
+                rec.fe_is_owner = False
+                rec.fe_has_accepted_marketing = False
+                rec.fe_email_account_notice = False
+                rec.fe_email_invoice = False
+                rec.fe_billing_email = False
+                rec.fe_postal_building_name = False
+                rec.fe_postal_apartment_number = False
+                rec.fe_postal_apartment_type = False
+                rec.fe_postal_floor_number = False
+                rec.fe_postal_floor_type = False
+                rec.fe_postal_lot_no = False
+                rec.fe_postal_street_number = False
+                rec.fe_postal_street_number_suffix = False
+                rec.fe_postal_street_name = False
+                rec.fe_postal_street_type = False
+                rec.fe_postal_street_suffix = False
+                rec.fe_postal_suburb = False
+                rec.fe_postal_post_code = False
+                rec.fe_postal_state = False
+                rec.fe_comments = False
+                rec.fe_transfer_special_instructions = False
+                rec.fe_medical_cooling = False
+                rec.fe_medical_cooling_energy_rebate = False
+                rec.fe_benefit_end_date = False
+                rec.fe_sales_class = False
+                rec.fe_bill_group_code = False
+                rec.fe_gas_meter_number = False
+                rec.fe_centre_name = False
+                rec.fe_qc_name = False
+                rec.fe_verifiers_name = False
+                rec.fe_tl_name = False
+                rec.fe_dnc_ref_no = False
+                rec.fe_audit_2 = False
+                rec.fe_welcome_call = False
+
+
+#    DODO POWER AND GAS FORM
+    dodo_power_stage = fields.Selection([
+        ('1', 'Stage 1'),
+        ('2', 'Stage 2'),
+        ('3', 'Stage 3'),
+        ('4', 'Stage 4'),
+        ('5', 'Stage 5')
+    ], string='Stage', required=True)
+
+    # Compliance / Internal
+    dp_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
+    dp_existing_sale = fields.Char(string="Existing Sale with NMI & Phone Number (Internal)")
+    dp_online_enquiry_form = fields.Char(string="Online Enquiry Form")
+
+    # Sales Info
+    dp_sales_name = fields.Char(string="Sales Name")
+    dp_sales_reference = fields.Char(string="Sales Reference")
+    dp_agreement_date = fields.Date(string="Agreement Date")
+
+    # Site / Address
+    dp_site_address_postcode = fields.Char(string="Site Address Postcode")
+    dp_site_addr_unit_type = fields.Char(string="Site Addr Unit Type")
+    dp_site_addr_unit_no = fields.Char(string="Site Addr Unit No")
+    dp_site_addr_floor_type = fields.Char(string="Site Addr Floor Type")
+    dp_site_addr_floor_no = fields.Char(string="Site Addr Floor No")
+    dp_site_addr_street_no = fields.Char(string="Site Addr Street No")
+    dp_site_addr_street_no_suffix = fields.Char(string="Site Addr Street No Suffix")
+    dp_site_addr_street_name = fields.Char(string="Site Addr Street Name")
+    dp_site_addr_street_type = fields.Char(string="Site Addr Street Type")
+    dp_site_addr_suburb = fields.Char(string="Site Addr Suburb")
+    dp_site_addr_state = fields.Char(string="Site Addr State")
+    dp_site_addr_postcode = fields.Char(string="Site Addr Postcode")
+    dp_site_addr_desc = fields.Text(string="Site Address Description")
+    dp_site_access = fields.Text(string="Site Access")
+    dp_site_more_than_12_months = fields.Boolean(string="At Site > 12 Months")
+
+    # Previous Address
+    dp_prev_addr_1 = fields.Char(string="Previous Address Line 1")
+    dp_prev_addr_2 = fields.Char(string="Previous Address Line 2")
+    dp_prev_addr_state = fields.Char(string="Previous Address State")
+    dp_prev_addr_postcode = fields.Char(string="Previous Address Postcode")
+
+    # Billing Address
+    dp_billing_address = fields.Boolean(string="Billing Address")
+    dp_bill_addr_1 = fields.Char(string="Bill Address Line 1")
+    dp_bill_addr_2 = fields.Char(string="Bill Address Line 2")
+    dp_bill_addr_state = fields.Char(string="Bill Address State")
+    dp_bill_addr_postcode = fields.Char(string="Bill Address Postcode")
+
+    # Concessions
+    dp_concession = fields.Boolean(string="Concession")
+    dp_concession_card_type = fields.Char(string="Concession Card Type")
+    dp_concession_card_no = fields.Char(string="Concession Card No")
+    dp_concession_start_date = fields.Date(string="Concession Start Date")
+    dp_concession_exp_date = fields.Date(string="Concession Expiry Date")
+    dp_concession_first_name = fields.Char(string="Concession First Name")
+    dp_concession_middle_name = fields.Char(string="Concession Middle Name")
+    dp_concession_last_name = fields.Char(string="Concession Last Name")
+
+    # Product / Energy Details
+    dp_product_code = fields.Char(string="Product Code")
+    dp_meter_type = fields.Char(string="Meter Type")
+    dp_kwh_usage_per_day = fields.Float(string="kWh Usage Per Day")
+    dp_how_many_people = fields.Integer(string="Number of People")
+    dp_how_many_bedrooms = fields.Integer(string="Number of Bedrooms")
+    dp_solar_power = fields.Boolean(string="Solar Power")
+    dp_solar_type = fields.Char(string="Solar Type")
+    dp_solar_output = fields.Float(string="Solar Output")
+    dp_green_energy = fields.Boolean(string="Green Energy")
+    dp_winter_gas_usage = fields.Float(string="Winter Gas Usage")
+    dp_summer_gas_usage = fields.Float(string="Summer Gas Usage")
+    dp_monthly_winter_spend = fields.Float(string="Monthly Winter Spend")
+    dp_monthly_summer_spend = fields.Float(string="Monthly Summer Spend")
+
+    # Invoice
+    dp_invoice_method = fields.Selection([
+        ('email', 'Email'),
+        ('post', 'Post'),
+        ('sms', 'SMS')
+    ], string="Invoice Method")
+
+    # Customer Info
+    dp_customer_salutation = fields.Char(string="Customer Salutation")
+    dp_first_name = fields.Char(string="First Name")
+    dp_last_name = fields.Char(string="Last Name")
+    dp_date_of_birth = fields.Date(string="Date of Birth")
+    dp_email_contact = fields.Char(string="Email Contact")
+    dp_contact_number = fields.Char(string="Contact Number")
+    dp_hearing_impaired = fields.Boolean(string="Hearing Impaired", default=False)
+
+    # Secondary Contact
+    dp_secondary_contact = fields.Boolean(string="Secondary Contact", default=False)
+    dp_secondary_salutation = fields.Char(string="Secondary Salutation")
+    dp_secondary_first_name = fields.Char(string="Secondary First Name")
+    dp_secondary_last_name = fields.Char(string="Secondary Last Name")
+    dp_secondary_date_of_birth = fields.Date(string="Secondary Date of Birth")
+    dp_secondary_email = fields.Char(string="Secondary Email")
+
+    # Referral / Login
+    dp_referral_code = fields.Char(string="Referral Code")
+    dp_new_username = fields.Char(string="New Username")
+    dp_new_password = fields.Char(string="New Password")
+
+    # Customer Identity
+    dp_customer_dlicense = fields.Char(string="Driver License")
+    dp_customer_dlicense_state = fields.Char(string="DL State")
+    dp_customer_dlicense_exp = fields.Date(string="DL Expiry")
+    dp_customer_passport = fields.Char(string="Passport")
+    dp_customer_passport_exp = fields.Date(string="Passport Expiry")
+    dp_customer_medicare = fields.Char(string="Medicare")
+    dp_customer_medicare_ref = fields.Char(string="Medicare Ref")
+
+    # Employment
+    dp_position_at_current_employer = fields.Char(string="Position at Current Employer")
+    dp_employment_status = fields.Char(string="Employment Status")
+    dp_current_employer = fields.Char(string="Current Employer")
+    dp_employer_contact_number = fields.Char(string="Employer Contact Number")
+    dp_years_in_employment = fields.Integer(string="Years in Employment")
+    dp_months_in_employment = fields.Integer(string="Months in Employment")
+    dp_employment_confirmation = fields.Boolean(string="Employment Confirmation")
+
+    # Life Support
+    dp_life_support = fields.Boolean(string="Life Support", default=False)
+    dp_life_support_machine_type = fields.Char(string="Life Support Machine Type")
+    dp_life_support_details = fields.Text(string="Life Support Details")
+
+    # Energy Identifiers
+    dp_nmi = fields.Char(string="NMI")
+    dp_nmi_source = fields.Char(string="NMI Source")
+    dp_mirn = fields.Char(string="MIRN")
+    dp_mirn_source = fields.Char(string="MIRN Source")
+
+    # Connection Info
+    dp_connection_date = fields.Date(string="Connection Date")
+    dp_electricity_connection = fields.Boolean(string="Electricity Connection")
+    dp_gas_connection = fields.Boolean(string="Gas Connection")
+    dp_12_month_disconnection = fields.Boolean(string="12 Month Disconnection")
+
+    # Certificates
+    dp_cert_electrical_safety = fields.Boolean(string="Electrical Safety Cert")
+    dp_cert_electrical_safety_id = fields.Char(string="Cert Electrical Safety ID")
+    dp_cert_electrical_safety_sent = fields.Boolean(string="Cert Sent")
+
+    # Consent
+    dp_explicit_informed_consent = fields.Boolean(string="Explicit Informed Consent")
+
+    # Compliance / Audit
+    dp_center_name = fields.Char(string="Center Name")
+    dp_closer_name = fields.Char(string="Closer Name")
+    dp_dnc_wash_number = fields.Char(string="DNC Wash Number")
+    dp_dnc_exp_date = fields.Date(string="DNC Exp Date")
+    dp_audit_1 = fields.Char(string="Audit-1")
+    dp_audit_2 = fields.Char(string="Audit-2")
+    dp_welcome_call = fields.Boolean(string="Welcome Call")  
+
+
+
+    @api.model
+    def _save_dodo_power_data(self):
+        """
+        Save Dodo Power form data per stage in custom.dodo.power.form
+        """
+        for lead in self:
+            stage = lead.dodo_power_stage
+            if not stage:
+                continue
+
+            DodoPowerForm = self.env['custom.dodo.power.form']
+
+            # Check if record for this lead and stage exists
+            existing = DodoPowerForm.search([
+                ('lead_id', '=', lead.id),
+                ('stage', '=', stage)
+            ], limit=1)
+
+            dp_vals = {
+                # Base
+                'lead_id': lead.id,
+                'stage': stage,
+
+                # Compliance / Internal
+                'internal_dnc_checked': lead.dp_internal_dnc_checked,
+                'existing_sale': lead.dp_existing_sale,
+                'online_enquiry_form': lead.dp_online_enquiry_form,
+
+                # Sales Info
+                'sales_name': lead.dp_sales_name,
+                'sales_reference': lead.dp_sales_reference,
+                'agreement_date': lead.dp_agreement_date,
+
+                # Site / Address
+                'site_address_postcode': lead.dp_site_address_postcode,
+                'site_addr_unit_type': lead.dp_site_addr_unit_type,
+                'site_addr_unit_no': lead.dp_site_addr_unit_no,
+                'site_addr_floor_type': lead.dp_site_addr_floor_type,
+                'site_addr_floor_no': lead.dp_site_addr_floor_no,
+                'site_addr_street_no': lead.dp_site_addr_street_no,
+                'site_addr_street_no_suffix': lead.dp_site_addr_street_no_suffix,
+                'site_addr_street_name': lead.dp_site_addr_street_name,
+                'site_addr_street_type': lead.dp_site_addr_street_type,
+                'site_addr_suburb': lead.dp_site_addr_suburb,
+                'site_addr_state': lead.dp_site_addr_state,
+                'site_addr_postcode': lead.dp_site_addr_postcode,
+                'site_addr_desc': lead.dp_site_addr_desc,
+                'site_access': lead.dp_site_access,
+                'site_more_than_12_months': lead.dp_site_more_than_12_months,
+
+                # Previous Address
+                'prev_addr_1': lead.dp_prev_addr_1,
+                'prev_addr_2': lead.dp_prev_addr_2,
+                'prev_addr_state': lead.dp_prev_addr_state,
+                'prev_addr_postcode': lead.dp_prev_addr_postcode,
+
+                # Billing Address
+                'billing_address': lead.dp_billing_address,
+                'bill_addr_1': lead.dp_bill_addr_1,
+                'bill_addr_2': lead.dp_bill_addr_2,
+                'bill_addr_state': lead.dp_bill_addr_state,
+                'bill_addr_postcode': lead.dp_bill_addr_postcode,
+
+                # Concessions
+                'concession': lead.dp_concession,
+                'concession_card_type': lead.dp_concession_card_type,
+                'concession_card_no': lead.dp_concession_card_no,
+                'concession_start_date': lead.dp_concession_start_date,
+                'concession_exp_date': lead.dp_concession_exp_date,
+                'concession_first_name': lead.dp_concession_first_name,
+                'concession_middle_name': lead.dp_concession_middle_name,
+                'concession_last_name': lead.dp_concession_last_name,
+
+                # Product / Energy
+                'product_code': lead.dp_product_code,
+                'meter_type': lead.dp_meter_type,
+                'kwh_usage_per_day': lead.dp_kwh_usage_per_day,
+                'how_many_people': lead.dp_how_many_people,
+                'how_many_bedrooms': lead.dp_how_many_bedrooms,
+                'solar_power': lead.dp_solar_power,
+                'solar_type': lead.dp_solar_type,
+                'solar_output': lead.dp_solar_output,
+                'green_energy': lead.dp_green_energy,
+                'winter_gas_usage': lead.dp_winter_gas_usage,
+                'summer_gas_usage': lead.dp_summer_gas_usage,
+                'monthly_winter_spend': lead.dp_monthly_winter_spend,
+                'monthly_summer_spend': lead.dp_monthly_summer_spend,
+
+                # Invoice
+                'invoice_method': lead.dp_invoice_method,
+
+                # Customer Info
+                'customer_salutation': lead.dp_customer_salutation,
+                'first_name': lead.dp_first_name,
+                'last_name': lead.dp_last_name,
+                'date_of_birth': lead.dp_date_of_birth,
+                'email_contact': lead.dp_email_contact,
+                'contact_number': lead.dp_contact_number,
+                'hearing_impaired': lead.dp_hearing_impaired,
+
+                # Secondary Contact
+                'secondary_contact': lead.dp_secondary_contact,
+                'secondary_salutation': lead.dp_secondary_salutation,
+                'secondary_first_name': lead.dp_secondary_first_name,
+                'secondary_last_name': lead.dp_secondary_last_name,
+                'secondary_date_of_birth': lead.dp_secondary_date_of_birth,
+                'secondary_email': lead.dp_secondary_email,
+
+                # Referral / Login
+                'referral_code': lead.dp_referral_code,
+                'new_username': lead.dp_new_username,
+                'new_password': lead.dp_new_password,
+
+                # Customer Identity
+                'customer_dlicense': lead.dp_customer_dlicense,
+                'customer_dlicense_state': lead.dp_customer_dlicense_state,
+                'customer_dlicense_exp': lead.dp_customer_dlicense_exp,
+                'customer_passport': lead.dp_customer_passport,
+                'customer_passport_exp': lead.dp_customer_passport_exp,
+                'customer_medicare': lead.dp_customer_medicare,
+                'customer_medicare_ref': lead.dp_customer_medicare_ref,
+
+                # Employment
+                'position_at_current_employer': lead.dp_position_at_current_employer,
+                'employment_status': lead.dp_employment_status,
+                'current_employer': lead.dp_current_employer,
+                'employer_contact_number': lead.dp_employer_contact_number,
+                'years_in_employment': lead.dp_years_in_employment,
+                'months_in_employment': lead.dp_months_in_employment,
+                'employment_confirmation': lead.dp_employment_confirmation,
+
+                # Life Support
+                'life_support': lead.dp_life_support,
+                'life_support_machine_type': lead.dp_life_support_machine_type,
+                'life_support_details': lead.dp_life_support_details,
+
+                # Energy Identifiers
+                'nmi': lead.dp_nmi,
+                'nmi_source': lead.dp_nmi_source,
+                'mirn': lead.dp_mirn,
+                'mirn_source': lead.dp_mirn_source,
+
+                # Connection Info
+                'connection_date': lead.dp_connection_date,
+                'electricity_connection': lead.dp_electricity_connection,
+                'gas_connection': lead.dp_gas_connection,
+                'twelve_month_disconnection': lead.dp_12_month_disconnection,
+
+                # Certificates
+                'cert_electrical_safety': lead.dp_cert_electrical_safety,
+                'cert_electrical_safety_id': lead.dp_cert_electrical_safety_id,
+                'cert_electrical_safety_sent': lead.dp_cert_electrical_safety_sent,
+
+                # Consent
+                'explicit_informed_consent': lead.dp_explicit_informed_consent,
+
+                # Compliance / Audit
+                'center_name': lead.dp_center_name,
+                'closer_name': lead.dp_closer_name,
+                'dnc_wash_number': lead.dp_dnc_wash_number,
+                'dnc_exp_date': lead.dp_dnc_exp_date,
+                'audit_1': lead.dp_audit_1,
+                'audit_2': lead.dp_audit_2,
+                'welcome_call': lead.dp_welcome_call,
+            }
+
+            if existing:
+                existing.write(dp_vals)
+            else:
+                DodoPowerForm.create(dp_vals) 
+
+    @api.onchange('dodo_power_stage')
+    def _onchange_dodo_power_stage(self):
+        """
+        Load Dodo Power form data from saved stage when user changes stage
+        """
+        for rec in self:
+            if not rec.dodo_power_stage:
+                return
+
+            DodoPowerForm = self.env['custom.dodo.power.form']
+            existing = DodoPowerForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.dodo_power_stage)
+            ], limit=1)
+
+            if existing:
+                # Compliance / Internal
+                rec.dp_internal_dnc_checked = existing.internal_dnc_checked
+                rec.dp_existing_sale = existing.existing_sale
+                rec.dp_online_enquiry_form = existing.online_enquiry_form
+
+                # Sales Info
+                rec.dp_sales_name = existing.sales_name
+                rec.dp_sales_reference = existing.sales_reference
+                rec.dp_agreement_date = existing.agreement_date
+
+                # Site / Address
+                rec.dp_site_address_postcode = existing.site_address_postcode
+                rec.dp_site_addr_unit_type = existing.site_addr_unit_type
+                rec.dp_site_addr_unit_no = existing.site_addr_unit_no
+                rec.dp_site_addr_floor_type = existing.site_addr_floor_type
+                rec.dp_site_addr_floor_no = existing.site_addr_floor_no
+                rec.dp_site_addr_street_no = existing.site_addr_street_no
+                rec.dp_site_addr_street_no_suffix = existing.site_addr_street_no_suffix
+                rec.dp_site_addr_street_name = existing.site_addr_street_name
+                rec.dp_site_addr_street_type = existing.site_addr_street_type
+                rec.dp_site_addr_suburb = existing.site_addr_suburb
+                rec.dp_site_addr_state = existing.site_addr_state
+                rec.dp_site_addr_postcode = existing.site_addr_postcode
+                rec.dp_site_addr_desc = existing.site_addr_desc
+                rec.dp_site_access = existing.site_access
+                rec.dp_site_more_than_12_months = existing.site_more_than_12_months
+
+                # Previous Address
+                rec.dp_prev_addr_1 = existing.prev_addr_1
+                rec.dp_prev_addr_2 = existing.prev_addr_2
+                rec.dp_prev_addr_state = existing.prev_addr_state
+                rec.dp_prev_addr_postcode = existing.prev_addr_postcode
+
+                # Billing Address
+                rec.dp_billing_address = existing.billing_address
+                rec.dp_bill_addr_1 = existing.bill_addr_1
+                rec.dp_bill_addr_2 = existing.bill_addr_2
+                rec.dp_bill_addr_state = existing.bill_addr_state
+                rec.dp_bill_addr_postcode = existing.bill_addr_postcode
+
+                # Concessions
+                rec.dp_concession = existing.concession
+                rec.dp_concession_card_type = existing.concession_card_type
+                rec.dp_concession_card_no = existing.concession_card_no
+                rec.dp_concession_start_date = existing.concession_start_date
+                rec.dp_concession_exp_date = existing.concession_exp_date
+                rec.dp_concession_first_name = existing.concession_first_name
+                rec.dp_concession_middle_name = existing.concession_middle_name
+                rec.dp_concession_last_name = existing.concession_last_name
+
+                # Product / Energy Details
+                rec.dp_product_code = existing.product_code
+                rec.dp_meter_type = existing.meter_type
+                rec.dp_kwh_usage_per_day = existing.kwh_usage_per_day
+                rec.dp_how_many_people = existing.how_many_people
+                rec.dp_how_many_bedrooms = existing.how_many_bedrooms
+                rec.dp_solar_power = existing.solar_power
+                rec.dp_solar_type = existing.solar_type
+                rec.dp_solar_output = existing.solar_output
+                rec.dp_green_energy = existing.green_energy
+                rec.dp_winter_gas_usage = existing.winter_gas_usage
+                rec.dp_summer_gas_usage = existing.summer_gas_usage
+                rec.dp_monthly_winter_spend = existing.monthly_winter_spend
+                rec.dp_monthly_summer_spend = existing.monthly_summer_spend
+
+                # Invoice
+                rec.dp_invoice_method = existing.invoice_method
+
+                # Customer Info
+                rec.dp_customer_salutation = existing.customer_salutation
+                rec.dp_first_name = existing.first_name
+                rec.dp_last_name = existing.last_name
+                rec.dp_date_of_birth = existing.date_of_birth
+                rec.dp_email_contact = existing.email_contact
+                rec.dp_contact_number = existing.contact_number
+                rec.dp_hearing_impaired = existing.hearing_impaired
+
+                # Secondary Contact
+                rec.dp_secondary_contact = existing.secondary_contact
+                rec.dp_secondary_salutation = existing.secondary_salutation
+                rec.dp_secondary_first_name = existing.secondary_first_name
+                rec.dp_secondary_last_name = existing.secondary_last_name
+                rec.dp_secondary_date_of_birth = existing.secondary_date_of_birth
+                rec.dp_secondary_email = existing.secondary_email
+
+                # Referral / Login
+                rec.dp_referral_code = existing.referral_code
+                rec.dp_new_username = existing.new_username
+                rec.dp_new_password = existing.new_password
+
+                # Customer Identity
+                rec.dp_customer_dlicense = existing.customer_dlicense
+                rec.dp_customer_dlicense_state = existing.customer_dlicense_state
+                rec.dp_customer_dlicense_exp = existing.customer_dlicense_exp
+                rec.dp_customer_passport = existing.customer_passport
+                rec.dp_customer_passport_exp = existing.customer_passport_exp
+                rec.dp_customer_medicare = existing.customer_medicare
+                rec.dp_customer_medicare_ref = existing.customer_medicare_ref
+
+                # Employment
+                rec.dp_position_at_current_employer = existing.position_at_current_employer
+                rec.dp_employment_status = existing.employment_status
+                rec.dp_current_employer = existing.current_employer
+                rec.dp_employer_contact_number = existing.employer_contact_number
+                rec.dp_years_in_employment = existing.years_in_employment
+                rec.dp_months_in_employment = existing.months_in_employment
+                rec.dp_employment_confirmation = existing.employment_confirmation
+
+                # Life Support
+                rec.dp_life_support = existing.life_support
+                rec.dp_life_support_machine_type = existing.life_support_machine_type
+                rec.dp_life_support_details = existing.life_support_details
+
+                # Energy Identifiers
+                rec.dp_nmi = existing.nmi
+                rec.dp_nmi_source = existing.nmi_source
+                rec.dp_mirn = existing.mirn
+                rec.dp_mirn_source = existing.mirn_source
+
+                # Connection Info
+                rec.dp_connection_date = existing.connection_date
+                rec.dp_electricity_connection = existing.electricity_connection
+                rec.dp_gas_connection = existing.gas_connection
+                rec.dp_12_month_disconnection = existing.twelve_month_disconnection
+
+                # Certificates
+                rec.dp_cert_electrical_safety = existing.cert_electrical_safety
+                rec.dp_cert_electrical_safety_id = existing.cert_electrical_safety_id
+                rec.dp_cert_electrical_safety_sent = existing.cert_electrical_safety_sent
+
+                # Consent
+                rec.dp_explicit_informed_consent = existing.explicit_informed_consent
+
+                # Compliance / Audit
+                rec.dp_center_name = existing.center_name
+                rec.dp_closer_name = existing.closer_name
+                rec.dp_dnc_wash_number = existing.dnc_wash_number
+                rec.dp_dnc_exp_date = existing.dnc_exp_date
+                rec.dp_audit_1 = existing.audit_1
+                rec.dp_audit_2 = existing.audit_2
+                rec.dp_welcome_call = existing.welcome_call
+
+            else:
+                # Reset all fields to defaults if no existing data found
+                rec.update({fname: False for fname in self._fields if fname.startswith("dp_")})
+                      
+
+                          
            
 
 

@@ -8,3 +8,7 @@ from . import internet_form
 from . import business_loan_form
 from . import home_loan_form
 from . import health_insurance_form
+from . import dodo_nbn_form
+from . import optus_nbn_form
+from . import first_energy_form
+from . import dodo_power_form

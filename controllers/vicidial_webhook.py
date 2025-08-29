@@ -131,10 +131,10 @@ class VicidialWebhookController(http.Controller):
         try:
             sip_exten = kwargs.get('sip_exten')
             user_id = kwargs.get('user_id')
-            _logger.info("sip_exten %s", sip_exten)
-            _logger.info("userID %s" , user_id)
-            _logger.info("env user ID %s", request.env.user.id)
-            _logger.info("env user vicidial %s", request.env.user.vicidial_extension)
+            # _logger.info("sip_exten %s", sip_exten)
+            # _logger.info("userID %s" , user_id)
+            # _logger.info("env user ID %s", request.env.user.id)
+            # _logger.info("env user vicidial %s", request.env.user.vicidial_extension)
 
             domain = []
             if user_id:
@@ -143,10 +143,10 @@ class VicidialWebhookController(http.Controller):
                 domain.append(('vicidial_extension', '=', str(sip_exten)))
             else:
                 domain.append(('id', '=', request.env.user.id))
-            _logger.info("domain....?? %s", domain)
+            # _logger.info("domain....?? %s", domain)
             user = request.env['res.users'].sudo().search(domain, limit=1)
-            _logger.info("user id >>> %s",user.id)
-            _logger.info("user vicidial_entension is  >>> %s",user.vicidial_extension)
+            # _logger.info("user id >>> %s",user.id)
+            # _logger.info("user vicidial_entension is  >>> %s",user.vicidial_extension)
 
             if not user:
                 return http.Response(
@@ -209,7 +209,7 @@ class VicidialWebhookController(http.Controller):
                     'company_id': company_name,
                     'iframe_id': lead.iframe_id.id if hasattr(lead, 'iframe_id') and lead.iframe_id else None,
                 })
-            _logger.info("leads data is %s", leads_data)
+            # _logger.info("leads data is %s", leads_data)
             return http.Response(
                 json.dumps({
                     'status': 'success',
