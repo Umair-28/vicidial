@@ -27,6 +27,7 @@ class VicidialWebhookController(http.Controller):
     @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
     def vicidial_webhook(self, **kwargs):
         try:
+            _logger.info("API HITTED......")
             # 1. Get JSON payload directly
             data = request.jsonrequest
 
