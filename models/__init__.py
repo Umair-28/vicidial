@@ -12,3 +12,4 @@ from . import dodo_nbn_form
 from . import optus_nbn_form
 from . import first_energy_form
 from . import dodo_power_form
+from . import vicidial_leads
