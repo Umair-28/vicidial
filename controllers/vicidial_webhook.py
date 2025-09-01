@@ -24,88 +24,110 @@ class VicidialWebhookController(http.Controller):
             content_type='application/json;charset=utf-8'
         )
 
-
-    @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)
-    def vicidial_webhook(self, **post):
+    @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
+    def vicidial_webhook(self, **kwargs):
         try:
-            # 1. Detect and parse incoming data
-            if request.httprequest.content_type == 'application/json':
-                data = json.loads(request.httprequest.data.decode('utf-8'))
-            else:
-                data = dict(request.params)
+            # 1. Get JSON payload directly
+            data = request.jsonrequest
 
-            
+            if not data:
+                return {"status": "error", "message": "No data received"}
 
-            # 2. Extract key fields
+            # 2. Print payload in Odoo logs
+            _logger = http.logging.getLogger(__name__)
+            _logger.info("📩 Received Vicidial payload: %s", json.dumps(data, indent=2))
 
-            phone = data.get('phone_number')
-            sip_exten = data.get('SIPexten')
-
-
-            # def get_campaign_id(campaign_name):
-            #     if not campaign_name:
-            #         return None
-            #     campaign = request.env['crm.campaign'].search([('name', '=', campaign_name)], limit=1)
-            #     return campaign.id if campaign else None
-           
-           
-            def get_country_id(country_code):
-                if not country_code:
-                    return None
-                country = request.env['res.country'].search([('code', '=', country_code.upper())], limit=1)
-                return country.id if country else None
-
-             # 3. Match user by Vicidial extension
-            user = request.env['res.users'].sudo().search([
-                ('vicidial_extension', '=', sip_exten)
-            ], limit=1)
-            if not user:
-                return http.Response(
-                    json.dumps({'status': 'error', 'message': 'User not found'}),
-                    content_type='application/json'
-                )
-            lead_vals = {
-                'vicidial_lead_id': data.get('lead_id'),
-                'name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or data.get('fullname', 'Unnamed Lead'),
-                'contact_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip(),
-                'phone': data.get('phone_number'),
-                'mobile': data.get('alt_phone'),
-                'email_from': data.get('email'),
-                'street': data.get('address1'),
-                'city': data.get('city'),
-                'zip': data.get('postal_code'),
-                'description': data.get('comments') or f"Recording: {data.get('recording_filename', '')}",
-                #'campaign_id': get_campaign_id(data.get('campaign')),  # map to campaign record ID or None
-                'country_id': get_country_id(data.get('country_code')),  # map to country record ID or None
-                'user_id': user.id,  # map to user record ID or None
+            # 3. Just return payload back as response
+            return {
+                "status": "success",
+                "received_payload": data
             }
-            
-
-            # 4. Get or create iframe session for user
-            iframe = request.env['custom.iframe'].sudo().search([
-                ('user_id', '=', user.id)
-            ], limit=1)
-            if iframe:
-               #domain = [('phone', '=', phone)]
-                domain = ['|', ('phone', '=', phone), ('vicidial_lead_id', '=', data.get('lead_id'))]
-                leads = request.env['crm.lead'].sudo().search(domain)
-                if leads: 
-                    iframe.sudo().write({'lead_ids': [(6, 0, leads.ids)]})
-                else:
-                    new_lead = request.env['crm.lead'].sudo().create(lead_vals)
-                    iframe.sudo().write({'lead_ids': [(4, new_lead.id)]})
-
-            
-            return http.Response(
-                json.dumps({'status': 'success', 'iframe_id': iframe.id, 'lead_ids':str(iframe.lead_ids), 'phone':phone}),
-                content_type='application/json'
-            )
 
         except Exception as e:
-            return http.Response(
-                json.dumps({'status': 'error', 'message': str(e)}),
-                content_type='application/json'
-            )
+            return {"status": "error", "message": str(e)}    
+
+
+    # @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)
+    # def vicidial_webhook(self, **post):
+    #     try:
+    #         # 1. Detect and parse incoming data
+    #         if request.httprequest.content_type == 'application/json':
+    #             data = json.loads(request.httprequest.data.decode('utf-8'))
+    #         else:
+    #             data = dict(request.params)
+
+            
+
+    #         # 2. Extract key fields
+
+    #         phone = data.get('phone_number')
+    #         sip_exten = data.get('SIPexten')
+
+
+    #         # def get_campaign_id(campaign_name):
+    #         #     if not campaign_name:
+    #         #         return None
+    #         #     campaign = request.env['crm.campaign'].search([('name', '=', campaign_name)], limit=1)
+    #         #     return campaign.id if campaign else None
+           
+           
+    #         def get_country_id(country_code):
+    #             if not country_code:
+    #                 return None
+    #             country = request.env['res.country'].search([('code', '=', country_code.upper())], limit=1)
+    #             return country.id if country else None
+
+    #          # 3. Match user by Vicidial extension
+    #         user = request.env['res.users'].sudo().search([
+    #             ('vicidial_extension', '=', sip_exten)
+    #         ], limit=1)
+    #         if not user:
+    #             return http.Response(
+    #                 json.dumps({'status': 'error', 'message': 'User not found'}),
+    #                 content_type='application/json'
+    #             )
+    #         lead_vals = {
+    #             'vicidial_lead_id': data.get('lead_id'),
+    #             'name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip() or data.get('fullname', 'Unnamed Lead'),
+    #             'contact_name': f"{data.get('first_name', '')} {data.get('last_name', '')}".strip(),
+    #             'phone': data.get('phone_number'),
+    #             'mobile': data.get('alt_phone'),
+    #             'email_from': data.get('email'),
+    #             'street': data.get('address1'),
+    #             'city': data.get('city'),
+    #             'zip': data.get('postal_code'),
+    #             'description': data.get('comments') or f"Recording: {data.get('recording_filename', '')}",
+    #             #'campaign_id': get_campaign_id(data.get('campaign')),  # map to campaign record ID or None
+    #             'country_id': get_country_id(data.get('country_code')),  # map to country record ID or None
+    #             'user_id': user.id,  # map to user record ID or None
+    #         }
+            
+
+    #         # 4. Get or create iframe session for user
+    #         iframe = request.env['custom.iframe'].sudo().search([
+    #             ('user_id', '=', user.id)
+    #         ], limit=1)
+    #         if iframe:
+    #            #domain = [('phone', '=', phone)]
+    #             domain = ['|', ('phone', '=', phone), ('vicidial_lead_id', '=', data.get('lead_id'))]
+    #             leads = request.env['crm.lead'].sudo().search(domain)
+    #             if leads: 
+    #                 iframe.sudo().write({'lead_ids': [(6, 0, leads.ids)]})
+    #             else:
+    #                 new_lead = request.env['crm.lead'].sudo().create(lead_vals)
+    #                 iframe.sudo().write({'lead_ids': [(4, new_lead.id)]})
+
+            
+    #         return http.Response(
+    #             json.dumps({'status': 'success', 'iframe_id': iframe.id, 'lead_ids':str(iframe.lead_ids), 'phone':phone}),
+    #             content_type='application/json'
+    #         )
+
+    #     except Exception as e:
+    #         return http.Response(
+    #             json.dumps({'status': 'error', 'message': str(e)}),
+    #             content_type='application/json'
+    #         )
 
     @http.route('/custom_iframe/create_on_load', type='json', auth='user')
     def create_iframe_on_load(self):
