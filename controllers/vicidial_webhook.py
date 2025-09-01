@@ -27,7 +27,8 @@ class VicidialWebhookController(http.Controller):
     @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
     def vicidial_webhook(self, **kwargs):
         try:
-            _logger.info("API HITTED......")
+            _logger.info("✅ API HITTED......")
+
             # 1. Get JSON payload directly
             data = request.jsonrequest
 
@@ -35,7 +36,6 @@ class VicidialWebhookController(http.Controller):
                 return {"status": "error", "message": "No data received"}
 
             # 2. Print payload in Odoo logs
-            _logger = http.logging.getLogger(__name__)
             _logger.info("📩 Received Vicidial payload: %s", json.dumps(data, indent=2))
 
             # 3. Just return payload back as response
@@ -45,7 +45,8 @@ class VicidialWebhookController(http.Controller):
             }
 
         except Exception as e:
-            return {"status": "error", "message": str(e)}    
+            _logger.error("❌ Error in webhook: %s", str(e))
+            return {"status": "error", "message": str(e)}   
 
 
     # @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)
