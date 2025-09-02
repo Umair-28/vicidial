@@ -162,7 +162,7 @@ const interval = setInterval(async () => {
     );
 
     const { leads } = await res.json();
-    console.log("leads IDS are ", leads.lenth, leads);
+    console.log("leads IDS are ", leads.length, leads);
 
     // const newRenderedHTML = leads.map(renderer).join("\n");
 
