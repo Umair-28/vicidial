@@ -429,7 +429,7 @@ class VicidialWebhookController(http.Controller):
                     "security_phrase": lead.security_phrase or "",
                     "extension": lead.extension or "",
                     "agent_user": lead.agent_user or "",
-                    "crm_lead_id":lead.crm_lead_id
+                    "crm_lead_id":lead.crm_lead_id or "",
                 })
 
             return http.Response(
