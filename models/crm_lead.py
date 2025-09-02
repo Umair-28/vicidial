@@ -26,7 +26,7 @@ class CrmLead(models.Model):
         string='Automatically Assigned Partner'
     )
 
-    stage_id = fields.Many2one('crm.stage', string="Stage")
+    # stage_id = fields.Many2one('crm.stage', string="Stage")
 
     
 
