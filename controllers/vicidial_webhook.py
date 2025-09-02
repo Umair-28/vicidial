@@ -62,7 +62,7 @@ class VicidialWebhookController(http.Controller):
             # 3. Iterate and create records
             for lead in leads:
                 vals = {
-                    "vicidial_lead_id": lead.get("lead_id"),
+                    "lead_id": lead.get("lead_id"),
                     "status": lead.get("status"),
                     "entry_date": lead.get("entry_date"),
                     "modify_date": lead.get("modify_date"),
