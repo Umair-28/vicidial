@@ -125,7 +125,7 @@ class VicidialWebhookController(http.Controller):
                 # Prepare CRM lead values based on 'lead' dictionary
                 crm_vals = {
                     'name': lead.get('first_name') or lead.get('comments'),
-                    'company_name': 'K N K TRADERS',
+                    'partner_name': 'K N K TRADERS',
                     'phone': lead.get('phone_number'),
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
