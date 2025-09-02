@@ -1282,7 +1282,7 @@ class CrmLead(models.Model):
         ('3', 'Stage 3'),
         ('4', 'Stage 4'),
         ('5', 'Stage 5')
-    ], string='Stage', required=True)
+    ], string='DODO Stage', default="1")
     do_dodo_receipt_no = fields.Char(string="DODO Receipt Number")
     do_service_type = fields.Char(string="Service Type")
     do_plan_sold_with_dodo = fields.Char(string="Plan With DODO")
@@ -1436,7 +1436,7 @@ class CrmLead(models.Model):
         ('3', 'Stage 3'),
         ('4', 'Stage 4'),
         ('5', 'Stage 5')
-    ], string='Stage', required=True)
+    ], string='OPTUS Stage', default="1")
     op_sale_date = fields.Date(string="Sale Date")
     op_activation_date = fields.Date(string="Activation Date")
     op_order_no = fields.Char(string="Order Number")
@@ -1558,7 +1558,7 @@ class CrmLead(models.Model):
         ('3', 'Stage 3'),
         ('4', 'Stage 4'),
         ('5', 'Stage 5')
-    ], string='Stage', required=True)
+    ], string='First Energy Stage', default="1")
     fe_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
     fe_existing_sale = fields.Char(string="Existing Sale with NMI & Phone Number")
     fe_online_enquiry_form = fields.Char(string="Online Enquiry Form")
@@ -2189,7 +2189,7 @@ class CrmLead(models.Model):
         ('3', 'Stage 3'),
         ('4', 'Stage 4'),
         ('5', 'Stage 5')
-    ], string='Stage', required=True)
+    ], string='DODO Power Stage', default="1")
 
     # Compliance / Internal
     dp_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
