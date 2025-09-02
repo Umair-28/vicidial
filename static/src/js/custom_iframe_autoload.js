@@ -57,7 +57,7 @@ async function showModalWithLeadData(leadData) {
 
     // Prepare context with lead data for form pre-population
     const formContext = {
-      default_services: False,
+      // default_services: False,
       // Map VICIDIAL data to CRM lead fields
       default_name: leadData.opportunity || leadData.comments || '',
       default_contact_name: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '',
