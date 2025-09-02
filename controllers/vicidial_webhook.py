@@ -44,10 +44,10 @@ class VicidialWebhookController(http.Controller):
 
             leads = data.get("leads", [])
             agent = data.get("agent")
-            extension = data.get("extension", "SIP/8011")  # default hardcoded
+            extension = data.get("extension", "SIP/8011")
 
             # 2. Handle empty leads → delete records
-            if len(leads) == 0:
+            if not leads:
                 _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
                 request.env["vicidial.lead"].sudo().search([("extension", "=", extension)]).unlink()
                 return {
@@ -55,8 +55,7 @@ class VicidialWebhookController(http.Controller):
                     "message": "All leads deleted for extension {}".format(extension)
                 }
 
-            _logger.info("📩 Processing %s leads for agent=%s, extension=%s",
-                        len(leads), agent, extension)
+            _logger.info("📩 Processing %s leads for agent=%s, extension=%s", len(leads), agent, extension)
 
             created_records = []
             default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
@@ -65,44 +64,54 @@ class VicidialWebhookController(http.Controller):
 
             # 3. Iterate and create records
             for lead in leads:
-                vals = { 
-                    "lead_id": str(lead.get("lead_id")), 
-                    "status": lead.get("status"), 
-                    "entry_date": lead.get("entry_date"), 
-                    "modify_date": lead.get("modify_date"), 
-                    "agent_user": agent, "extension": extension, 
-                    "user": lead.get("user"), 
-                    "vendor_lead_code": lead.get("vendor_lead_code"), 
-                    "source_id": lead.get("source_id"), 
-                    "list_id": str(lead.get("list_id")) if lead.get("list_id") else False, 
-                    "gmt_offset_now": lead.get("gmt_offset_now"), 
-                    "called_since_last_reset": True if str(lead.get("called_since_last_reset")).upper() in ["Y", "1", "TRUE"] else False, 
-                    "phone_code": lead.get("phone_code"), 
-                    "phone_number": lead.get("phone_number"), 
-                    "title": lead.get("title"), 
-                    "first_name": lead.get("first_name"), 
-                    "middle_initial": lead.get("middle_initial"), 
-                    "last_name": lead.get("last_name"), 
-                    "address1": lead.get("address1"), 
-                    "address2": lead.get("address2"), 
-                    "address3": lead.get("address3"), 
-                    "city": lead.get("city"), 
-                    "state": lead.get("state"), 
-                    "province": lead.get("province"), 
-                    "postal_code": lead.get("postal_code"), 
-                    "country_code": lead.get("country_code"), 
-                    "gender": lead.get("gender") if lead.get("gender") in ["M", "F", "O"] else False, 
-                    "date_of_birth": lead.get("date_of_birth"), 
-                    "alt_phone": lead.get("alt_phone"), 
-                    "email": lead.get("email"), 
-                    "security_phrase": lead.get("security_phrase"), 
-                    "comments": lead.get("comments"), 
-                    "called_count": lead.get("called_count"), 
-                    "last_local_call_time": lead.get("last_local_call_time"), 
-                    "rank": lead.get("rank"), 
-                    "owner": lead.get("owner"), 
-                    "entry_list_id": str(lead.get("entry_list_id")), 
-                    "companyName":"K N K TRADERS",
+                # Correctly parse the datetime fields
+                entry_date_str = lead.get("entry_date")
+                modify_date_str = lead.get("modify_date")
+                last_local_call_time_str = lead.get("last_local_call_time")
+
+                entry_date_obj = datetime.strptime(entry_date_str, '%Y-%m-%dT%H:%M:%S') if entry_date_str else False
+                modify_date_obj = datetime.strptime(modify_date_str, '%Y-%m-%dT%H:%M:%S') if modify_date_str else False
+                last_local_call_time_obj = datetime.strptime(last_local_call_time_str, '%Y-%m-%dT%H:%M:%S') if last_local_call_time_str else False
+                
+                vals = {
+                    "lead_id": str(lead.get("lead_id")),
+                    "status": lead.get("status"),
+                    "entry_date": entry_date_obj,
+                    "modify_date": modify_date_obj,
+                    "agent_user": agent,
+                    "extension": extension,
+                    "user": lead.get("user"),
+                    "vendor_lead_code": lead.get("vendor_lead_code"),
+                    "source_id": lead.get("source_id"),
+                    "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
+                    "gmt_offset_now": lead.get("gmt_offset_now"),
+                    "called_since_last_reset": str(lead.get("called_since_last_reset")).upper() in ["Y", "1", "TRUE"],
+                    "phone_code": lead.get("phone_code"),
+                    "phone_number": lead.get("phone_number"),
+                    "title": lead.get("title"),
+                    "first_name": lead.get("first_name"),
+                    "middle_initial": lead.get("middle_initial"),
+                    "last_name": lead.get("last_name"),
+                    "address1": lead.get("address1"),
+                    "address2": lead.get("address2"),
+                    "address3": lead.get("address3"),
+                    "city": lead.get("city"),
+                    "state": lead.get("state"),
+                    "province": lead.get("province"),
+                    "postal_code": lead.get("postal_code"),
+                    "country_code": lead.get("country_code"),
+                    "gender": lead.get("gender") if lead.get("gender") in ["M", "F", "O"] else False,
+                    "date_of_birth": lead.get("date_of_birth"),
+                    "alt_phone": lead.get("alt_phone"),
+                    "email": lead.get("email"),
+                    "security_phrase": lead.get("security_phrase"),
+                    "comments": lead.get("comments"),
+                    "called_count": lead.get("called_count"),
+                    "last_local_call_time": last_local_call_time_obj,
+                    "rank": lead.get("rank"),
+                    "owner": lead.get("owner"),
+                    "entry_list_id": str(lead.get("entry_list_id")),
+                    "companyName": "K N K TRADERS",
                     "stage_id": default_stage.id,
                 }
 
@@ -113,10 +122,8 @@ class VicidialWebhookController(http.Controller):
                     rec = Lead.create(vals)
                     created_records.append(rec.id)
                 else:
-                    # Optionally update existing lead instead of skipping
-                    # existing_lead.write(vals)
-                    created_records.append(existing_lead.id)  # Keep track of it anyway
-
+                    existing_lead.write(vals)
+                    created_records.append(existing_lead.id)
 
             _logger.info("✅ Successfully saved %s leads", len(created_records))
 
