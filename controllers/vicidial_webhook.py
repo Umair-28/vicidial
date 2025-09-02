@@ -41,22 +41,28 @@ class VicidialWebhookController(http.Controller):
                 _logger.error("❌ Failed to parse JSON: %s", str(parse_err))
                 return {"status": "error", "message": "Invalid JSON payload"}
 
-            if not data or "leads" not in data:
-                return {"status": "error", "message": "No leads found in payload"}
-
             leads = data.get("leads", [])
             agent = data.get("agent")
-            extension = data.get("extension")
+            extension = data.get("extension", "SIP/8011")  # default hardcoded
+
+            # 2. Handle empty leads → delete records
+            if not leads:
+                _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
+                request.env["vicidial.lead"].sudo().search([("extension", "=", extension)]).unlink()
+                return {
+                    "status": "success",
+                    "message": "All leads deleted for extension {}".format(extension)
+                }
 
             _logger.info("📩 Processing %s leads for agent=%s, extension=%s",
-                    len(leads), agent, extension)
+                        len(leads), agent, extension)
 
             created_records = []
 
-            # 2. Iterate and create records
+            # 3. Iterate and create records
             for lead in leads:
                 vals = {
-                    "lead_id": str(lead.get("lead_id")),
+                    "vicidial_lead_id": lead.get("lead_id"),
                     "status": lead.get("status"),
                     "entry_date": lead.get("entry_date"),
                     "modify_date": lead.get("modify_date"),
@@ -115,7 +121,8 @@ class VicidialWebhookController(http.Controller):
 
         except Exception as e:
             _logger.error("❌ Error in webhook: %s", str(e))
-            return {"status": "error", "message": str(e)}  
+            return {"status": "error", "message": str(e)}
+
 
 
     # @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)
