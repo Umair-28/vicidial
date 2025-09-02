@@ -133,7 +133,7 @@ class VicidialWebhookController(http.Controller):
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
                     # ✅ THIS IS THE CRITICAL LINE ADDED FOR THE LINK
-                    # 'vicidial_lead_id': existing_vicidial_lead.id if existing_vicidial_lead else False,
+                    'vicidial_lead_id': lead.lead_id,
                 }
                 
                 if not existing_vicidial_lead:
@@ -429,6 +429,7 @@ class VicidialWebhookController(http.Controller):
                     "security_phrase": lead.security_phrase or "",
                     "extension": lead.extension or "",
                     "agent_user": lead.agent_user or "",
+                    "crm_lead_id":lead.crm_lead_id
                 })
 
             return http.Response(
