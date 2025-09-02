@@ -66,6 +66,9 @@ class VicidialWebhookController(http.Controller):
 
             # 3. Iterate and create records
             for lead in leads:
+
+                VicidialLead = request.env["vicidial.lead"].sudo()
+                existing_vicidial_lead = VicidialLead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
                 # Correctly parse the datetime fields
                 entry_date_str = lead.get("entry_date")
                 modify_date_str = lead.get("modify_date")
@@ -122,12 +125,28 @@ class VicidialWebhookController(http.Controller):
                 Lead = request.env["vicidial.lead"].sudo()
                 existing_lead = Lead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
 
-                if not existing_lead:
-                    rec = Lead.create(vals)
+                if not existing_vicidial_lead:
+                    # Create a new CRM lead first
+                    crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                    
+                    # Link the new CRM lead to the Vicidial record
+                    vals['crm_lead_id'] = crm_lead_rec.id
+                    
+                    # Create the Vicidial lead record
+                    rec = VicidialLead.create(vals)
                     created_records.append(rec.id)
                 else:
-                    existing_lead.write(vals)
-                    created_records.append(existing_lead.id)
+                    # Update the existing CRM lead
+                    if existing_vicidial_lead.crm_lead_id:
+                        existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
+                    else:
+                        # Handle cases where the link was missing
+                        crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                        existing_vicidial_lead.sudo().write({'crm_lead_id': crm_lead_rec.id})
+
+            # Update the existing Vicidial lead record
+            existing_vicidial_lead.write(vals)
+            created_records.append(existing_vicidial_lead.id)
 
             _logger.info("✅ Successfully saved %s leads", len(created_records))
 

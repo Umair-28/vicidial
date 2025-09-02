@@ -97,9 +97,20 @@ async function showModalWithLeadData(leadId) {
   }
 }
 
-async function openCustomModal(leadId) {
+async function openCustomModal(vicidialLeadId) {
   try {
-    await showModalWithLeadData(leadId);
+    const orm = owl.Component.env.services.orm;
+    
+    // Read the crm_lead_id from the vicidial.lead record
+    const vicidialLeadData = await orm.searchRead('vicidial.lead', [['id', '=', parseInt(vicidialLeadId)]], ['crm_lead_id']);
+    
+    if (vicidialLeadData.length === 0 || !vicidialLeadData[0].crm_lead_id) {
+        console.error("No corresponding CRM lead found.");
+        return;
+    }
+    
+    const crmLeadId = vicidialLeadData[0].crm_lead_id[0]; // [id, name]
+    await showModalWithLeadData(crmLeadId);
   } catch (err) {
     console.error("[modal] Failed to open lead modal:", err);
   }
@@ -114,7 +125,7 @@ document.addEventListener("click", async function (e) {
     if (row && row.dataset.id) {
       const rawId = row.dataset.id;
       const leadId = rawId.replace("datapoint_", "");
-      openCustomModal(leadId);
+      openCustomModal(leadId); // Pass the Vicidial lead ID
       return;
     }
   }
@@ -187,39 +198,6 @@ const interval = setInterval(async () => {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
 
-  // try {
-  //   const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  //   const res = await fetch(`${baseUrl}/vici/iframe/session`);
-
-  //   const { leads } = await res.json();
-  //   console.log("leads IDS are ", leads.length, leads);
-
-  //   // Fetch the stage names for the renderer
-  //   const stages = await owl.Component.env.services.orm.read_group('crm.stage', [], ['name'], []);
-  //   const stageMap = {};
-  //   stages.forEach(s => stageMap[s.id] = s.name);
-
-  //   // Enrich the lead data with stage names
-  //   const enrichedLeads = leads.map(lead => ({
-  //     ...lead,
-  //     stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || 'New' }
-  //   }));
-
-  //   const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
-
-  //   if (newRenderedHTML !== previousRenderedHTML) {
-  //     console.log("[lead_auto_refresh] UI updated due to change...");
-  //     const tbody = leadIdsTable.querySelector("tbody");
-  //     if (tbody) {
-  //       tbody.innerHTML = newRenderedHTML;
-  //       previousRenderedHTML = newRenderedHTML;
-  //     }
-  //   } else {
-  //     console.log("[lead_auto_refresh] No update needed.");
-  //   }
-  // } catch (error) {
-  //   console.error("[lead_auto_refresh] Fetch/render error:", error);
-  // }
 }, 5000);
 
 // /** @odoo-module **/
