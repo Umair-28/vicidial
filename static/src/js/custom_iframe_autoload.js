@@ -35,26 +35,35 @@ export class LeadAutoRefreshMany2Many extends Component {
 
 // ---------------- Table Renderer ----------------
 
+// const renderer = (item) => `
+// <tr class="o_data_row" data-id="datapoint_${item.id}">
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.sales_person}</td>
+//   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
+//     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
+//   </td>
+// </tr>
+// `;
+
 const renderer = (item) => `
-<tr class="o_data_row" data-id="datapoint_${
-  item.lead_id
-}" data-full-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+<tr class="o_data_row" data-id="datapoint_${item.id}">
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
     item.opportunity || item.comments || ""
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${
-    item.companyName ||
-    (item.first_name && item.last_name
-      ? `${item.first_name} ${item.last_name}`
-      : "") ||
-    ""
+    item.company_name || "K N K TRADERS"
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${
     item.phone_number || item.alt_phone || ""
   }</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${1}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${
+    item.stage || "New"
+  }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
-    item.user || ""
+    item.user
   }</td>
   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
@@ -64,61 +73,24 @@ const renderer = (item) => `
 
 // ---------------- Modal Logic ----------------
 
-async function showModalWithLeadData(leadData) {
+async function showModalWithLeadData(leadId) {
   try {
     const env = owl.Component.env;
     const actionService = env.services.action;
 
-    // Prepare context with lead data for form pre-population
-    const formContext = {
-      default_name: leadData.opportunity || leadData.comments || "",
-      default_contact_name:
-        leadData.first_name && leadData.last_name
-          ? `${leadData.first_name} ${leadData.last_name}`
-          : "",
-      default_partner_name: leadData.company_name || "",
-      default_phone: leadData.phone_number || leadData.alt_phone || "",
-      default_mobile: leadData.alt_phone || "",
-      default_email_from: leadData.email || "",
-      default_street: leadData.address1 || "",
-      default_street2: leadData.address2 || "",
-      default_city: leadData.city || "",
-      default_state_id: leadData.state || "",
-      default_zip: leadData.postal_code || "",
-      default_country_id: leadData.country_code || "",
-      default_description: leadData.comments || "",
-      // Additional custom fields if they exist in your CRM
-      default_title: leadData.title || "",
-      default_date_of_birth: leadData.date_of_birth || "",
-      default_security_phrase: leadData.security_phrase || "",
-      default_vicidial_lead_id: leadData.lead_id || "",
-      default_vendor_lead_code: leadData.vendor_lead_code || "",
-      default_source_id: leadData.source_id || "",
-      default_list_id: leadData.list_id || "",
-      default_called_count: leadData.called_count || 0,
-      default_last_local_call_time: leadData.last_local_call_time || "",
-    };
+    await actionService.doAction({
+      type: "ir.actions.act_window",
+      res_model: "crm.lead",
+      res_id: parseInt(leadId),
+      views: [[false, "form"]],
+      target: "new",
+      fullscreen: true,
+      context: {
+        default_services: "false",
+      },
+    });
 
-    // Create new lead or open existing one
-    const actionConfig = leadData.existing_crm_id
-      ? {
-          type: "ir.actions.act_window",
-          res_model: "crm.lead",
-          res_id: parseInt(leadData.lead_id),
-          views: [[false, "form"]],
-          target: "new",
-          context: formContext,
-        }
-      : {
-          type: "ir.actions.act_window",
-          res_model: "crm.lead",
-          views: [[false, "form"]],
-          target: "new",
-          context: formContext,
-        };
-
-    await actionService.doAction(actionConfig);
-
+    // Use recursive retry to wait for field to appear
     const waitForFieldAndSetValue = () => {
       const select = document.querySelector("#services_0");
 
@@ -133,104 +105,6 @@ async function showModalWithLeadData(leadData) {
     };
 
     waitForFieldAndSetValue();
-
-    // Enhanced field population after modal opens
-    // const waitForFieldsAndSetValues = () => {
-    //   const fieldsToSet = [
-    //     // { selector: "#services_0", value: "false", type: "select" },
-    //     {
-    //       selector: "input[name='name']",
-    //       value: leadData.opportunity || leadData.comments || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='contact_name']",
-    //       value:
-    //         leadData.first_name && leadData.last_name
-    //           ? `${leadData.first_name} ${leadData.last_name}`
-    //           : "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='partner_name']",
-    //       value: leadData.company_name || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='phone']",
-    //       value: leadData.phone_number || leadData.alt_phone || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='mobile']",
-    //       value: leadData.alt_phone || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='email_from']",
-    //       value: leadData.email || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='street']",
-    //       value: leadData.address1 || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='street2']",
-    //       value: leadData.address2 || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='city']",
-    //       value: leadData.city || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "input[name='zip']",
-    //       value: leadData.postal_code || "",
-    //       type: "input",
-    //     },
-    //     {
-    //       selector: "textarea[name='description']",
-    //       value: leadData.comments || "",
-    //       type: "textarea",
-    //     },
-    //   ];
-
-    //   let fieldsSet = 0;
-    //   let totalFields = fieldsToSet.filter((field) => field.value).length;
-
-    //   fieldsToSet.forEach((field) => {
-    //     if (!field.value) return; // Skip empty values
-
-    //     const element = document.querySelector(field.selector);
-    //     if (element) {
-    //       if (field.type === "input" || field.type === "textarea") {
-    //         element.value = field.value;
-    //         element.dispatchEvent(new Event("input", { bubbles: true }));
-    //         element.dispatchEvent(new Event("change", { bubbles: true }));
-    //       } else if (field.type === "select") {
-    //         element.value = field.value;
-    //         element.dispatchEvent(new Event("change", { bubbles: true }));
-    //       }
-    //       fieldsSet++;
-    //       console.log(`✅ Set ${field.selector} to: ${field.value}`);
-    //     }
-    //   });
-
-    //   if (fieldsSet < totalFields) {
-    //     console.warn(
-    //       `⏳ Waiting for more fields... (${fieldsSet}/${totalFields})`
-    //     );
-    //     setTimeout(waitForFieldsAndSetValues, 200); // keep retrying every 200ms
-    //   } else {
-    //     console.info(`✅ All ${fieldsSet} fields populated successfully`);
-    //   }
-    // };
-
-    // // Start field population after a brief delay
-    // setTimeout(waitForFieldsAndSetValues, 300);
   } catch (error) {
     console.error("[lead_modal] Error loading form modal:", error);
   }
@@ -238,27 +112,7 @@ async function showModalWithLeadData(leadData) {
 
 async function openCustomModal(leadId) {
   try {
-    // Get the full lead data from the row
-    const row = document.querySelector(`[data-id="datapoint_${leadId}"]`);
-    if (!row) {
-      console.error("[modal] Could not find row data for lead:", leadId);
-      return;
-    }
-
-    const fullDataAttr = row.getAttribute("data-full-data");
-    if (!fullDataAttr) {
-      console.error("[modal] No full data attribute found for lead:", leadId);
-      return;
-    }
-
-    try {
-      const leadData = JSON.parse(fullDataAttr.replace(/&apos;/g, "'"));
-      await showModalWithLeadData(leadData);
-    } catch (parseError) {
-      console.error("[modal] Error parsing lead data:", parseError);
-      // Fallback to basic modal opening
-      await showModalWithLeadData({ lead_id: leadId });
-    }
+    await showModalWithLeadData(leadId);
   } catch (err) {
     console.error("[modal] Failed to open lead modal:", err);
   }
@@ -310,8 +164,18 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
+    // const res = await fetch(
+    //   `${baseUrl}/vici/iframe/session?sip_exten=${
+    //     document.querySelector("[name=sip_exten]").innerText
+    //       ? document.querySelector("[name=sip_exten]").innerText
+    //       : "1001"
+    //   }  `
+    // );
+
     const res = await fetch(`${baseUrl}/vici/iframe/session`);
+
     const { leads } = await res.json();
+    // console.log("leads IDS are ", leads.length, leads);
 
     const newRenderedHTML = leads.map(renderer).join("\n");
 
@@ -329,6 +193,7 @@ const interval = setInterval(async () => {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
 }, 5000);
+
 // /** @odoo-module **/
 
 // import { Component, onMounted, onWillUnmount, xml } from "@odoo/owl";
@@ -366,26 +231,27 @@ const interval = setInterval(async () => {
 
 // // ---------------- Table Renderer ----------------
 
-// // const renderer = (item) => `
-// // <tr class="o_data_row" data-id="datapoint_${item.id}">
-// //   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
-// //   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
-// //   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
-// //   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
-// //   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.sales_person}</td>
-// //   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
-// //     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
-// //   </td>
-// // </tr>
-// // `;
-
 // const renderer = (item) => `
-// <tr class="o_data_row" data-id="datapoint_${item.id}">
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity || item.comments}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone_number || item.alt_phone}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.user}</td>
+// <tr class="o_data_row" data-id="datapoint_${
+//   item.lead_id
+// }" data-full-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
+//     item.opportunity || item.comments || ""
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${
+//     item.companyName ||
+//     (item.first_name && item.last_name
+//       ? `${item.first_name} ${item.last_name}`
+//       : "") ||
+//     ""
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${
+//     item.phone_number || item.alt_phone || ""
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${1}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
+//     item.user || ""
+//   }</td>
 //   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
 //     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
 //   </td>
@@ -394,24 +260,61 @@ const interval = setInterval(async () => {
 
 // // ---------------- Modal Logic ----------------
 
-// async function showModalWithLeadData(leadId) {
+// async function showModalWithLeadData(leadData) {
 //   try {
 //     const env = owl.Component.env;
 //     const actionService = env.services.action;
 
-//     await actionService.doAction({
-//       type: "ir.actions.act_window",
-//       res_model: "crm.lead",
-//       res_id: parseInt(leadId),
-//       views: [[false, "form"]],
-//       target: "new",
-//       fullscreen: true,
-//       context: {
-//         default_services: "false",
-//       },
-//     });
+//     // Prepare context with lead data for form pre-population
+//     const formContext = {
+//       default_name: leadData.opportunity || leadData.comments || "",
+//       default_contact_name:
+//         leadData.first_name && leadData.last_name
+//           ? `${leadData.first_name} ${leadData.last_name}`
+//           : "",
+//       default_partner_name: leadData.company_name || "",
+//       default_phone: leadData.phone_number || leadData.alt_phone || "",
+//       default_mobile: leadData.alt_phone || "",
+//       default_email_from: leadData.email || "",
+//       default_street: leadData.address1 || "",
+//       default_street2: leadData.address2 || "",
+//       default_city: leadData.city || "",
+//       default_state_id: leadData.state || "",
+//       default_zip: leadData.postal_code || "",
+//       default_country_id: leadData.country_code || "",
+//       default_description: leadData.comments || "",
+//       // Additional custom fields if they exist in your CRM
+//       default_title: leadData.title || "",
+//       default_date_of_birth: leadData.date_of_birth || "",
+//       default_security_phrase: leadData.security_phrase || "",
+//       default_vicidial_lead_id: leadData.lead_id || "",
+//       default_vendor_lead_code: leadData.vendor_lead_code || "",
+//       default_source_id: leadData.source_id || "",
+//       default_list_id: leadData.list_id || "",
+//       default_called_count: leadData.called_count || 0,
+//       default_last_local_call_time: leadData.last_local_call_time || "",
+//     };
 
-//     // Use recursive retry to wait for field to appear
+//     // Create new lead or open existing one
+//     const actionConfig = leadData.existing_crm_id
+//       ? {
+//           type: "ir.actions.act_window",
+//           res_model: "crm.lead",
+//           res_id: parseInt(leadData.existing_crm_id),
+//           views: [[false, "form"]],
+//           target: "new",
+//           context: formContext,
+//         }
+//       : {
+//           type: "ir.actions.act_window",
+//           res_model: "crm.lead",
+//           views: [[false, "form"]],
+//           target: "new",
+//           context: formContext,
+//         };
+
+//     await actionService.doAction(actionConfig);
+
 //     const waitForFieldAndSetValue = () => {
 //       const select = document.querySelector("#services_0");
 
@@ -426,6 +329,104 @@ const interval = setInterval(async () => {
 //     };
 
 //     waitForFieldAndSetValue();
+
+//     // Enhanced field population after modal opens
+//     // const waitForFieldsAndSetValues = () => {
+//     //   const fieldsToSet = [
+//     //     // { selector: "#services_0", value: "false", type: "select" },
+//     //     {
+//     //       selector: "input[name='name']",
+//     //       value: leadData.opportunity || leadData.comments || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='contact_name']",
+//     //       value:
+//     //         leadData.first_name && leadData.last_name
+//     //           ? `${leadData.first_name} ${leadData.last_name}`
+//     //           : "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='partner_name']",
+//     //       value: leadData.company_name || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='phone']",
+//     //       value: leadData.phone_number || leadData.alt_phone || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='mobile']",
+//     //       value: leadData.alt_phone || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='email_from']",
+//     //       value: leadData.email || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='street']",
+//     //       value: leadData.address1 || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='street2']",
+//     //       value: leadData.address2 || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='city']",
+//     //       value: leadData.city || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "input[name='zip']",
+//     //       value: leadData.postal_code || "",
+//     //       type: "input",
+//     //     },
+//     //     {
+//     //       selector: "textarea[name='description']",
+//     //       value: leadData.comments || "",
+//     //       type: "textarea",
+//     //     },
+//     //   ];
+
+//     //   let fieldsSet = 0;
+//     //   let totalFields = fieldsToSet.filter((field) => field.value).length;
+
+//     //   fieldsToSet.forEach((field) => {
+//     //     if (!field.value) return; // Skip empty values
+
+//     //     const element = document.querySelector(field.selector);
+//     //     if (element) {
+//     //       if (field.type === "input" || field.type === "textarea") {
+//     //         element.value = field.value;
+//     //         element.dispatchEvent(new Event("input", { bubbles: true }));
+//     //         element.dispatchEvent(new Event("change", { bubbles: true }));
+//     //       } else if (field.type === "select") {
+//     //         element.value = field.value;
+//     //         element.dispatchEvent(new Event("change", { bubbles: true }));
+//     //       }
+//     //       fieldsSet++;
+//     //       console.log(`✅ Set ${field.selector} to: ${field.value}`);
+//     //     }
+//     //   });
+
+//     //   if (fieldsSet < totalFields) {
+//     //     console.warn(
+//     //       `⏳ Waiting for more fields... (${fieldsSet}/${totalFields})`
+//     //     );
+//     //     setTimeout(waitForFieldsAndSetValues, 200); // keep retrying every 200ms
+//     //   } else {
+//     //     console.info(`✅ All ${fieldsSet} fields populated successfully`);
+//     //   }
+//     // };
+
+//     // // Start field population after a brief delay
+//     // setTimeout(waitForFieldsAndSetValues, 300);
 //   } catch (error) {
 //     console.error("[lead_modal] Error loading form modal:", error);
 //   }
@@ -433,7 +434,27 @@ const interval = setInterval(async () => {
 
 // async function openCustomModal(leadId) {
 //   try {
-//     await showModalWithLeadData(leadId);
+//     // Get the full lead data from the row
+//     const row = document.querySelector(`[data-id="datapoint_${leadId}"]`);
+//     if (!row) {
+//       console.error("[modal] Could not find row data for lead:", leadId);
+//       return;
+//     }
+
+//     const fullDataAttr = row.getAttribute("data-full-data");
+//     if (!fullDataAttr) {
+//       console.error("[modal] No full data attribute found for lead:", leadId);
+//       return;
+//     }
+
+//     try {
+//       const leadData = JSON.parse(fullDataAttr.replace(/&apos;/g, "'"));
+//       await showModalWithLeadData(leadData);
+//     } catch (parseError) {
+//       console.error("[modal] Error parsing lead data:", parseError);
+//       // Fallback to basic modal opening
+//       await showModalWithLeadData({ lead_id: leadId });
+//     }
 //   } catch (err) {
 //     console.error("[modal] Failed to open lead modal:", err);
 //   }
@@ -485,20 +506,8 @@ const interval = setInterval(async () => {
 
 //   try {
 //     const baseUrl = `${window.location.protocol}//${window.location.host}`;
-//     // const res = await fetch(
-//     //   `${baseUrl}/vici/iframe/session?sip_exten=${
-//     //     document.querySelector("[name=sip_exten]").innerText
-//     //       ? document.querySelector("[name=sip_exten]").innerText
-//     //       : "1001"
-//     //   }  `
-//     // );
-
-//     const res = await fetch(
-//       `${baseUrl}/vici/iframe/session`
-//     );
-
+//     const res = await fetch(`${baseUrl}/vici/iframe/session`);
 //     const { leads } = await res.json();
-//     // console.log("leads IDS are ", leads.length, leads);
 
 //     const newRenderedHTML = leads.map(renderer).join("\n");
 

@@ -62,8 +62,8 @@ class VicidialWebhookController(http.Controller):
             # Stage = request.env['crm.stage'].sudo()
             # new_stage = Stage.search([('name', '=', 'New')], limit=1)
             # stage_id = new_stage.id if new_stage else False
-            company = request.env["res.company"].sudo().browse(2)
-            company_id = company.id if company.exists() else False  # ID for Many2one
+            # company = request.env["res.company"].sudo().browse(2)
+            # company_id = company.id if company.exists() else False  # ID for Many2one
             _logger.info("Company id si %s", company.name)
 
             # 3. Iterate and create records
