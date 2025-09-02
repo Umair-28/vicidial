@@ -34,7 +34,7 @@ class CrmLead(models.Model):
     extension = fields.Char(string="Extension")
     user = fields.Char(string="User")
     vendor_lead_code = fields.Char(string="Vendor Lead Code")
-    source_id = fields.Char(string="Source ID")
+    source_id = fields.Integer(string="Source ID")
     list_id = fields.Char(string="List ID")
     gmt_offset_now = fields.Float(string="GMT Offset Now")
     called_since_last_reset = fields.Boolean(string="Called Since Last Reset")
