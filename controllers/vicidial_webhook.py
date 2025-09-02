@@ -62,6 +62,8 @@ class VicidialWebhookController(http.Controller):
             if not default_stage:
                 default_stage = request.env['crm.stage'].sudo().create({'name': 'New'})
 
+            _logger.info("Default stage is %s", default_stage)    
+
             # 3. Iterate and create records
             for lead in leads:
                 # Correctly parse the datetime fields
@@ -114,6 +116,8 @@ class VicidialWebhookController(http.Controller):
                     "companyName": "K N K TRADERS",
                     "stage_id": default_stage.id,
                 }
+
+                _logger.info("Final vals for lead creation/update: %s", vals)
 
                 Lead = request.env["vicidial.lead"].sudo()
                 existing_lead = Lead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
