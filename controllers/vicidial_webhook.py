@@ -1,7 +1,7 @@
-from odoo import http
-from odoo.http import request
 import json
 import logging
+from odoo import http
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
@@ -33,8 +33,13 @@ class VicidialWebhookController(http.Controller):
         try:
             _logger.info("✅ API HITTED......")
 
-            # 1. Get JSON payload directly
-            data = request.jsonrequest
+            # 1. Parse JSON payload safely
+            try:
+                raw_body = request.httprequest.data  # raw request body
+                data = json.loads(raw_body.decode("utf-8")) if raw_body else {}
+            except Exception as parse_err:
+                _logger.error("❌ Failed to parse JSON: %s", str(parse_err))
+                return {"status": "error", "message": "Invalid JSON payload"}
 
             if not data:
                 return {"status": "error", "message": "No data received"}
