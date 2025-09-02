@@ -31,8 +31,6 @@ export class LeadAutoRefreshMany2Many extends Component {
   }
 }
 
-// registry.category('fields').add('lead_auto_refresh_m2m', LeadAutoRefreshMany2Many);
-
 // ---------------- Table Renderer ----------------
 
 const renderer = (item) => `
@@ -61,8 +59,6 @@ const renderer = (item) => `
 // ---------------- Modal Logic ----------------
 
 async function showModalWithLeadData(leadId) {
-  console.log("lead issssssssssssss ", leadId);
-
   try {
     const env = owl.Component.env;
     const actionService = env.services.action;
@@ -79,29 +75,49 @@ async function showModalWithLeadData(leadId) {
       },
     });
 
-    // Use recursive retry to wait for field to appear
     const waitForFieldAndSetValue = () => {
       const select = document.querySelector("#services_0");
-
       if (select) {
         select.value = "false";
         select.dispatchEvent(new Event("change", { bubbles: true }));
         console.info("✅ 'services' field forcibly reset to 'false'");
       } else {
         console.warn("⏳ Waiting for services field...");
-        setTimeout(waitForFieldAndSetValue, 100); // keep retrying every 100ms
+        setTimeout(waitForFieldAndSetValue, 100);
       }
     };
-
     waitForFieldAndSetValue();
+
   } catch (error) {
     console.error("[lead_modal] Error loading form modal:", error);
   }
 }
 
-async function openCustomModal(leadId) {
+// 🎯 FIX: This function now correctly fetches the CRM Lead ID
+async function openCustomModal(vicidialLeadId) {
   try {
-    await showModalWithLeadData(leadId);
+    const orm = owl.Component.env.services.orm;
+    
+    // Read the crm_lead_id from the vicidial.lead record
+    const vicidialLeadData = await orm.searchRead(
+      'vicidial.lead', 
+      [['id', '=', parseInt(vicidialLeadId)]], 
+      ['crm_lead_id']
+    );
+
+    // Check if the record was found and if it has a linked crm.lead
+    if (vicidialLeadData.length === 0 || !vicidialLeadData[0].crm_lead_id) {
+        console.error("No corresponding CRM lead found or link is missing.");
+        alert("This lead cannot be opened in CRM. The corresponding record is missing.");
+        return;
+    }
+    
+    // Extract the integer ID from the Many2one field's array [ID, name]
+    const crmLeadId = vicidialLeadData[0].crm_lead_id[0];
+
+    // Proceed with opening the form using the correct res_model and ID
+    await showModalWithLeadData(crmLeadId);
+
   } catch (err) {
     console.error("[modal] Failed to open lead modal:", err);
   }
@@ -110,13 +126,13 @@ async function openCustomModal(leadId) {
 document.addEventListener("click", async function (e) {
   const isDeleteBtn = e.target.closest(".o_list_record_remove [name='delete']");
 
-  // 🚫 Skip row click if delete button is clicked
   if (!isDeleteBtn) {
     const row = e.target.closest(".o_data_row");
     if (row && row.dataset.id) {
       const rawId = row.dataset.id;
       const leadId = rawId.replace("datapoint_", "");
-      openCustomModal(leadId);
+      // 🎯 FIX: Call the new, corrected function
+      await openCustomModal(leadId); 
       return;
     }
   }
@@ -135,7 +151,7 @@ document.addEventListener("click", async function (e) {
       await orm.call("crm.lead", "unlink", [[parseInt(leadId)]]);
       console.log(`[lead_auto_refresh] Lead ${leadId} deleted successfully`);
 
-      previousRenderedHTML = ""; // trigger UI refresh
+      previousRenderedHTML = "";
     } catch (err) {
       console.error(`[lead_auto_refresh] Failed to delete lead ${leadId}`, err);
       alert("Failed to delete lead. Check server logs.");
@@ -158,7 +174,6 @@ const interval = setInterval(async () => {
     const { leads } = await res.json();
     console.log("leads IDS are ", leads.length, leads);
 
-    // Fetch the stage names and their IDs using searchRead
     const stages = await owl.Component.env.services.orm.searchRead(
       "crm.stage",
       [],
@@ -167,7 +182,6 @@ const interval = setInterval(async () => {
     const stageMap = {};
     stages.forEach((s) => (stageMap[s.id] = s.name));
 
-    // Enrich the lead data with stage names
     const enrichedLeads = leads.map((lead) => ({
       ...lead,
       stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || "New" },
@@ -188,8 +202,199 @@ const interval = setInterval(async () => {
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
-
 }, 5000);
+// /** @odoo-module **/
+
+// import { Component, onMounted, onWillUnmount, xml } from "@odoo/owl";
+// import { registry } from "@web/core/registry";
+// import { useService } from "@web/core/utils/hooks";
+// import { Dialog } from "@web/core/dialog/dialog";
+
+// console.log("[VICIDIAL] Loading custom_iframe_autoload.js module...");
+
+// // ---------------- Widget Class ----------------
+
+// export class LeadAutoRefreshMany2Many extends Component {
+//   static template = xml`
+//     <div class="o_field_widget">
+//       <span>Auto-refresh active</span>
+//     </div>
+//   `;
+
+//   setup() {}
+
+//   reloadField() {
+//     console.log("[lead_auto_refresh_m2m] Reloading field...");
+//     try {
+//       if (this.env && this.env.model) {
+//         this.env.model.load();
+//         console.log("[lead_auto_refresh_m2m] Field reloaded successfully");
+//       }
+//     } catch (error) {
+//       console.error("[lead_auto_refresh_m2m] Error reloading field:", error);
+//     }
+//   }
+// }
+
+// // registry.category('fields').add('lead_auto_refresh_m2m', LeadAutoRefreshMany2Many);
+
+// // ---------------- Table Renderer ----------------
+
+// const renderer = (item) => `
+// <tr class="o_data_row" data-id="datapoint_${item.id}">
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
+//     item.first_name || item.opportunity || item.comments || ""
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${
+//     item.companyName || "K N K TRADERS"
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${
+//     item.phone_number || item.alt_phone || ""
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${
+//     item.stage_id ? item.stage_id.name : "New"
+//   }</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
+//     item.user
+//   }</td>
+//   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
+//     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
+//   </td>
+// </tr>
+// `;
+
+// // ---------------- Modal Logic ----------------
+
+// async function showModalWithLeadData(leadId) {
+//   console.log("lead issssssssssssss ", leadId);
+
+//   try {
+//     const env = owl.Component.env;
+//     const actionService = env.services.action;
+
+//     await actionService.doAction({
+//       type: "ir.actions.act_window",
+//       res_model: "crm.lead",
+//       res_id: parseInt(leadId),
+//       views: [[false, "form"]],
+//       target: "new",
+//       fullscreen: true,
+//       context: {
+//         default_services: "false",
+//       },
+//     });
+
+//     // Use recursive retry to wait for field to appear
+//     const waitForFieldAndSetValue = () => {
+//       const select = document.querySelector("#services_0");
+
+//       if (select) {
+//         select.value = "false";
+//         select.dispatchEvent(new Event("change", { bubbles: true }));
+//         console.info("✅ 'services' field forcibly reset to 'false'");
+//       } else {
+//         console.warn("⏳ Waiting for services field...");
+//         setTimeout(waitForFieldAndSetValue, 100); // keep retrying every 100ms
+//       }
+//     };
+
+//     waitForFieldAndSetValue();
+//   } catch (error) {
+//     console.error("[lead_modal] Error loading form modal:", error);
+//   }
+// }
+
+// async function openCustomModal(leadId) {
+//   try {
+//     await showModalWithLeadData(leadId);
+//   } catch (err) {
+//     console.error("[modal] Failed to open lead modal:", err);
+//   }
+// }
+
+// document.addEventListener("click", async function (e) {
+//   const isDeleteBtn = e.target.closest(".o_list_record_remove [name='delete']");
+
+//   // 🚫 Skip row click if delete button is clicked
+//   if (!isDeleteBtn) {
+//     const row = e.target.closest(".o_data_row");
+//     if (row && row.dataset.id) {
+//       const rawId = row.dataset.id;
+//       const leadId = rawId.replace("datapoint_", "");
+//       openCustomModal(leadId);
+//       return;
+//     }
+//   }
+
+//   // ✅ Delete functionality
+//   const row = e.target.closest(".o_data_row");
+//   if (isDeleteBtn && row && row.dataset.id) {
+//     const leadId = row.dataset.id.replace("datapoint_", "");
+//     const confirmDelete = confirm("Are you sure you want to delete this lead?");
+//     if (!confirmDelete) return;
+
+//     try {
+//       const env = owl.Component.env;
+//       const orm = env.services.orm;
+//       removeItem(parseInt(leadId));
+//       await orm.call("crm.lead", "unlink", [[parseInt(leadId)]]);
+//       console.log(`[lead_auto_refresh] Lead ${leadId} deleted successfully`);
+
+//       previousRenderedHTML = ""; // trigger UI refresh
+//     } catch (err) {
+//       console.error(`[lead_auto_refresh] Failed to delete lead ${leadId}`, err);
+//       alert("Failed to delete lead. Check server logs.");
+//     }
+//   }
+// });
+
+// // ---------------- Polling Refresh ----------------
+
+// let previousRenderedHTML = "";
+
+// const interval = setInterval(async () => {
+//   const leadIdsTable = document.querySelector("[name=lead_ids]");
+//   if (!leadIdsTable) return;
+
+//   try {
+//     const baseUrl = `${window.location.protocol}//${window.location.host}`;
+//     const res = await fetch(`${baseUrl}/vici/iframe/session`);
+
+//     const { leads } = await res.json();
+//     console.log("leads IDS are ", leads.length, leads);
+
+//     // Fetch the stage names and their IDs using searchRead
+//     const stages = await owl.Component.env.services.orm.searchRead(
+//       "crm.stage",
+//       [],
+//       ["name"]
+//     );
+//     const stageMap = {};
+//     stages.forEach((s) => (stageMap[s.id] = s.name));
+
+//     // Enrich the lead data with stage names
+//     const enrichedLeads = leads.map((lead) => ({
+//       ...lead,
+//       stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || "New" },
+//     }));
+
+//     const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
+
+//     if (newRenderedHTML !== previousRenderedHTML) {
+//       console.log("[lead_auto_refresh] UI updated due to change...");
+//       const tbody = leadIdsTable.querySelector("tbody");
+//       if (tbody) {
+//         tbody.innerHTML = newRenderedHTML;
+//         previousRenderedHTML = newRenderedHTML;
+//       }
+//     } else {
+//       console.log("[lead_auto_refresh] No update needed.");
+//     }
+//   } catch (error) {
+//     console.error("[lead_auto_refresh] Fetch/render error:", error);
+//   }
+
+// }, 5000);
 
 // /** @odoo-module **/
 
