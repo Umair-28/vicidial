@@ -156,15 +156,19 @@ const interval = setInterval(async () => {
     const { leads } = await res.json();
     console.log("leads IDS are ", leads.length, leads);
 
-    // Fetch the stage names for the renderer
-    const stages = await owl.Component.env.services.orm.read_group('crm.stage', [], ['name'], []);
+    // Fetch the stage names and their IDs using searchRead
+    const stages = await owl.Component.env.services.orm.searchRead(
+      "crm.stage",
+      [],
+      ["name"]
+    );
     const stageMap = {};
-    stages.forEach(s => stageMap[s.id] = s.name);
+    stages.forEach((s) => (stageMap[s.id] = s.name));
 
     // Enrich the lead data with stage names
-    const enrichedLeads = leads.map(lead => ({
+    const enrichedLeads = leads.map((lead) => ({
       ...lead,
-      stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || 'New' }
+      stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || "New" },
     }));
 
     const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
@@ -182,6 +186,40 @@ const interval = setInterval(async () => {
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
+
+  // try {
+  //   const baseUrl = `${window.location.protocol}//${window.location.host}`;
+  //   const res = await fetch(`${baseUrl}/vici/iframe/session`);
+
+  //   const { leads } = await res.json();
+  //   console.log("leads IDS are ", leads.length, leads);
+
+  //   // Fetch the stage names for the renderer
+  //   const stages = await owl.Component.env.services.orm.read_group('crm.stage', [], ['name'], []);
+  //   const stageMap = {};
+  //   stages.forEach(s => stageMap[s.id] = s.name);
+
+  //   // Enrich the lead data with stage names
+  //   const enrichedLeads = leads.map(lead => ({
+  //     ...lead,
+  //     stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || 'New' }
+  //   }));
+
+  //   const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
+
+  //   if (newRenderedHTML !== previousRenderedHTML) {
+  //     console.log("[lead_auto_refresh] UI updated due to change...");
+  //     const tbody = leadIdsTable.querySelector("tbody");
+  //     if (tbody) {
+  //       tbody.innerHTML = newRenderedHTML;
+  //       previousRenderedHTML = newRenderedHTML;
+  //     }
+  //   } else {
+  //     console.log("[lead_auto_refresh] No update needed.");
+  //   }
+  // } catch (error) {
+  //   console.error("[lead_auto_refresh] Fetch/render error:", error);
+  // }
 }, 5000);
 
 // /** @odoo-module **/
