@@ -415,48 +415,84 @@ class VicidialWebhookController(http.Controller):
 
             # 1. Fetch leads from vicidial.lead model
             leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)])
+            _logger.info("Found %d leads for extension %s", len(leads), extension)
 
             leads_data = []
             for lead in leads:
-                leads_data.append({
-                    "province": lead.province or "",
-                    "last_name": lead.last_name or "",
-                    "alt_phone": lead.alt_phone or "",
-                    "phone_code": lead.phone_code or "",
-                    "last_local_call_time": lead.last_local_call_time.strftime('%Y-%m-%d %H:%M:%S') if lead.last_local_call_time else "",
-                    "rank": lead.rank or 0,
-                    "postal_code": lead.postal_code or "",
-                    "country_code": lead.country_code or "",
-                    "owner": lead.owner or "",
-                    "middle_initial": lead.middle_initial or "",
-                    "vendor_lead_code": lead.vendor_lead_code or "",
-                    "first_name": lead.first_name or "",
-                    "title": lead.title or "",
-                    "comments": lead.comments or "",
-                    "gmt_offset_now": lead.gmt_offset_now or 0.0,
-                    "state": lead.state or "",
-                    "date_of_birth": lead.date_of_birth.strftime('%Y-%m-%d') if lead.date_of_birth else None,
-                    "entry_date": lead.entry_date.strftime('%Y-%m-%d %H:%M:%S') if lead.entry_date else "",
-                    "list_id": lead.list_id or "",
-                    "phone_number": lead.phone_number or "",
-                    "email": lead.email or "",
-                    "status": lead.status or "",
-                    "called_since_last_reset": lead.called_since_last_reset or "",
-                    "city": lead.city or "",
-                    "address1": lead.address1 or "",
-                    "address2": lead.address2 or "",
-                    "address3": lead.address3 or "",
-                    "user": lead.user or "",
-                    "entry_list_id": lead.entry_list_id or "",
-                    "lead_id": lead.lead_id or "",
-                    "gender": lead.gender or "",
-                    "called_count": lead.called_count or 0,
-                    "modify_date": lead.modify_date.strftime('%Y-%m-%d %H:%M:%S') if lead.modify_date else "",
-                    "source_id": lead.source_id or "",
-                    "security_phrase": lead.security_phrase or "",
-                    "extension": lead.extension or "",
-                    "agent_user": lead.agent_user or "",
-                })
+                try:
+                    # 🎯 CRITICAL: Get CRM lead information for proper linking
+                    crm_lead_id = None
+                    stage_id = None
+                    stage_name = "New"
+                    
+                    if lead.crm_lead_id:
+                        crm_lead_id = lead.crm_lead_id.id
+                        if lead.crm_lead_id.stage_id:
+                            stage_id = lead.crm_lead_id.stage_id.id
+                            stage_name = lead.crm_lead_id.stage_id.name
+                    
+                    # If no stage from CRM lead, get default
+                    if not stage_id:
+                        default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
+                        if default_stage:
+                            stage_id = default_stage.id
+                            stage_name = default_stage.name
+
+                    lead_data = {
+                        # 🎯 CRITICAL FIELDS for JavaScript functionality
+                        "id": lead.id,  # This is the Vicidial lead ID that JavaScript will use
+                        "crm_lead_id": crm_lead_id,  # Link to CRM lead
+                        "stage_id": stage_id,
+                        "stage_name": stage_name,
+                        "companyName": "K N K TRADERS",  # Required by renderer
+                        
+                        # All your existing fields
+                        "province": lead.province or "",
+                        "last_name": lead.last_name or "",
+                        "alt_phone": lead.alt_phone or "",
+                        "phone_code": lead.phone_code or "",
+                        "last_local_call_time": lead.last_local_call_time.strftime('%Y-%m-%d %H:%M:%S') if lead.last_local_call_time else "",
+                        "rank": lead.rank or 0,
+                        "postal_code": lead.postal_code or "",
+                        "country_code": lead.country_code or "",
+                        "owner": lead.owner or "",
+                        "middle_initial": lead.middle_initial or "",
+                        "vendor_lead_code": lead.vendor_lead_code or "",
+                        "first_name": lead.first_name or "",
+                        "title": lead.title or "",
+                        "comments": lead.comments or "",
+                        "gmt_offset_now": lead.gmt_offset_now or 0.0,
+                        "state": lead.state or "",
+                        "date_of_birth": lead.date_of_birth.strftime('%Y-%m-%d') if lead.date_of_birth else None,
+                        "entry_date": lead.entry_date.strftime('%Y-%m-%d %H:%M:%S') if lead.entry_date else "",
+                        "list_id": lead.list_id or "",
+                        "phone_number": lead.phone_number or "",
+                        "email": lead.email or "",
+                        "status": lead.status or "",
+                        "called_since_last_reset": lead.called_since_last_reset or "",
+                        "city": lead.city or "",
+                        "address1": lead.address1 or "",
+                        "address2": lead.address2 or "",
+                        "address3": lead.address3 or "",
+                        "user": lead.user or "",
+                        "entry_list_id": lead.entry_list_id or "",
+                        "lead_id": lead.lead_id or "",  # This is the external Vicidial system ID
+                        "gender": lead.gender or "",
+                        "called_count": lead.called_count or 0,
+                        "modify_date": lead.modify_date.strftime('%Y-%m-%d %H:%M:%S') if lead.modify_date else "",
+                        "source_id": lead.source_id or "",
+                        "security_phrase": lead.security_phrase or "",
+                        "extension": lead.extension or "",
+                        "agent_user": lead.agent_user or "",
+                    }
+                    
+                    leads_data.append(lead_data)
+                    
+                except Exception as lead_error:
+                    _logger.error("Error processing lead ID %s: %s", lead.id, str(lead_error))
+                    continue
+
+            _logger.info("Successfully processed %d leads", len(leads_data))
 
             return http.Response(
                 json.dumps({
@@ -469,6 +505,7 @@ class VicidialWebhookController(http.Controller):
             )
 
         except Exception as e:
+            _logger.error("Error in get_iframe_data: %s", str(e))
             return http.Response(
                 json.dumps({'status': 'error', 'message': str(e)}),
                 content_type='application/json'

@@ -58,15 +58,17 @@ const renderer = (item) => `
 
 // ---------------- Modal Logic ----------------
 
-async function showModalWithLeadData(leadId) {
+async function showModalWithLeadData(crmLeadId) {
   try {
+    console.log("🎯 [showModalWithLeadData] Opening CRM lead ID:", crmLeadId);
+
     const env = owl.Component.env;
     const actionService = env.services.action;
 
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(leadId),
+      res_id: parseInt(crmLeadId),
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
@@ -75,56 +77,112 @@ async function showModalWithLeadData(leadId) {
       },
     });
 
-    const waitForFieldAndSetValue = () => {
-      const select = document.querySelector("#services_0");
-      if (select) {
-        select.value = "false";
-        select.dispatchEvent(new Event("change", { bubbles: true }));
-        console.info("✅ 'services' field forcibly reset to 'false'");
-      } else {
-        console.warn("⏳ Waiting for services field...");
-        setTimeout(waitForFieldAndSetValue, 100);
-      }
-    };
-    waitForFieldAndSetValue();
+    console.log("✅ [showModalWithLeadData] Modal opened successfully");
 
+    // Optional: Set default field values after modal loads
+    setTimeout(() => {
+      const waitForFieldAndSetValue = () => {
+        const select = document.querySelector("#services_0");
+        if (select) {
+          select.value = "false";
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          console.info("✅ Services field reset to 'false'");
+        }
+      };
+      waitForFieldAndSetValue();
+    }, 500);
   } catch (error) {
-    console.error("[lead_modal] Error loading form modal:", error);
+    console.error("❌ [showModalWithLeadData] Error:", error);
+    alert("Failed to open lead modal: " + error.message);
   }
 }
 
 // 🎯 FIX: This function now correctly fetches the CRM Lead ID
 // Corrected JavaScript function
+
 async function openCustomModal(vicidialLeadId) {
-  console.log("viciDialLeadId is ", vicidialLeadId);
-  
+  console.log(
+    "🎯 [openCustomModal] Starting with vicidialLeadId:",
+    vicidialLeadId
+  );
+
   try {
     const orm = owl.Component.env.services.orm;
-    
-    // 🎯 FIX: Search the crm.lead model directly using the vicidial_lead_id field
-    const crmLeadData = await orm.searchRead(
-      'crm.lead', 
-      [['vicidial_lead_id', '=', parseInt(vicidialLeadId)]], 
-      ['id']
+
+    // Strategy 1: Search CRM lead using vicidial_lead_id field
+    console.log(
+      "🔍 [openCustomModal] Searching crm.lead with vicidial_lead_id =",
+      vicidialLeadId
     );
 
-    console.log("crm lead data is ", crmLeadData);
-    
-    // Check if the record was found
-    if (crmLeadData.length === 0) {
-        console.error("No corresponding CRM lead found for this Vicidial lead ID.");
-        alert("This lead cannot be opened in CRM. The corresponding record is missing or deleted.");
-        return;
-    }
-    
-    // Extract the integer ID of the CRM lead
-    const crmLeadId = crmLeadData[0].id;
-    console.log("crm lead ID to open is ", crmLeadId);
-    
-    await showModalWithLeadData(crmLeadId);
+    const crmLeadData = await orm.searchRead(
+      "crm.lead",
+      [["vicidial_lead_id", "=", parseInt(vicidialLeadId)]],
+      ["id", "name", "vicidial_lead_id"]
+    );
 
+    console.log("📊 [openCustomModal] CRM lead search result:", crmLeadData);
+
+    if (crmLeadData.length > 0) {
+      const crmLeadId = crmLeadData[0].id;
+      console.log("✅ [openCustomModal] Found CRM lead ID:", crmLeadId);
+      await showModalWithLeadData(crmLeadId);
+      return;
+    }
+
+    // Strategy 2: Direct lookup via vicidial.lead -> crm_lead_id
+    console.log("🔍 [openCustomModal] Strategy 2: Direct vicidial lookup");
+
+    const vicidialLeadData = await orm.searchRead(
+      "vicidial.lead",
+      [["id", "=", parseInt(vicidialLeadId)]],
+      ["id", "crm_lead_id", "first_name", "last_name"]
+    );
+
+    console.log("📊 [openCustomModal] Vicidial lead data:", vicidialLeadData);
+
+    if (vicidialLeadData.length > 0 && vicidialLeadData[0].crm_lead_id) {
+      const crmLeadId = Array.isArray(vicidialLeadData[0].crm_lead_id)
+        ? vicidialLeadData[0].crm_lead_id[0]
+        : vicidialLeadData[0].crm_lead_id;
+
+      console.log(
+        "✅ [openCustomModal] Found CRM lead ID via direct lookup:",
+        crmLeadId
+      );
+      await showModalWithLeadData(crmLeadId);
+      return;
+    }
+
+    // If we reach here, something is wrong
+    console.error(
+      "❌ [openCustomModal] No CRM lead found for vicidial ID:",
+      vicidialLeadId
+    );
+
+    // Debug: Check what's actually in the database
+    const allCrmLeads = await orm.searchRead(
+      "crm.lead",
+      [],
+      ["id", "name", "vicidial_lead_id"],
+      { limit: 5 }
+    );
+    const allVicidialLeads = await orm.searchRead(
+      "vicidial.lead",
+      [],
+      ["id", "crm_lead_id", "first_name"],
+      { limit: 5 }
+    );
+
+    console.log("🔍 [DEBUG] Sample CRM leads:", allCrmLeads);
+    console.log("🔍 [DEBUG] Sample Vicidial leads:", allVicidialLeads);
+
+    alert(
+      `Lead cannot be opened in CRM.\nVicidial Lead ID: ${vicidialLeadId}\nCheck browser console for debug info.`
+    );
   } catch (err) {
-    console.error("[modal] Failed to open lead modal:", err);
+    console.error("❌ [openCustomModal] Critical error:", err);
+    alert("Error opening lead modal: " + err.message);
   }
 }
 
@@ -134,10 +192,20 @@ document.addEventListener("click", async function (e) {
   if (!isDeleteBtn) {
     const row = e.target.closest(".o_data_row");
     if (row && row.dataset.id) {
+      console.log("🖱️ [click] Row clicked with dataset:", row.dataset);
+
       const rawId = row.dataset.id;
-      const leadId = rawId.replace("datapoint_", "");
-      // 🎯 FIX: Call the new, corrected function
-      await openCustomModal(leadId); 
+      const vicidialLeadId = rawId.replace("datapoint_", "");
+
+      console.log("🎯 [click] Extracted vicidialLeadId:", vicidialLeadId);
+
+      if (!vicidialLeadId || vicidialLeadId === "undefined") {
+        console.error("❌ [click] Invalid vicidial lead ID");
+        alert("Invalid lead ID. Cannot open modal.");
+        return;
+      }
+
+      await openCustomModal(vicidialLeadId);
       return;
     }
   }
