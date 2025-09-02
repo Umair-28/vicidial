@@ -219,96 +219,145 @@ class VicidialWebhookController(http.Controller):
                 request.session['iframe_id'] = None
         return {'status': 'deleted'}
     
+    # @http.route('/vici/iframe/session', type='http', auth='user', methods=['GET'], csrf=False)
+    # def get_iframe_data(self, **kwargs):
+    #     try:
+    #         sip_exten = kwargs.get('sip_exten')
+    #         user_id = kwargs.get('user_id')
+    #         # _logger.info("sip_exten %s", sip_exten)
+    #         # _logger.info("userID %s" , user_id)
+    #         # _logger.info("env user ID %s", request.env.user.id)
+    #         # _logger.info("env user vicidial %s", request.env.user.vicidial_extension)
+
+    #         domain = []
+    #         if user_id:
+    #             domain.append(('id', '=', int(user_id)))
+    #         elif sip_exten:
+    #             domain.append(('vicidial_extension', '=', str(sip_exten)))
+    #         else:
+    #             domain.append(('id', '=', request.env.user.id))
+    #         # _logger.info("domain....?? %s", domain)
+    #         user = request.env['res.users'].sudo().search(domain, limit=1)
+    #         # _logger.info("user id >>> %s",user.id)
+    #         # _logger.info("user vicidial_entension is  >>> %s",user.vicidial_extension)
+
+    #         if not user:
+    #             return http.Response(
+    #                 json.dumps({'status': 'error', 'message': 'User not found'}),
+    #                 content_type='application/json'
+    #             )
+    #         iframe = request.env['custom.iframe'].sudo().search([
+    #             ('user_id', '=', user.id)
+    #         ], limit=1)
+    #         if not iframe:
+    #             return http.Response(
+    #                 json.dumps({'status': 'error', 'message': 'No iframe session found'}),
+    #                 content_type='application/json'
+    #             )
+    #         leads_data = []
+    #         for lead in iframe.lead_ids:
+    #             # Safely get partner name
+    #             partner_name = None
+    #             if hasattr(lead, 'partner_name') and lead.partner_name:
+    #                 if hasattr(lead.partner_name, 'name'):
+    #                     partner_name = lead.partner_name.name
+    #                 else:
+    #                     partner_name = str(lead.partner_name)
+                
+    #             # Safely get stage name
+    #             stage_name = None
+    #             if hasattr(lead, 'stage_id') and lead.stage_id:
+    #                 if hasattr(lead.stage_id, 'name'):
+    #                     stage_name = lead.stage_id.name
+    #                 else:
+    #                     stage_name = str(lead.stage_id)
+                
+    #             # Safely get user name  
+    #             user_name = None
+    #             if hasattr(lead, 'user_id') and lead.user_id:
+    #                 if hasattr(lead.user_id, 'name'):
+    #                     user_name = lead.user_id.name
+    #                 else:
+    #                     user_name = str(lead.user_id)
+                
+    #             # Safely get company name
+    #             company_name = None
+    #             if hasattr(lead, 'company_id') and lead.company_id:
+    #                 if hasattr(lead.company_id, 'name'):
+    #                     company_name = lead.company_id.name
+    #                 else:
+    #                     company_name = str(lead.company_id)
+
+    #             leads_data.append({
+    #                 'id': lead.id,
+    #                 'opportunity': lead.name or '',
+    #                 'company_name': partner_name,
+    #                 'phone': lead.phone or '',
+    #                 'email': lead.email_from or '',
+    #                 'stage': stage_name,
+    #                 'sales_person': user_name,
+    #                 'priority': getattr(lead, 'priority', ''),
+    #                 'revenue': getattr(lead, 'expected_revenue', 0),
+    #                 'create_date': lead.create_date.strftime('%Y-%m-%d %H:%M:%S') if lead.create_date else '',
+    #                 'company_id': company_name,
+    #                 'iframe_id': lead.iframe_id.id if hasattr(lead, 'iframe_id') and lead.iframe_id else None,
+    #             })
+    #         # _logger.info("leads data is %s", leads_data)
+    #         return http.Response(
+    #             json.dumps({
+    #                 'status': 'success',
+    #                 'iframe_id': iframe.id,
+    #                 'lead_ids': leads_data,
+    #                 'user': user.name
+    #             }),
+    #             content_type='application/json'
+    #         )
+
+    #     except Exception as e:
+    #         return http.Response(
+    #             json.dumps({'status': 'error', 'message': str(e)}),
+    #             content_type='application/json'
+    #         )
+
     @http.route('/vici/iframe/session', type='http', auth='user', methods=['GET'], csrf=False)
     def get_iframe_data(self, **kwargs):
         try:
-            sip_exten = kwargs.get('sip_exten')
-            user_id = kwargs.get('user_id')
-            # _logger.info("sip_exten %s", sip_exten)
-            # _logger.info("userID %s" , user_id)
-            # _logger.info("env user ID %s", request.env.user.id)
-            # _logger.info("env user vicidial %s", request.env.user.vicidial_extension)
+            # ✅ Hardcoded extension (later replace with kwargs.get('sip_exten'))
+            extension = "SIP/8011"
 
-            domain = []
-            if user_id:
-                domain.append(('id', '=', int(user_id)))
-            elif sip_exten:
-                domain.append(('vicidial_extension', '=', str(sip_exten)))
-            else:
-                domain.append(('id', '=', request.env.user.id))
-            # _logger.info("domain....?? %s", domain)
-            user = request.env['res.users'].sudo().search(domain, limit=1)
-            # _logger.info("user id >>> %s",user.id)
-            # _logger.info("user vicidial_entension is  >>> %s",user.vicidial_extension)
+            # 1. Fetch leads from vicidial.lead model
+            leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)])
 
-            if not user:
-                return http.Response(
-                    json.dumps({'status': 'error', 'message': 'User not found'}),
-                    content_type='application/json'
-                )
-            iframe = request.env['custom.iframe'].sudo().search([
-                ('user_id', '=', user.id)
-            ], limit=1)
-            if not iframe:
-                return http.Response(
-                    json.dumps({'status': 'error', 'message': 'No iframe session found'}),
-                    content_type='application/json'
-                )
             leads_data = []
-            for lead in iframe.lead_ids:
-                # Safely get partner name
-                partner_name = None
-                if hasattr(lead, 'partner_name') and lead.partner_name:
-                    if hasattr(lead.partner_name, 'name'):
-                        partner_name = lead.partner_name.name
-                    else:
-                        partner_name = str(lead.partner_name)
-                
-                # Safely get stage name
-                stage_name = None
-                if hasattr(lead, 'stage_id') and lead.stage_id:
-                    if hasattr(lead.stage_id, 'name'):
-                        stage_name = lead.stage_id.name
-                    else:
-                        stage_name = str(lead.stage_id)
-                
-                # Safely get user name  
-                user_name = None
-                if hasattr(lead, 'user_id') and lead.user_id:
-                    if hasattr(lead.user_id, 'name'):
-                        user_name = lead.user_id.name
-                    else:
-                        user_name = str(lead.user_id)
-                
-                # Safely get company name
-                company_name = None
-                if hasattr(lead, 'company_id') and lead.company_id:
-                    if hasattr(lead.company_id, 'name'):
-                        company_name = lead.company_id.name
-                    else:
-                        company_name = str(lead.company_id)
-
+            for lead in leads:
                 leads_data.append({
-                    'id': lead.id,
-                    'opportunity': lead.name or '',
-                    'company_name': partner_name,
-                    'phone': lead.phone or '',
-                    'email': lead.email_from or '',
-                    'stage': stage_name,
-                    'sales_person': user_name,
-                    'priority': getattr(lead, 'priority', ''),
-                    'revenue': getattr(lead, 'expected_revenue', 0),
-                    'create_date': lead.create_date.strftime('%Y-%m-%d %H:%M:%S') if lead.create_date else '',
-                    'company_id': company_name,
-                    'iframe_id': lead.iframe_id.id if hasattr(lead, 'iframe_id') and lead.iframe_id else None,
+                    'lead_id': lead.lead_id,
+                    'status': lead.status or '',
+                    'first_name': lead.first_name or '',
+                    'last_name': lead.last_name or '',
+                    'phone_number': lead.phone_number or '',
+                    'email': lead.email or '',
+                    'address1': lead.address1 or '',
+                    'city': lead.city or '',
+                    'state': lead.state or '',
+                    'province': lead.province or '',
+                    'postal_code': lead.postal_code or '',
+                    'country_code': lead.country_code or '',
+                    'comments': lead.comments or '',
+                    'called_count': lead.called_count or 0,
+                    'last_local_call_time': lead.last_local_call_time.strftime('%Y-%m-%d %H:%M:%S') if lead.last_local_call_time else '',
+                    'entry_date': lead.entry_date.strftime('%Y-%m-%d %H:%M:%S') if lead.entry_date else '',
+                    'modify_date': lead.modify_date.strftime('%Y-%m-%d %H:%M:%S') if lead.modify_date else '',
+                    'extension': lead.extension or '',
+                    'agent_user': lead.agent_user or '',
                 })
-            # _logger.info("leads data is %s", leads_data)
+
             return http.Response(
                 json.dumps({
                     'status': 'success',
-                    'iframe_id': iframe.id,
-                    'lead_ids': leads_data,
-                    'user': user.name
+                    'extension': extension,
+                    'total_leads': len(leads_data),
+                    'leads': leads_data
                 }),
                 content_type='application/json'
             )

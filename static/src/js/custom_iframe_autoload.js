@@ -149,29 +149,33 @@ const interval = setInterval(async () => {
     //   }  `
     // );
 
+    // const res = await fetch(
+    //   `${baseUrl}/vici/iframe/session?sip_exten=${
+    //     document.querySelector("[name=sip_exten]").innerText
+    //       ? document.querySelector("[name=sip_exten]").innerText
+    //       : "55101"
+    //   }  `
+    // );
+
     const res = await fetch(
-      `${baseUrl}/vici/iframe/session?sip_exten=${
-        document.querySelector("[name=sip_exten]").innerText
-          ? document.querySelector("[name=sip_exten]").innerText
-          : "55101"
-      }  `
+      `${baseUrl}/vici/iframe/session`
     );
 
-    const { lead_ids } = await res.json();
-    // console.log("leads IDS are ", lead_ids.lenth);
+    const { leads } = await res.json();
+    console.log("leads IDS are ", leads.lenth, leads);
 
-    const newRenderedHTML = lead_ids.map(renderer).join("\n");
+    // const newRenderedHTML = leads.map(renderer).join("\n");
 
-    if (newRenderedHTML !== previousRenderedHTML) {
-      console.log("[lead_auto_refresh] UI updated due to change...");
-      const tbody = leadIdsTable.querySelector("tbody");
-      if (tbody) {
-        tbody.innerHTML = newRenderedHTML;
-        previousRenderedHTML = newRenderedHTML;
-      }
-    } else {
-      console.log("[lead_auto_refresh] No update needed.");
-    }
+    // if (newRenderedHTML !== previousRenderedHTML) {
+    //   console.log("[lead_auto_refresh] UI updated due to change...");
+    //   const tbody = leadIdsTable.querySelector("tbody");
+    //   if (tbody) {
+    //     tbody.innerHTML = newRenderedHTML;
+    //     previousRenderedHTML = newRenderedHTML;
+    //   }
+    // } else {
+    //   console.log("[lead_auto_refresh] No update needed.");
+    // }
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
