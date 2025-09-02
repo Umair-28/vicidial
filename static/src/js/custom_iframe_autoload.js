@@ -60,7 +60,7 @@ const renderer = (item) => `
 
 // ---------------- Modal Logic ----------------
 
-async function showModalWithLeadData(leadId) {
+async function showModalWithLeadData(leadData) {
   try {
     const env = owl.Component.env;
     const actionService = env.services.action;
