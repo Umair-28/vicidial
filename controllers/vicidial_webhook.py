@@ -136,18 +136,8 @@ class VicidialWebhookController(http.Controller):
                         'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
                         'partner_name': 'K N K TRADERS',
                         'phone': lead.get('phone_number'),
-                        'mobile': lead.get('alt_phone'),
-                        'email': lead.get('email'),
-                        'street': lead.get('address1'),
-                        'street2': lead.get('address2'),
-                        'city': lead.get('city'),
-                        'state_id': False,  # You might want to map this properly
-                        'zip': lead.get('postal_code'),
-                        'country_id': False,  # You might want to map this properly
                         'stage_id': default_stage.id,
                         'description': lead.get('comments'),
-                        'title': lead.get('title'),
-                        # 🎯 CRITICAL: This will be set after vicidial lead creation
                         'vicidial_lead_id': None,  # Will be set below
                     }
                     
