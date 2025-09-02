@@ -65,6 +65,36 @@ async function showModalWithLeadData(leadId) {
     const env = owl.Component.env;
     const actionService = env.services.action;
 
+    const formContext = {
+      default_name: leadData.opportunity || leadData.comments || "",
+      default_contact_name:
+        leadData.first_name && leadData.last_name
+          ? `${leadData.first_name} ${leadData.last_name}`
+          : "",
+      default_partner_name: leadData.company_name || "",
+      default_phone: leadData.phone_number || leadData.alt_phone || "",
+      default_mobile: leadData.alt_phone || "",
+      default_email_from: leadData.email || "",
+      default_street: leadData.address1 || "",
+      default_street2: leadData.address2 || "",
+      default_city: leadData.city || "",
+      default_state_id: leadData.state || "",
+      default_zip: leadData.postal_code || "",
+      default_country_id: leadData.country_code || "",
+      default_description: leadData.comments || "",
+      // Additional custom fields if they exist in your CRM
+      default_title: leadData.title || "",
+      default_date_of_birth: leadData.date_of_birth || "",
+      default_security_phrase: leadData.security_phrase || "",
+      default_vicidial_lead_id: leadData.lead_id || "",
+      default_vendor_lead_code: leadData.vendor_lead_code || "",
+      default_source_id: leadData.source_id || "",
+      default_list_id: leadData.list_id || "",
+      default_called_count: leadData.called_count || 0,
+      default_last_local_call_time: leadData.last_local_call_time || "",
+      default_services: "false",
+    };
+
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
@@ -73,7 +103,7 @@ async function showModalWithLeadData(leadId) {
       target: "new",
       fullscreen: true,
       context: {
-        default_services: "false",
+        formContext,
       },
     });
 
@@ -186,7 +216,6 @@ const interval = setInterval(async () => {
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
-
 }, 5000);
 
 // /** @odoo-module **/
