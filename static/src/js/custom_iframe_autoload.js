@@ -35,32 +35,19 @@ export class LeadAutoRefreshMany2Many extends Component {
 
 // ---------------- Table Renderer ----------------
 
-// const renderer = (item) => `
-// <tr class="o_data_row" data-id="datapoint_${item.id}">
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
-//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.sales_person}</td>
-//   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
-//     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
-//   </td>
-// </tr>
-// `;
-
 const renderer = (item) => `
 <tr class="o_data_row" data-id="datapoint_${item.id}">
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
     item.opportunity || item.comments || ""
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${
-    item.company_name || "K N K TRADERS"
+    item.companyName || "K N K TRADERS"
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${
     item.phone_number || item.alt_phone || ""
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${
-    item.stage_id || "New"
+    item.stage_id ? item.stage_id.name : "New"
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
     item.user
@@ -164,20 +151,23 @@ const interval = setInterval(async () => {
 
   try {
     const baseUrl = `${window.location.protocol}//${window.location.host}`;
-    // const res = await fetch(
-    //   `${baseUrl}/vici/iframe/session?sip_exten=${
-    //     document.querySelector("[name=sip_exten]").innerText
-    //       ? document.querySelector("[name=sip_exten]").innerText
-    //       : "1001"
-    //   }  `
-    // );
-
     const res = await fetch(`${baseUrl}/vici/iframe/session`);
 
     const { leads } = await res.json();
-    // console.log("leads IDS are ", leads.length, leads);
+    console.log("leads IDS are ", leads.length, leads);
 
-    const newRenderedHTML = leads.map(renderer).join("\n");
+    // Fetch the stage names for the renderer
+    const stages = await owl.Component.env.services.orm.read_group('crm.stage', [], ['name'], []);
+    const stageMap = {};
+    stages.forEach(s => stageMap[s.id] = s.name);
+
+    // Enrich the lead data with stage names
+    const enrichedLeads = leads.map(lead => ({
+      ...lead,
+      stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || 'New' }
+    }));
+
+    const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
 
     if (newRenderedHTML !== previousRenderedHTML) {
       console.log("[lead_auto_refresh] UI updated due to change...");
