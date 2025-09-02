@@ -388,6 +388,7 @@ class VicidialWebhookController(http.Controller):
 
             # 1. Fetch leads from vicidial.lead model
             leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)])
+            _logger.info("Leads in session are %s",  leads)
 
             leads_data = []
             for lead in leads:
