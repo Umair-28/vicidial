@@ -33,29 +33,89 @@ class VicidialWebhookController(http.Controller):
         try:
             _logger.info("✅ API HITTED......")
 
-            # 1. Parse JSON payload safely
+            # 1. Parse JSON payload
             try:
-                raw_body = request.httprequest.data  # raw request body
+                raw_body = request.httprequest.data
                 data = json.loads(raw_body.decode("utf-8")) if raw_body else {}
             except Exception as parse_err:
                 _logger.error("❌ Failed to parse JSON: %s", str(parse_err))
                 return {"status": "error", "message": "Invalid JSON payload"}
 
-            if not data:
-                return {"status": "error", "message": "No data received"}
+            if not data or "leads" not in data:
+                return {"status": "error", "message": "No leads found in payload"}
 
-            # 2. Print payload in Odoo logs
-            _logger.info("📩 Received Vicidial payload: %s", json.dumps(data, indent=2))
+            leads = data.get("leads", [])
+            agent = data.get("agent")
+            extension = data.get("extension")
 
-            # 3. Just return payload back as response
+            _logger.info("📩 Processing %s leads for agent=%s, extension=%s",
+                    len(leads), agent, extension)
+
+            created_records = []
+
+            # 2. Iterate and create records
+            for lead in leads:
+                vals = {
+                    "lead_id": str(lead.get("lead_id")),
+                    "status": lead.get("status"),
+                    "entry_date": lead.get("entry_date"),
+                    "modify_date": lead.get("modify_date"),
+                    "agent_user": agent,
+                    "extension": extension,
+                    "user": lead.get("user"),
+                    "vendor_lead_code": lead.get("vendor_lead_code"),
+                    "source_id": lead.get("source_id"),
+                    "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
+                    "gmt_offset_now": lead.get("gmt_offset_now"),
+                    "called_since_last_reset": True if str(lead.get("called_since_last_reset")).upper() in ["Y", "1", "TRUE"] else False,
+
+                    "phone_code": lead.get("phone_code"),
+                    "phone_number": lead.get("phone_number"),
+
+                    "title": lead.get("title"),
+                    "first_name": lead.get("first_name"),
+                    "middle_initial": lead.get("middle_initial"),
+                    "last_name": lead.get("last_name"),
+
+                    "address1": lead.get("address1"),
+                    "address2": lead.get("address2"),
+                    "address3": lead.get("address3"),
+                    "city": lead.get("city"),
+                    "state": lead.get("state"),
+                    "province": lead.get("province"),
+                    "postal_code": lead.get("postal_code"),
+                    "country_code": lead.get("country_code"),
+
+                    "gender": lead.get("gender") if lead.get("gender") in ["M", "F", "O"] else False,
+                    "date_of_birth": lead.get("date_of_birth"),
+
+                    "alt_phone": lead.get("alt_phone"),
+                    "email": lead.get("email"),
+                    "security_phrase": lead.get("security_phrase"),
+                    "comments": lead.get("comments"),
+
+                    "called_count": lead.get("called_count"),
+                    "last_local_call_time": lead.get("last_local_call_time"),
+
+                    "rank": lead.get("rank"),
+                    "owner": lead.get("owner"),
+                    "entry_list_id": str(lead.get("entry_list_id")),
+                }
+
+                rec = request.env["vicidial.lead"].sudo().create(vals)
+                created_records.append(rec.id)
+
+            _logger.info("✅ Successfully saved %s leads", len(created_records))
+
             return {
                 "status": "success",
-                "received_payload": data
+                "created_records": created_records,
+                "message": "{} leads saved".format(len(created_records))
             }
 
         except Exception as e:
             _logger.error("❌ Error in webhook: %s", str(e))
-            return {"status": "error", "message": str(e)}   
+            return {"status": "error", "message": str(e)}  
 
 
     # @http.route('/vici/webhook', type='http', auth='public', methods=['POST', 'GET'], csrf=False)

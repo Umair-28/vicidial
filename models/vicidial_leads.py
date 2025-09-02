@@ -9,6 +9,7 @@ class VicidialLead(models.Model):
     entry_date = fields.Datetime(string="Entry Date")
     modify_date = fields.Datetime(string="Modify Date")
     agent_user = fields.Char(string="Agent User", index=True)
+    extension = fields.Char(string="Extension")
     user = fields.Char(string="User")
     vendor_lead_code = fields.Char(string="Vendor Lead Code")
     source_id = fields.Char(string="Source ID")
