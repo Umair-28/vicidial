@@ -236,7 +236,7 @@ const interval = setInterval(async () => {
     const responseData = await res.json();
     const { leads } = responseData;
     
-    console.log("[polling] Fetched leads count:", leads.length);
+    console.log("[polling] Fetched leads are : ", leads);
 
     if (!leads || leads.length === 0) {
       console.log("[polling] No leads found, clearing table");
