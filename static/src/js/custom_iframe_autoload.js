@@ -50,9 +50,9 @@ export class LeadAutoRefreshMany2Many extends Component {
 
 const renderer = (item) => `
 <tr class="o_data_row" data-id="datapoint_${item.id}">
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity || item.comments}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone_number || item.alt_phone}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.user}</td>
   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
