@@ -121,6 +121,9 @@ class VicidialWebhookController(http.Controller):
                     "companyName": "K N K TRADERS",
                     "stage_id": default_stage.id,
                 }
+
+                VicidialLead = request.env["vicidial.lead"].sudo()
+                existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
                 
                 # Prepare CRM lead values based on 'lead' dictionary
                 crm_vals = {
@@ -130,7 +133,7 @@ class VicidialWebhookController(http.Controller):
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
                     # ✅ THIS IS THE CRITICAL LINE ADDED FOR THE LINK
-                    'vicidial_lead_id': existing_vicidial_lead.id if existing_vicidial_lead else False,
+                    # 'vicidial_lead_id': existing_vicidial_lead.id if existing_vicidial_lead else False,
                 }
                 
                 if not existing_vicidial_lead:
