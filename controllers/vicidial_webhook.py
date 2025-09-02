@@ -105,7 +105,7 @@ class VicidialWebhookController(http.Controller):
                     "rank": lead.get("rank"), 
                     "owner": lead.get("owner"), 
                     "entry_list_id": str(lead.get("entry_list_id")), 
-                    "company_name":company.name,
+                    "company_name":"K N K TRADERS",
                     "stage_id": 1,
                 }
 
