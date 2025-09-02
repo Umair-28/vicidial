@@ -40,7 +40,7 @@ const renderer = (item) => `
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity || item.comments || ''}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name || (item.first_name && item.last_name ? `${item.first_name} ${item.last_name}` : '') || ''}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone_number || item.alt_phone || ''}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage || ''}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage || 1}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.user || ''}</td>
   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
@@ -57,7 +57,7 @@ async function showModalWithLeadData(leadData) {
 
     // Prepare context with lead data for form pre-population
     const formContext = {
-      default_services: "false",
+      default_services: "credit_card",
       // Map VICIDIAL data to CRM lead fields
       default_name: leadData.opportunity || leadData.comments || '',
       default_contact_name: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '',

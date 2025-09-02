@@ -4,6 +4,7 @@ class VicidialLead(models.Model):
     _name = "vicidial.lead"
     _description = "Vicidial Lead Data"
 
+    company_name = fields.Char(string="Company Name")
     lead_id = fields.Char(string="Lead ID", index=True)
     status = fields.Char(string="Status")
     entry_date = fields.Datetime(string="Entry Date")
