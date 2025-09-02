@@ -34,7 +34,7 @@ export class LeadAutoRefreshMany2Many extends Component {
 // ---------------- Table Renderer ----------------
 
 const renderer = (item) => `
-<tr class="o_data_row" data-id="datapoint_${item.id}" data-vicidial-id="${item.crm_lead_id}">
+<tr class="o_data_row" data-id="datapoint_${item.id}" data-vicidial-id="${item.id}">
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
     item.first_name || item.opportunity || item.comments || ""
   }</td>
