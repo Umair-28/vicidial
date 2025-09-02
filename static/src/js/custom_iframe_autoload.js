@@ -182,7 +182,7 @@ async function openCustomModal(vicidialLeadId) {
     );
   } catch (err) {
     console.error("❌ [openCustomModal] Critical error:", err);
-    alert("Error opening lead modal: " + err.message);
+    // alert("Error opening lead modal: " + err.message);
   }
 }
 
