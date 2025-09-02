@@ -94,7 +94,10 @@ async function showModalWithLeadData(leadId) {
 }
 
 // 🎯 FIX: This function now correctly fetches the CRM Lead ID
+// Corrected JavaScript function
 async function openCustomModal(vicidialLeadId) {
+  console.log("viciDialLeadId is ", vicidialLeadId);
+  
   try {
     const orm = owl.Component.env.services.orm;
     
@@ -105,17 +108,26 @@ async function openCustomModal(vicidialLeadId) {
       ['crm_lead_id']
     );
 
-    // Check if the record was found and if it has a linked crm.lead
-    if (vicidialLeadData.length === 0 || !vicidialLeadData[0].crm_lead_id) {
+    console.log("leeeeeeeeeeeeed data is ", vicidialLeadData);
+    
+
+    // ✅ ADDED CHECK: Ensure a record was found before proceeding
+    if (vicidialLeadData.length === 0) {
+        console.error("The Vicidial lead record was not found in the database.");
+        alert("The lead record you clicked on no longer exists. Please refresh the page.");
+        return;
+    }
+
+    // Now proceed with the rest of the original logic
+    if (!vicidialLeadData[0].crm_lead_id) {
         console.error("No corresponding CRM lead found or link is missing.");
         alert("This lead cannot be opened in CRM. The corresponding record is missing.");
         return;
     }
     
-    // Extract the integer ID from the Many2one field's array [ID, name]
     const crmLeadId = vicidialLeadData[0].crm_lead_id[0];
-
-    // Proceed with opening the form using the correct res_model and ID
+    console.log(vicidialLeadData[0].crm_lead_id[0]);
+    
     await showModalWithLeadData(crmLeadId);
 
   } catch (err) {
