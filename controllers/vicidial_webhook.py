@@ -48,18 +48,18 @@ class VicidialWebhookController(http.Controller):
 
             # 2. Handle empty leads -> delete records
             if not leads:
-                _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
+                _logger.warning("⚠️ No leads found in payload. Deleting vicidial records for extension=%s", extension)
                 
-                # 🎯 FIX: Delete both vicidial and linked CRM leads
+                # 🎯 SIMPLE FIX: Only delete vicidial leads
                 vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", extension)])
-                for vici_lead in vicidial_leads:
-                    if vici_lead.crm_lead_id:
-                        vici_lead.crm_lead_id.sudo().unlink()
+                deleted_count = len(vicidial_leads)
                 vicidial_leads.unlink()
+                
+                _logger.info("✅ Deleted %d vicidial leads, CRM leads preserved", deleted_count)
                 
                 return {
                     "status": "success",
-                    "message": "All leads deleted for extension {}".format(extension)
+                    "message": "Deleted {} vicidial leads for extension {}".format(deleted_count, extension)
                 }
 
             _logger.info("📩 Processing %s leads for agent=%s, extension=%s", len(leads), agent, extension)
