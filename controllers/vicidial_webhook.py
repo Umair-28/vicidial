@@ -64,6 +64,7 @@ class VicidialWebhookController(http.Controller):
             stage_id = new_stage.id if new_stage else False
             company = request.env["res.company"].sudo().browse(2)
             company_id = company.id if company.exists() else False  # ID for Many2one
+            _logger.info("Company id si %s", company)
 
             # 3. Iterate and create records
             for lead in leads:
