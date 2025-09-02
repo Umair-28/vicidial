@@ -4,7 +4,7 @@ class VicidialLead(models.Model):
     _name = "vicidial.lead"
     _description = "Vicidial Lead Data"
 
-    stage_id = fields.Integer(string = "Stage")
+    stage_id = fields.Many2one('crm.stage', string="Stage")
     companyName = fields.Char(string="Company Name")
     lead_id = fields.Char(string="Lead ID", index=True)
     status = fields.Char(string="Status")

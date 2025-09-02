@@ -60,7 +60,7 @@ const renderer = (item) => `
     item.phone_number || item.alt_phone || ""
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${
-    item.stage || "New"
+    item.stage_id || "New"
   }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
     item.user
