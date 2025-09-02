@@ -97,31 +97,9 @@ async function showModalWithLeadData(leadId) {
   }
 }
 
-async function openCustomModal(vicidialLeadId) {
+async function openCustomModal(leadId) {
   try {
-    const orm = owl.Component.env.services.orm;
-    
-    // Read the crm_lead_id from the vicidial.lead record
-    const vicidialLeadData = await orm.searchRead(
-      'vicidial.lead', 
-      [['id', '=', parseInt(vicidialLeadId)]], 
-      ['crm_lead_id']
-    );
-
-    // Check if the record was found and if it has a linked crm.lead
-    if (vicidialLeadData.length === 0 || !vicidialLeadData[0].crm_lead_id) {
-        console.error("No corresponding CRM lead found or link is missing.");
-        // Optional: show a user-friendly alert
-        alert("This lead cannot be opened in CRM. The corresponding record is missing.");
-        return;
-    }
-    
-    // Extract the integer ID from the Many2one field's array [ID, name]
-    const crmLeadId = vicidialLeadData[0].crm_lead_id[0];
-
-    // Proceed with opening the form using the correct res_model and ID
-    await showModalWithLeadData(crmLeadId);
-
+    await showModalWithLeadData(leadId);
   } catch (err) {
     console.error("[modal] Failed to open lead modal:", err);
   }
@@ -136,7 +114,7 @@ document.addEventListener("click", async function (e) {
     if (row && row.dataset.id) {
       const rawId = row.dataset.id;
       const leadId = rawId.replace("datapoint_", "");
-      openCustomModal(leadId); // Pass the Vicidial lead ID
+      openCustomModal(leadId);
       return;
     }
   }
@@ -208,6 +186,7 @@ const interval = setInterval(async () => {
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
+
 }, 5000);
 
 // /** @odoo-module **/
