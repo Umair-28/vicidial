@@ -59,6 +59,8 @@ class VicidialWebhookController(http.Controller):
                         len(leads), agent, extension)
 
             created_records = []
+            company = request.env["res.company"].sudo().browse(2)
+            company_name = company.name if company.exists() else False
 
             # 3. Iterate and create records
             for lead in leads:
@@ -99,6 +101,7 @@ class VicidialWebhookController(http.Controller):
                     "rank": lead.get("rank"), 
                     "owner": lead.get("owner"), 
                     "entry_list_id": str(lead.get("entry_list_id")), 
+                    "company_name":company_name
                 }
 
                 Lead = request.env["vicidial.lead"].sudo()
