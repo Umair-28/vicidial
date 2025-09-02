@@ -5,7 +5,7 @@ class VicidialLead(models.Model):
     _description = "Vicidial Lead Data"
 
     stage_id = fields.Integer(string = "Stage")
-    company_name = fields.Char(string="Company Name")
+    companyName = fields.Char(string="Company Name")
     lead_id = fields.Char(string="Lead ID", index=True)
     status = fields.Char(string="Status")
     entry_date = fields.Datetime(string="Entry Date")
