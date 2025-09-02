@@ -36,12 +36,26 @@ export class LeadAutoRefreshMany2Many extends Component {
 // ---------------- Table Renderer ----------------
 
 const renderer = (item) => `
-<tr class="o_data_row" data-id="datapoint_${item.lead_id}" data-full-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity || item.comments || ''}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.companyName || (item.first_name && item.last_name ? `${item.first_name} ${item.last_name}` : '') || ''}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone_number || item.alt_phone || ''}</td>
+<tr class="o_data_row" data-id="datapoint_${
+  item.lead_id
+}" data-full-data='${JSON.stringify(item).replace(/'/g, "&apos;")}'>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${
+    item.opportunity || item.comments || ""
+  }</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${
+    item.companyName ||
+    (item.first_name && item.last_name
+      ? `${item.first_name} ${item.last_name}`
+      : "") ||
+    ""
+  }</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${
+    item.phone_number || item.alt_phone || ""
+  }</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${1}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.user || ''}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${
+    item.user || ""
+  }</td>
   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
   </td>
@@ -57,99 +71,166 @@ async function showModalWithLeadData(leadData) {
 
     // Prepare context with lead data for form pre-population
     const formContext = {
-
-      default_name: leadData.opportunity || leadData.comments || '',
-      default_contact_name: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '',
-      default_partner_name: leadData.company_name || '',
-      default_phone: leadData.phone_number || leadData.alt_phone || '',
-      default_mobile: leadData.alt_phone || '',
-      default_email_from: leadData.email || '',
-      default_street: leadData.address1 || '',
-      default_street2: leadData.address2 || '',
-      default_city: leadData.city || '',
-      default_state_id: leadData.state || '',
-      default_zip: leadData.postal_code || '',
-      default_country_id: leadData.country_code || '',
-      default_description: leadData.comments || '',
+      default_name: leadData.opportunity || leadData.comments || "",
+      default_contact_name:
+        leadData.first_name && leadData.last_name
+          ? `${leadData.first_name} ${leadData.last_name}`
+          : "",
+      default_partner_name: leadData.company_name || "",
+      default_phone: leadData.phone_number || leadData.alt_phone || "",
+      default_mobile: leadData.alt_phone || "",
+      default_email_from: leadData.email || "",
+      default_street: leadData.address1 || "",
+      default_street2: leadData.address2 || "",
+      default_city: leadData.city || "",
+      default_state_id: leadData.state || "",
+      default_zip: leadData.postal_code || "",
+      default_country_id: leadData.country_code || "",
+      default_description: leadData.comments || "",
       // Additional custom fields if they exist in your CRM
-      default_title: leadData.title || '',
-      default_date_of_birth: leadData.date_of_birth || '',
-      default_security_phrase: leadData.security_phrase || '',
-      default_vicidial_lead_id: leadData.lead_id || '',
-      default_vendor_lead_code: leadData.vendor_lead_code || '',
-      default_source_id: leadData.source_id || '',
-      default_list_id: leadData.list_id || '',
+      default_title: leadData.title || "",
+      default_date_of_birth: leadData.date_of_birth || "",
+      default_security_phrase: leadData.security_phrase || "",
+      default_vicidial_lead_id: leadData.lead_id || "",
+      default_vendor_lead_code: leadData.vendor_lead_code || "",
+      default_source_id: leadData.source_id || "",
+      default_list_id: leadData.list_id || "",
       default_called_count: leadData.called_count || 0,
-      default_last_local_call_time: leadData.last_local_call_time || '',
+      default_last_local_call_time: leadData.last_local_call_time || "",
     };
 
     // Create new lead or open existing one
-    const actionConfig = leadData.existing_crm_id ? {
-      type: "ir.actions.act_window",
-      res_model: "crm.lead",
-      res_id: parseInt(leadData.lead_id),
-      views: [[false, "form"]],
-      target: "new",
-      context: formContext,
-    } : {
-      type: "ir.actions.act_window",
-      res_model: "crm.lead",
-      views: [[false, "form"]],
-      target: "new",
-      context: formContext,
-    };
+    const actionConfig = leadData.existing_crm_id
+      ? {
+          type: "ir.actions.act_window",
+          res_model: "crm.lead",
+          res_id: parseInt(leadData.lead_id),
+          views: [[false, "form"]],
+          target: "new",
+          context: formContext,
+        }
+      : {
+          type: "ir.actions.act_window",
+          res_model: "crm.lead",
+          views: [[false, "form"]],
+          target: "new",
+          context: formContext,
+        };
 
     await actionService.doAction(actionConfig);
 
-    // Enhanced field population after modal opens
-    const waitForFieldsAndSetValues = () => {
-      const fieldsToSet = [
-        // { selector: "#services_0", value: "false", type: "select" },
-        { selector: "input[name='name']", value: leadData.opportunity || leadData.comments || '', type: "input" },
-        { selector: "input[name='contact_name']", value: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '', type: "input" },
-        { selector: "input[name='partner_name']", value: leadData.company_name || '', type: "input" },
-        { selector: "input[name='phone']", value: leadData.phone_number || leadData.alt_phone || '', type: "input" },
-        { selector: "input[name='mobile']", value: leadData.alt_phone || '', type: "input" },
-        { selector: "input[name='email_from']", value: leadData.email || '', type: "input" },
-        { selector: "input[name='street']", value: leadData.address1 || '', type: "input" },
-        { selector: "input[name='street2']", value: leadData.address2 || '', type: "input" },
-        { selector: "input[name='city']", value: leadData.city || '', type: "input" },
-        { selector: "input[name='zip']", value: leadData.postal_code || '', type: "input" },
-        { selector: "textarea[name='description']", value: leadData.comments || '', type: "textarea" },
-      ];
+    const waitForFieldAndSetValue = () => {
+      const select = document.querySelector("#services_0");
 
-      let fieldsSet = 0;
-      let totalFields = fieldsToSet.filter(field => field.value).length;
-
-      fieldsToSet.forEach(field => {
-        if (!field.value) return; // Skip empty values
-
-        const element = document.querySelector(field.selector);
-        if (element) {
-          if (field.type === "input" || field.type === "textarea") {
-            element.value = field.value;
-            element.dispatchEvent(new Event("input", { bubbles: true }));
-            element.dispatchEvent(new Event("change", { bubbles: true }));
-          } else if (field.type === "select") {
-            element.value = field.value;
-            element.dispatchEvent(new Event("change", { bubbles: true }));
-          }
-          fieldsSet++;
-          console.log(`✅ Set ${field.selector} to: ${field.value}`);
-        }
-      });
-
-      if (fieldsSet < totalFields) {
-        console.warn(`⏳ Waiting for more fields... (${fieldsSet}/${totalFields})`);
-        setTimeout(waitForFieldsAndSetValues, 200); // keep retrying every 200ms
+      if (select) {
+        select.value = "false";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+        console.info("✅ 'services' field forcibly reset to 'false'");
       } else {
-        console.info(`✅ All ${fieldsSet} fields populated successfully`);
+        console.warn("⏳ Waiting for services field...");
+        setTimeout(waitForFieldAndSetValue, 100); // keep retrying every 100ms
       }
     };
 
-    // Start field population after a brief delay
-    setTimeout(waitForFieldsAndSetValues, 300);
+    waitForFieldAndSetValue();
 
+    // Enhanced field population after modal opens
+    // const waitForFieldsAndSetValues = () => {
+    //   const fieldsToSet = [
+    //     // { selector: "#services_0", value: "false", type: "select" },
+    //     {
+    //       selector: "input[name='name']",
+    //       value: leadData.opportunity || leadData.comments || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='contact_name']",
+    //       value:
+    //         leadData.first_name && leadData.last_name
+    //           ? `${leadData.first_name} ${leadData.last_name}`
+    //           : "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='partner_name']",
+    //       value: leadData.company_name || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='phone']",
+    //       value: leadData.phone_number || leadData.alt_phone || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='mobile']",
+    //       value: leadData.alt_phone || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='email_from']",
+    //       value: leadData.email || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='street']",
+    //       value: leadData.address1 || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='street2']",
+    //       value: leadData.address2 || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='city']",
+    //       value: leadData.city || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "input[name='zip']",
+    //       value: leadData.postal_code || "",
+    //       type: "input",
+    //     },
+    //     {
+    //       selector: "textarea[name='description']",
+    //       value: leadData.comments || "",
+    //       type: "textarea",
+    //     },
+    //   ];
+
+    //   let fieldsSet = 0;
+    //   let totalFields = fieldsToSet.filter((field) => field.value).length;
+
+    //   fieldsToSet.forEach((field) => {
+    //     if (!field.value) return; // Skip empty values
+
+    //     const element = document.querySelector(field.selector);
+    //     if (element) {
+    //       if (field.type === "input" || field.type === "textarea") {
+    //         element.value = field.value;
+    //         element.dispatchEvent(new Event("input", { bubbles: true }));
+    //         element.dispatchEvent(new Event("change", { bubbles: true }));
+    //       } else if (field.type === "select") {
+    //         element.value = field.value;
+    //         element.dispatchEvent(new Event("change", { bubbles: true }));
+    //       }
+    //       fieldsSet++;
+    //       console.log(`✅ Set ${field.selector} to: ${field.value}`);
+    //     }
+    //   });
+
+    //   if (fieldsSet < totalFields) {
+    //     console.warn(
+    //       `⏳ Waiting for more fields... (${fieldsSet}/${totalFields})`
+    //     );
+    //     setTimeout(waitForFieldsAndSetValues, 200); // keep retrying every 200ms
+    //   } else {
+    //     console.info(`✅ All ${fieldsSet} fields populated successfully`);
+    //   }
+    // };
+
+    // // Start field population after a brief delay
+    // setTimeout(waitForFieldsAndSetValues, 300);
   } catch (error) {
     console.error("[lead_modal] Error loading form modal:", error);
   }
@@ -164,7 +245,7 @@ async function openCustomModal(leadId) {
       return;
     }
 
-    const fullDataAttr = row.getAttribute('data-full-data');
+    const fullDataAttr = row.getAttribute("data-full-data");
     if (!fullDataAttr) {
       console.error("[modal] No full data attribute found for lead:", leadId);
       return;
