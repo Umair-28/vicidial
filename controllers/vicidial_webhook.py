@@ -46,7 +46,7 @@ class VicidialWebhookController(http.Controller):
             extension = data.get("extension", "SIP/8011")  # default hardcoded
 
             # 2. Handle empty leads → delete records
-            if not leads:
+            if len(leads) == 0:
                 _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
                 request.env["vicidial.lead"].sudo().search([("extension", "=", extension)]).unlink()
                 return {
