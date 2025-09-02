@@ -133,7 +133,7 @@ class VicidialWebhookController(http.Controller):
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
                     # ✅ THIS IS THE CRITICAL LINE ADDED FOR THE LINK
-                    'vicidial_lead_id': lead.lead_id,
+                    # 'vicidial_lead_id': lead.lead_id,
                 }
                 
                 if not existing_vicidial_lead:
