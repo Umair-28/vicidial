@@ -29,190 +29,190 @@ class VicidialWebhookController(http.Controller):
     def vici_test(self, **kwargs):
         return "✅ Vici webhook test route is working!"    
 
-@http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
-def vicidial_webhook(self, **kwargs):
-    try:
-        _logger.info("✅ API HITTED......")
-
-        # 1. Parse JSON payload
+    @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
+    def vicidial_webhook(self, **kwargs):
         try:
-            raw_body = request.httprequest.data
-            data = json.loads(raw_body.decode("utf-8")) if raw_body else {}
-        except Exception as parse_err:
-            _logger.error("❌ Failed to parse JSON: %s", str(parse_err))
-            return {"status": "error", "message": "Invalid JSON payload"}
+            _logger.info("✅ API HITTED......")
 
-        leads = data.get("leads", [])
-        agent = data.get("agent")
-        extension = data.get("extension", "SIP/8011")
+            # 1. Parse JSON payload
+            try:
+                raw_body = request.httprequest.data
+                data = json.loads(raw_body.decode("utf-8")) if raw_body else {}
+            except Exception as parse_err:
+                _logger.error("❌ Failed to parse JSON: %s", str(parse_err))
+                return {"status": "error", "message": "Invalid JSON payload"}
 
-        # 2. Handle empty leads -> delete records
-        if not leads:
-            _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
-            
-            # 🎯 FIX: Delete both vicidial and linked CRM leads
-            vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", extension)])
-            for vici_lead in vicidial_leads:
-                if vici_lead.crm_lead_id:
-                    vici_lead.crm_lead_id.sudo().unlink()
-            vicidial_leads.unlink()
-            
+            leads = data.get("leads", [])
+            agent = data.get("agent")
+            extension = data.get("extension", "SIP/8011")
+
+            # 2. Handle empty leads -> delete records
+            if not leads:
+                _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
+                
+                # 🎯 FIX: Delete both vicidial and linked CRM leads
+                vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", extension)])
+                for vici_lead in vicidial_leads:
+                    if vici_lead.crm_lead_id:
+                        vici_lead.crm_lead_id.sudo().unlink()
+                vicidial_leads.unlink()
+                
+                return {
+                    "status": "success",
+                    "message": "All leads deleted for extension {}".format(extension)
+                }
+
+            _logger.info("📩 Processing %s leads for agent=%s, extension=%s", len(leads), agent, extension)
+
+            created_records = []
+            default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
+            if not default_stage:
+                default_stage = request.env['crm.stage'].sudo().create({'name': 'New'})
+
+            _logger.info("Default stage is %s", default_stage)    
+
+            # 3. Iterate and create/update records
+            for lead in leads:
+                try:
+                    # Correctly parse the datetime fields
+                    entry_date_str = lead.get("entry_date")
+                    modify_date_str = lead.get("modify_date")
+                    last_local_call_time_str = lead.get("last_local_call_time")
+
+                    entry_date_obj = datetime.strptime(entry_date_str, '%Y-%m-%dT%H:%M:%S') if entry_date_str else False
+                    modify_date_obj = datetime.strptime(modify_date_str, '%Y-%m-%dT%H:%M:%S') if modify_date_str else False
+                    last_local_call_time_obj = datetime.strptime(last_local_call_time_str, '%Y-%m-%dT%H:%M:%S') if last_local_call_time_str else False
+                    
+                    # 🎯 FIX: Search by lead_id instead of duplicating the search
+                    VicidialLead = request.env["vicidial.lead"].sudo()
+                    existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
+                    
+                    # Common values for vicidial records
+                    vicidial_vals = {
+                        "lead_id": str(lead.get("lead_id")),
+                        "status": lead.get("status"),
+                        "entry_date": entry_date_obj,
+                        "modify_date": modify_date_obj,
+                        "agent_user": agent,
+                        "extension": extension,
+                        "user": lead.get("user"),
+                        "vendor_lead_code": lead.get("vendor_lead_code"),
+                        "source_id": lead.get("source_id"),
+                        "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
+                        "gmt_offset_now": lead.get("gmt_offset_now"),
+                        "called_since_last_reset": str(lead.get("called_since_last_reset")).upper() in ["Y", "1", "TRUE"],
+                        "phone_code": lead.get("phone_code"),
+                        "phone_number": lead.get("phone_number"),
+                        "title": lead.get("title"),
+                        "first_name": lead.get("first_name"),
+                        "middle_initial": lead.get("middle_initial"),
+                        "last_name": lead.get("last_name"),
+                        "address1": lead.get("address1"),
+                        "address2": lead.get("address2"),
+                        "address3": lead.get("address3"),
+                        "city": lead.get("city"),
+                        "state": lead.get("state"),
+                        "province": lead.get("province"),
+                        "postal_code": lead.get("postal_code"),
+                        "country_code": lead.get("country_code"),
+                        "gender": lead.get("gender") if lead.get("gender") in ["M", "F", "O"] else False,
+                        "date_of_birth": lead.get("date_of_birth"),
+                        "alt_phone": lead.get("alt_phone"),
+                        "email": lead.get("email"),
+                        "security_phrase": lead.get("security_phrase"),
+                        "comments": lead.get("comments"),
+                        "called_count": lead.get("called_count"),
+                        "last_local_call_time": last_local_call_time_obj,
+                        "rank": lead.get("rank"),
+                        "owner": lead.get("owner"),
+                        "entry_list_id": str(lead.get("entry_list_id")),
+                        # 🎯 FIX: Remove fields that don't belong to vicidial.lead model
+                        # "companyName": "K N K TRADERS",  # This belongs to CRM lead
+                        # "stage_id": default_stage.id,    # This belongs to CRM lead
+                    }
+                    
+                    # 🎯 FIX: Proper CRM lead values
+                    crm_vals = {
+                        'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
+                        'partner_name': 'K N K TRADERS',
+                        'phone': lead.get('phone_number'),
+                        'mobile': lead.get('alt_phone'),
+                        'email': lead.get('email'),
+                        'street': lead.get('address1'),
+                        'street2': lead.get('address2'),
+                        'city': lead.get('city'),
+                        'state_id': False,  # You might want to map this properly
+                        'zip': lead.get('postal_code'),
+                        'country_id': False,  # You might want to map this properly
+                        'stage_id': default_stage.id,
+                        'description': lead.get('comments'),
+                        'title': lead.get('title'),
+                        # 🎯 CRITICAL: This will be set after vicidial lead creation
+                        'vicidial_lead_id': None,  # Will be set below
+                    }
+                    
+                    if not existing_vicidial_lead:
+                        # ========== CREATING NEW LEAD ==========
+                        _logger.info("📝 Creating new lead with lead_id: %s", lead.get("lead_id"))
+                        
+                        # Step 1: Create Vicidial lead first
+                        vicidial_rec = VicidialLead.create(vicidial_vals)
+                        _logger.info("✅ Created vicidial lead with ID: %s", vicidial_rec.id)
+                        
+                        # Step 2: Set the vicidial_lead_id in CRM vals
+                        crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
+                        
+                        # Step 3: Create CRM lead
+                        crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                        _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
+                        
+                        # Step 4: Link CRM lead back to Vicidial record
+                        vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
+                        _logger.info("🔗 Linked vicidial lead %s to CRM lead %s", vicidial_rec.id, crm_lead_rec.id)
+                        
+                        created_records.append(vicidial_rec.id)
+
+                    else:
+                        # ========== UPDATING EXISTING LEAD ==========
+                        _logger.info("📝 Updating existing lead with lead_id: %s", lead.get("lead_id"))
+                        
+                        # Step 1: Update Vicidial record
+                        existing_vicidial_lead.write(vicidial_vals)
+                        _logger.info("✅ Updated vicidial lead ID: %s", existing_vicidial_lead.id)
+                        
+                        # Step 2: Handle CRM lead
+                        if existing_vicidial_lead.crm_lead_id:
+                            # Update existing CRM lead
+                            crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id  # Ensure consistency
+                            existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
+                            _logger.info("✅ Updated existing CRM lead ID: %s", existing_vicidial_lead.crm_lead_id.id)
+                        else:
+                            # Create missing CRM lead
+                            _logger.warning("⚠️ CRM lead missing for vicidial lead %s, creating new one", existing_vicidial_lead.id)
+                            crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
+                            crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                            existing_vicidial_lead.write({'crm_lead_id': crm_lead_rec.id})
+                            _logger.info("✅ Created and linked new CRM lead ID: %s", crm_lead_rec.id)
+                        
+                        created_records.append(existing_vicidial_lead.id)
+
+                except Exception as lead_error:
+                    _logger.error("❌ Error processing lead %s: %s", lead.get("lead_id"), str(lead_error))
+                    continue
+
+            _logger.info("✅ Successfully processed %s leads", len(created_records))
+
             return {
                 "status": "success",
-                "message": "All leads deleted for extension {}".format(extension)
+                "created_records": created_records,
+                "message": "{} leads processed successfully".format(len(created_records))
             }
 
-        _logger.info("📩 Processing %s leads for agent=%s, extension=%s", len(leads), agent, extension)
-
-        created_records = []
-        default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
-        if not default_stage:
-            default_stage = request.env['crm.stage'].sudo().create({'name': 'New'})
-
-        _logger.info("Default stage is %s", default_stage)    
-
-        # 3. Iterate and create/update records
-        for lead in leads:
-            try:
-                # Correctly parse the datetime fields
-                entry_date_str = lead.get("entry_date")
-                modify_date_str = lead.get("modify_date")
-                last_local_call_time_str = lead.get("last_local_call_time")
-
-                entry_date_obj = datetime.strptime(entry_date_str, '%Y-%m-%dT%H:%M:%S') if entry_date_str else False
-                modify_date_obj = datetime.strptime(modify_date_str, '%Y-%m-%dT%H:%M:%S') if modify_date_str else False
-                last_local_call_time_obj = datetime.strptime(last_local_call_time_str, '%Y-%m-%dT%H:%M:%S') if last_local_call_time_str else False
-                
-                # 🎯 FIX: Search by lead_id instead of duplicating the search
-                VicidialLead = request.env["vicidial.lead"].sudo()
-                existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
-                
-                # Common values for vicidial records
-                vicidial_vals = {
-                    "lead_id": str(lead.get("lead_id")),
-                    "status": lead.get("status"),
-                    "entry_date": entry_date_obj,
-                    "modify_date": modify_date_obj,
-                    "agent_user": agent,
-                    "extension": extension,
-                    "user": lead.get("user"),
-                    "vendor_lead_code": lead.get("vendor_lead_code"),
-                    "source_id": lead.get("source_id"),
-                    "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
-                    "gmt_offset_now": lead.get("gmt_offset_now"),
-                    "called_since_last_reset": str(lead.get("called_since_last_reset")).upper() in ["Y", "1", "TRUE"],
-                    "phone_code": lead.get("phone_code"),
-                    "phone_number": lead.get("phone_number"),
-                    "title": lead.get("title"),
-                    "first_name": lead.get("first_name"),
-                    "middle_initial": lead.get("middle_initial"),
-                    "last_name": lead.get("last_name"),
-                    "address1": lead.get("address1"),
-                    "address2": lead.get("address2"),
-                    "address3": lead.get("address3"),
-                    "city": lead.get("city"),
-                    "state": lead.get("state"),
-                    "province": lead.get("province"),
-                    "postal_code": lead.get("postal_code"),
-                    "country_code": lead.get("country_code"),
-                    "gender": lead.get("gender") if lead.get("gender") in ["M", "F", "O"] else False,
-                    "date_of_birth": lead.get("date_of_birth"),
-                    "alt_phone": lead.get("alt_phone"),
-                    "email": lead.get("email"),
-                    "security_phrase": lead.get("security_phrase"),
-                    "comments": lead.get("comments"),
-                    "called_count": lead.get("called_count"),
-                    "last_local_call_time": last_local_call_time_obj,
-                    "rank": lead.get("rank"),
-                    "owner": lead.get("owner"),
-                    "entry_list_id": str(lead.get("entry_list_id")),
-                    # 🎯 FIX: Remove fields that don't belong to vicidial.lead model
-                    # "companyName": "K N K TRADERS",  # This belongs to CRM lead
-                    # "stage_id": default_stage.id,    # This belongs to CRM lead
-                }
-                
-                # 🎯 FIX: Proper CRM lead values
-                crm_vals = {
-                    'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
-                    'partner_name': 'K N K TRADERS',
-                    'phone': lead.get('phone_number'),
-                    'mobile': lead.get('alt_phone'),
-                    'email': lead.get('email'),
-                    'street': lead.get('address1'),
-                    'street2': lead.get('address2'),
-                    'city': lead.get('city'),
-                    'state_id': False,  # You might want to map this properly
-                    'zip': lead.get('postal_code'),
-                    'country_id': False,  # You might want to map this properly
-                    'stage_id': default_stage.id,
-                    'description': lead.get('comments'),
-                    'title': lead.get('title'),
-                    # 🎯 CRITICAL: This will be set after vicidial lead creation
-                    'vicidial_lead_id': None,  # Will be set below
-                }
-                
-                if not existing_vicidial_lead:
-                    # ========== CREATING NEW LEAD ==========
-                    _logger.info("📝 Creating new lead with lead_id: %s", lead.get("lead_id"))
-                    
-                    # Step 1: Create Vicidial lead first
-                    vicidial_rec = VicidialLead.create(vicidial_vals)
-                    _logger.info("✅ Created vicidial lead with ID: %s", vicidial_rec.id)
-                    
-                    # Step 2: Set the vicidial_lead_id in CRM vals
-                    crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
-                    
-                    # Step 3: Create CRM lead
-                    crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                    _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
-                    
-                    # Step 4: Link CRM lead back to Vicidial record
-                    vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
-                    _logger.info("🔗 Linked vicidial lead %s to CRM lead %s", vicidial_rec.id, crm_lead_rec.id)
-                    
-                    created_records.append(vicidial_rec.id)
-
-                else:
-                    # ========== UPDATING EXISTING LEAD ==========
-                    _logger.info("📝 Updating existing lead with lead_id: %s", lead.get("lead_id"))
-                    
-                    # Step 1: Update Vicidial record
-                    existing_vicidial_lead.write(vicidial_vals)
-                    _logger.info("✅ Updated vicidial lead ID: %s", existing_vicidial_lead.id)
-                    
-                    # Step 2: Handle CRM lead
-                    if existing_vicidial_lead.crm_lead_id:
-                        # Update existing CRM lead
-                        crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id  # Ensure consistency
-                        existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
-                        _logger.info("✅ Updated existing CRM lead ID: %s", existing_vicidial_lead.crm_lead_id.id)
-                    else:
-                        # Create missing CRM lead
-                        _logger.warning("⚠️ CRM lead missing for vicidial lead %s, creating new one", existing_vicidial_lead.id)
-                        crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
-                        crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                        existing_vicidial_lead.write({'crm_lead_id': crm_lead_rec.id})
-                        _logger.info("✅ Created and linked new CRM lead ID: %s", crm_lead_rec.id)
-                    
-                    created_records.append(existing_vicidial_lead.id)
-
-            except Exception as lead_error:
-                _logger.error("❌ Error processing lead %s: %s", lead.get("lead_id"), str(lead_error))
-                continue
-
-        _logger.info("✅ Successfully processed %s leads", len(created_records))
-
-        return {
-            "status": "success",
-            "created_records": created_records,
-            "message": "{} leads processed successfully".format(len(created_records))
-        }
-
-    except Exception as e:
-        _logger.error("❌ Critical error in webhook: %s", str(e))
-        import traceback
-        _logger.error("Full traceback: %s", traceback.format_exc())
-        return {"status": "error", "message": str(e)}
+        except Exception as e:
+            _logger.error("❌ Critical error in webhook: %s", str(e))
+            import traceback
+            _logger.error("Full traceback: %s", traceback.format_exc())
+            return {"status": "error", "message": str(e)}
 
 
 
