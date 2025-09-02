@@ -35,13 +35,26 @@ export class LeadAutoRefreshMany2Many extends Component {
 
 // ---------------- Table Renderer ----------------
 
+// const renderer = (item) => `
+// <tr class="o_data_row" data-id="datapoint_${item.id}">
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
+//   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.sales_person}</td>
+//   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
+//     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
+//   </td>
+// </tr>
+// `;
+
 const renderer = (item) => `
 <tr class="o_data_row" data-id="datapoint_${item.id}">
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char o_required_modifier" name="name">${item.opportunity}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="partner_name">${item.company_name}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_char" name="phone">${item.phone}</td>
   <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="stage_id">${item.stage}</td>
-  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.sales_person}</td>
+  <td class="o_data_cell cursor-pointer o_field_cell o_list_many2one" name="user_id">${item.user}</td>
   <td class="o_list_record_remove w-print-0 p-print-0 text-center">
     <button class="fa d-print-none fa-times" name="delete" aria-label="Delete row"></button>
   </td>
@@ -162,20 +175,20 @@ const interval = setInterval(async () => {
     );
 
     const { leads } = await res.json();
-    console.log("leads IDS are ", leads.length, leads);
+    // console.log("leads IDS are ", leads.length, leads);
 
-    // const newRenderedHTML = leads.map(renderer).join("\n");
+    const newRenderedHTML = leads.map(renderer).join("\n");
 
-    // if (newRenderedHTML !== previousRenderedHTML) {
-    //   console.log("[lead_auto_refresh] UI updated due to change...");
-    //   const tbody = leadIdsTable.querySelector("tbody");
-    //   if (tbody) {
-    //     tbody.innerHTML = newRenderedHTML;
-    //     previousRenderedHTML = newRenderedHTML;
-    //   }
-    // } else {
-    //   console.log("[lead_auto_refresh] No update needed.");
-    // }
+    if (newRenderedHTML !== previousRenderedHTML) {
+      console.log("[lead_auto_refresh] UI updated due to change...");
+      const tbody = leadIdsTable.querySelector("tbody");
+      if (tbody) {
+        tbody.innerHTML = newRenderedHTML;
+        previousRenderedHTML = newRenderedHTML;
+      }
+    } else {
+      console.log("[lead_auto_refresh] No update needed.");
+    }
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }

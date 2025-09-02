@@ -102,7 +102,7 @@ class VicidialWebhookController(http.Controller):
                     "entry_list_id": str(lead.get("entry_list_id")),
                 }
 
-                rec = request.env["vicidial.lead"].sudo().create(vals)
+                rec = request.env["crm.lead"].sudo().create(vals)
                 created_records.append(rec.id)
 
             _logger.info("✅ Successfully saved %s leads", len(created_records))
