@@ -6,7 +6,8 @@ class VicidialLead(models.Model):
 
     # stage_id = fields.Many2one('crm.stage', string="Stage")
     stage_id = fields.Integer(string = "Stage")
-    company_name = fields.Many2one('res.company', string="Company")  # Correct relational field
+    company_name = fields.Char(string="Company Name")
+    # company_name = fields.Many2one('res.company', string="Company")  # Correct relational field
     lead_id = fields.Char(string="Lead ID", index=True)
     status = fields.Char(string="Status")
     entry_date = fields.Datetime(string="Entry Date")
