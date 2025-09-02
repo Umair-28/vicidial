@@ -29,7 +29,7 @@ class VicidialWebhookController(http.Controller):
     def vici_test(self, **kwargs):
         return "✅ Vici webhook test route is working!"    
 
-    @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
+    @route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
     def vicidial_webhook(self, **kwargs):
         try:
             _logger.info("✅ API HITTED......")
@@ -64,7 +64,7 @@ class VicidialWebhookController(http.Controller):
 
             _logger.info("Default stage is %s", default_stage)    
 
-            # 3. Iterate and create records
+            # 3. Iterate and create/update records
             for lead in leads:
                 # Correctly parse the datetime fields
                 entry_date_str = lead.get("entry_date")
@@ -129,19 +129,24 @@ class VicidialWebhookController(http.Controller):
                     'phone': lead.get('phone_number'),
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
+                    # ✅ THIS IS THE CRITICAL LINE ADDED FOR THE LINK
+                    'vicidial_lead_id': existing_vicidial_lead.id if existing_vicidial_lead else False,
                 }
                 
                 if not existing_vicidial_lead:
-                    # 1. This is a NEW Vicidial lead.
-                    # Create a new CRM lead first.
-                    crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                    
-                    # 2. Link the new CRM lead to the Vicidial record values.
-                    vals['crm_lead_id'] = crm_lead_rec.id
-                    
-                    # 3. Create the Vicidial lead record with the new link.
+                    # Create the new Vicidial record first to get its ID.
                     rec = VicidialLead.create(vals)
                     created_records.append(rec.id)
+                    
+                    # Update the crm_vals with the newly created vicidial_lead record's ID.
+                    crm_vals['vicidial_lead_id'] = rec.id
+
+                    # Create the new CRM lead with the correct link.
+                    crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                    
+                    # Finally, link the newly created CRM lead back to the Vicidial record.
+                    rec.write({'crm_lead_id': crm_lead_rec.id})
+
                 else:
                     # This is an EXISTING Vicidial lead.
                     # 1. Update the existing CRM lead linked to it.
@@ -149,6 +154,7 @@ class VicidialWebhookController(http.Controller):
                         existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
                     else:
                         # Handle cases where the CRM link was missing
+                        crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
                         crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
                         vals['crm_lead_id'] = crm_lead_rec.id
 
