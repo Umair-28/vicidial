@@ -59,6 +59,9 @@ class VicidialWebhookController(http.Controller):
                         len(leads), agent, extension)
 
             created_records = []
+            Stage = request.env['crm.stage'].sudo()
+            new_stage = Stage.search([('name', '=', 'New')], limit=1)
+            stage_id = new_stage.id if new_stage else False
             company = request.env["res.company"].sudo().browse(2)
             company_name = company.name if company.exists() else False
 
@@ -101,7 +104,8 @@ class VicidialWebhookController(http.Controller):
                     "rank": lead.get("rank"), 
                     "owner": lead.get("owner"), 
                     "entry_list_id": str(lead.get("entry_list_id")), 
-                    "company_name":company_name
+                    "company_name":company_name,
+                    "stage_id": stage_id,
                 }
 
                 Lead = request.env["vicidial.lead"].sudo()
