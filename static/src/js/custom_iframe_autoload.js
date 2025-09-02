@@ -59,6 +59,7 @@ async function showModalWithLeadData(leadData) {
     const formContext = {
       // default_services: False,
       // Map VICIDIAL data to CRM lead fields
+      default_stage_id: leadData.stage_id || '',
       default_name: leadData.opportunity || leadData.comments || '',
       default_contact_name: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '',
       default_partner_name: leadData.company_name || '',
@@ -88,7 +89,7 @@ async function showModalWithLeadData(leadData) {
     const actionConfig = leadData.existing_crm_id ? {
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(leadData.existing_crm_id),
+      res_id: parseInt(leadData.lead_id),
       views: [[false, "form"]],
       target: "new",
       context: formContext,
