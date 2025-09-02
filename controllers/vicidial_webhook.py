@@ -132,17 +132,19 @@ class VicidialWebhookController(http.Controller):
                 }
                 
                 if not existing_vicidial_lead:
-                    # 1. Create a new CRM lead
+                    # 1. This is a NEW Vicidial lead.
+                    # Create a new CRM lead first.
                     crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
                     
-                    # 2. Link the new CRM lead to the Vicidial record values
+                    # 2. Link the new CRM lead to the Vicidial record values.
                     vals['crm_lead_id'] = crm_lead_rec.id
                     
-                    # 3. Create the Vicidial lead record with the new link
+                    # 3. Create the Vicidial lead record with the new link.
                     rec = VicidialLead.create(vals)
                     created_records.append(rec.id)
                 else:
-                    # 1. Update the existing CRM lead
+                    # This is an EXISTING Vicidial lead.
+                    # 1. Update the existing CRM lead linked to it.
                     if existing_vicidial_lead.crm_lead_id:
                         existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
                     else:
@@ -150,7 +152,7 @@ class VicidialWebhookController(http.Controller):
                         crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
                         vals['crm_lead_id'] = crm_lead_rec.id
 
-                    # 2. Update the existing Vicidial lead record
+                    # 2. Update the existing Vicidial lead record.
                     existing_vicidial_lead.write(vals)
                     created_records.append(existing_vicidial_lead.id)
 

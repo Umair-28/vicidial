@@ -62,12 +62,10 @@ const renderer = (item) => `
 
 async function showModalWithLeadData(leadId) {
   console.log("lead issssssssssssss ", leadId);
-  
+
   try {
     const env = owl.Component.env;
     const actionService = env.services.action;
-
-    
 
     await actionService.doAction({
       type: "ir.actions.act_window",
@@ -313,7 +311,7 @@ const interval = setInterval(async () => {
 //         };
 
 //     await actionService.doAction(actionConfig);
-
+//     // Use recursive retry to wait for field to appear
 //     const waitForFieldAndSetValue = () => {
 //       const select = document.querySelector("#services_0");
 
@@ -328,104 +326,6 @@ const interval = setInterval(async () => {
 //     };
 
 //     waitForFieldAndSetValue();
-
-//     // Enhanced field population after modal opens
-//     // const waitForFieldsAndSetValues = () => {
-//     //   const fieldsToSet = [
-//     //     // { selector: "#services_0", value: "false", type: "select" },
-//     //     {
-//     //       selector: "input[name='name']",
-//     //       value: leadData.opportunity || leadData.comments || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='contact_name']",
-//     //       value:
-//     //         leadData.first_name && leadData.last_name
-//     //           ? `${leadData.first_name} ${leadData.last_name}`
-//     //           : "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='partner_name']",
-//     //       value: leadData.company_name || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='phone']",
-//     //       value: leadData.phone_number || leadData.alt_phone || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='mobile']",
-//     //       value: leadData.alt_phone || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='email_from']",
-//     //       value: leadData.email || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='street']",
-//     //       value: leadData.address1 || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='street2']",
-//     //       value: leadData.address2 || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='city']",
-//     //       value: leadData.city || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "input[name='zip']",
-//     //       value: leadData.postal_code || "",
-//     //       type: "input",
-//     //     },
-//     //     {
-//     //       selector: "textarea[name='description']",
-//     //       value: leadData.comments || "",
-//     //       type: "textarea",
-//     //     },
-//     //   ];
-
-//     //   let fieldsSet = 0;
-//     //   let totalFields = fieldsToSet.filter((field) => field.value).length;
-
-//     //   fieldsToSet.forEach((field) => {
-//     //     if (!field.value) return; // Skip empty values
-
-//     //     const element = document.querySelector(field.selector);
-//     //     if (element) {
-//     //       if (field.type === "input" || field.type === "textarea") {
-//     //         element.value = field.value;
-//     //         element.dispatchEvent(new Event("input", { bubbles: true }));
-//     //         element.dispatchEvent(new Event("change", { bubbles: true }));
-//     //       } else if (field.type === "select") {
-//     //         element.value = field.value;
-//     //         element.dispatchEvent(new Event("change", { bubbles: true }));
-//     //       }
-//     //       fieldsSet++;
-//     //       console.log(`✅ Set ${field.selector} to: ${field.value}`);
-//     //     }
-//     //   });
-
-//     //   if (fieldsSet < totalFields) {
-//     //     console.warn(
-//     //       `⏳ Waiting for more fields... (${fieldsSet}/${totalFields})`
-//     //     );
-//     //     setTimeout(waitForFieldsAndSetValues, 200); // keep retrying every 200ms
-//     //   } else {
-//     //     console.info(`✅ All ${fieldsSet} fields populated successfully`);
-//     //   }
-//     // };
-
-//     // // Start field population after a brief delay
-//     // setTimeout(waitForFieldsAndSetValues, 300);
 //   } catch (error) {
 //     console.error("[lead_modal] Error loading form modal:", error);
 //   }
