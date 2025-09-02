@@ -46,7 +46,7 @@ class VicidialWebhookController(http.Controller):
             agent = data.get("agent")
             extension = data.get("extension", "SIP/8011")
 
-            # 2. Handle empty leads → delete records
+            # 2. Handle empty leads -> delete records
             if not leads:
                 _logger.warning("⚠️ No leads found in payload. Deleting existing records for extension=%s", extension)
                 request.env["vicidial.lead"].sudo().search([("extension", "=", extension)]).unlink()
@@ -66,9 +66,6 @@ class VicidialWebhookController(http.Controller):
 
             # 3. Iterate and create records
             for lead in leads:
-
-                VicidialLead = request.env["vicidial.lead"].sudo()
-                existing_vicidial_lead = VicidialLead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
                 # Correctly parse the datetime fields
                 entry_date_str = lead.get("entry_date")
                 modify_date_str = lead.get("modify_date")
@@ -78,6 +75,11 @@ class VicidialWebhookController(http.Controller):
                 modify_date_obj = datetime.strptime(modify_date_str, '%Y-%m-%dT%H:%M:%S') if modify_date_str else False
                 last_local_call_time_obj = datetime.strptime(last_local_call_time_str, '%Y-%m-%dT%H:%M:%S') if last_local_call_time_str else False
                 
+                # Check for an existing vicidial lead first
+                VicidialLead = request.env["vicidial.lead"].sudo()
+                existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
+                
+                # Common values for vicidial and crm records
                 vals = {
                     "lead_id": str(lead.get("lead_id")),
                     "status": lead.get("status"),
@@ -119,34 +121,38 @@ class VicidialWebhookController(http.Controller):
                     "companyName": "K N K TRADERS",
                     "stage_id": default_stage.id,
                 }
-
-                _logger.info("Final vals for lead creation/update: %s", vals)
-
-                Lead = request.env["vicidial.lead"].sudo()
-                existing_lead = Lead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
-
+                
+                # Prepare CRM lead values based on 'lead' dictionary
+                crm_vals = {
+                    'name': lead.get('first_name') or lead.get('comments'),
+                    'company_name': 'K N K TRADERS',
+                    'phone': lead.get('phone_number'),
+                    'stage_id': default_stage.id,
+                    'description': lead.get('comments'),
+                }
+                
                 if not existing_vicidial_lead:
-                    # Create a new CRM lead first
+                    # 1. Create a new CRM lead
                     crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
                     
-                    # Link the new CRM lead to the Vicidial record
+                    # 2. Link the new CRM lead to the Vicidial record values
                     vals['crm_lead_id'] = crm_lead_rec.id
                     
-                    # Create the Vicidial lead record
+                    # 3. Create the Vicidial lead record with the new link
                     rec = VicidialLead.create(vals)
                     created_records.append(rec.id)
                 else:
-                    # Update the existing CRM lead
+                    # 1. Update the existing CRM lead
                     if existing_vicidial_lead.crm_lead_id:
                         existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
                     else:
-                        # Handle cases where the link was missing
+                        # Handle cases where the CRM link was missing
                         crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                        existing_vicidial_lead.sudo().write({'crm_lead_id': crm_lead_rec.id})
+                        vals['crm_lead_id'] = crm_lead_rec.id
 
-            # Update the existing Vicidial lead record
-            existing_vicidial_lead.write(vals)
-            created_records.append(existing_vicidial_lead.id)
+                    # 2. Update the existing Vicidial lead record
+                    existing_vicidial_lead.write(vals)
+                    created_records.append(existing_vicidial_lead.id)
 
             _logger.info("✅ Successfully saved %s leads", len(created_records))
 

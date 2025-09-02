@@ -109,7 +109,7 @@ async function openCustomModal(vicidialLeadId) {
         return;
     }
     
-    const crmLeadId = vicidialLeadData[0].crm_lead_id[0]; // [id, name]
+    const crmLeadId = vicidialLeadData[0].crm_lead_id[0];
     await showModalWithLeadData(crmLeadId);
   } catch (err) {
     console.error("[modal] Failed to open lead modal:", err);
@@ -197,7 +197,6 @@ const interval = setInterval(async () => {
   } catch (error) {
     console.error("[lead_auto_refresh] Fetch/render error:", error);
   }
-
 }, 5000);
 
 // /** @odoo-module **/
