@@ -133,7 +133,7 @@ class VicidialWebhookController(http.Controller):
                     'stage_id': default_stage.id,
                     'description': lead.get('comments'),
                     # ✅ THIS IS THE CRITICAL LINE ADDED FOR THE LINK
-                    # 'vicidial_lead_id': lead.lead_id,
+                    # 'vicidial_lead_id': existing_vicidial_lead.id if existing_vicidial_lead else False,
                 }
                 
                 if not existing_vicidial_lead:
@@ -388,7 +388,6 @@ class VicidialWebhookController(http.Controller):
 
             # 1. Fetch leads from vicidial.lead model
             leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)])
-            _logger.info("Leads in session are %s",  leads)
 
             leads_data = []
             for lead in leads:
@@ -430,7 +429,6 @@ class VicidialWebhookController(http.Controller):
                     "security_phrase": lead.security_phrase or "",
                     "extension": lead.extension or "",
                     "agent_user": lead.agent_user or "",
-                    "crm_lead_id":lead.crm_lead_id or "",
                 })
 
             return http.Response(
