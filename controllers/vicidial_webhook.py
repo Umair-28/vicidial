@@ -101,8 +101,17 @@ class VicidialWebhookController(http.Controller):
                     "entry_list_id": str(lead.get("entry_list_id")), 
                 }
 
-                rec = request.env["vicidial.lead"].sudo().create(vals)
-                created_records.append(rec.id)
+                Lead = request.env["vicidial.lead"].sudo()
+                existing_lead = Lead.search([("lead_id", "=", vals.get("lead_id"))], limit=1)
+
+                if not existing_lead:
+                    rec = Lead.create(vals)
+                    created_records.append(rec.id)
+                else:
+                    # Optionally update existing lead instead of skipping
+                    # existing_lead.write(vals)
+                    created_records.append(existing_lead.id)  # Keep track of it anyway
+
 
             _logger.info("✅ Successfully saved %s leads", len(created_records))
 
