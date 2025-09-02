@@ -101,32 +101,25 @@ async function openCustomModal(vicidialLeadId) {
   try {
     const orm = owl.Component.env.services.orm;
     
-    // Read the crm_lead_id from the vicidial.lead record
-    const vicidialLeadData = await orm.searchRead(
-      'vicidial.lead', 
-      [['id', '=', parseInt(vicidialLeadId)]], 
-      ['crm_lead_id']
+    // 🎯 FIX: Search the crm.lead model directly using the vicidial_lead_id field
+    const crmLeadData = await orm.searchRead(
+      'crm.lead', 
+      [['vicidial_lead_id', '=', parseInt(vicidialLeadId)]], 
+      ['id']
     );
 
-    console.log("leeeeeeeeeeeeed data is ", vicidialLeadData);
+    console.log("crm lead data is ", crmLeadData);
     
-
-    // ✅ ADDED CHECK: Ensure a record was found before proceeding
-    if (vicidialLeadData.length === 0) {
-        console.error("The Vicidial lead record was not found in the database.");
-        alert("The lead record you clicked on no longer exists. Please refresh the page.");
-        return;
-    }
-
-    // Now proceed with the rest of the original logic
-    if (!vicidialLeadData[0].crm_lead_id) {
-        console.error("No corresponding CRM lead found or link is missing.");
-        alert("This lead cannot be opened in CRM. The corresponding record is missing.");
+    // Check if the record was found
+    if (crmLeadData.length === 0) {
+        console.error("No corresponding CRM lead found for this Vicidial lead ID.");
+        alert("This lead cannot be opened in CRM. The corresponding record is missing or deleted.");
         return;
     }
     
-    const crmLeadId = vicidialLeadData[0].crm_lead_id[0];
-    console.log(vicidialLeadData[0].crm_lead_id[0]);
+    // Extract the integer ID of the CRM lead
+    const crmLeadId = crmLeadData[0].id;
+    console.log("crm lead ID to open is ", crmLeadId);
     
     await showModalWithLeadData(crmLeadId);
 
