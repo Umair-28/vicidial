@@ -105,7 +105,7 @@ async function showModalWithLeadData(leadData) {
     // Enhanced field population after modal opens
     const waitForFieldsAndSetValues = () => {
       const fieldsToSet = [
-        { selector: "#services_0", value: "false", type: "select" },
+        // { selector: "#services_0", value: "false", type: "select" },
         { selector: "input[name='name']", value: leadData.opportunity || leadData.comments || '', type: "input" },
         { selector: "input[name='contact_name']", value: leadData.first_name && leadData.last_name ? `${leadData.first_name} ${leadData.last_name}` : '', type: "input" },
         { selector: "input[name='partner_name']", value: leadData.company_name || '', type: "input" },
