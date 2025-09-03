@@ -32,8 +32,7 @@ class VicidialWebhookController(http.Controller):
     @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def vicidial_webhook(self, **kwargs):
         try:
-            request.session.sid = False
-            request.session.should_save = False
+            
             _logger.info("✅ API HITTED......")
 
             # 1. Parse JSON payload
@@ -47,7 +46,7 @@ class VicidialWebhookController(http.Controller):
             leads = data.get("leads", [])
             agent = data.get("agent")
             extension = data.get("extension", "SIP/8011")
-            env = request.env(su=True)
+            # env = request.env(su=True)
 
             # 2. Handle empty leads -> delete records
             if not leads:
