@@ -29,7 +29,7 @@ class VicidialWebhookController(http.Controller):
     def vici_test(self, **kwargs):
         return "✅ Vici webhook test route is working!"    
 
-    @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False)
+    @http.route('/vici/webhook', type='json', auth='none', methods=['POST'], csrf=False)
     def vicidial_webhook(self, **kwargs):
         try:
             _logger.info("✅ API HITTED......")
