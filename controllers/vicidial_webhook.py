@@ -414,7 +414,7 @@ class VicidialWebhookController(http.Controller):
             extension = "SIP/8011"
 
             # 1. Fetch leads from vicidial.lead model
-            leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)])
+            leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)], order='id desc')
             _logger.info("Found %d leads for extension %s", len(leads), extension)
 
             leads_data = []
