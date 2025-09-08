@@ -60,37 +60,68 @@ const renderer = (item) => `
 
 async function showModalWithLeadData(leadId) {
   try {
-    console.log("🎯 [showModalWithLeadData] Opening CRM lead ID:", leadId);
+    const orm = owl.Component.env.services.orm;
+
+    // Fetch Vicidial lead data
+    const vicidialLeadData = await orm.searchRead(
+      "vicidial.lead",
+      [["id", "=", parseInt(leadId)]],
+      [
+        "id",
+        "first_name",
+        "last_name",
+        "phone_number",
+        "email",
+        "comments",
+        "city",
+        "state",
+        "country_code",
+        "vendor_lead_code",
+        "lead_id",
+      ]
+    );
+
+    if (!vicidialLeadData.length) {
+      throw new Error("Vicidial lead not found");
+    }
+
+    const lead = vicidialLeadData[0];
+
+    console.log(
+      "🎯 [showModalWithLeadData] Opening CRM form with Vicidial lead:",
+      lead
+    );
 
     const env = owl.Component.env;
     const actionService = env.services.action;
 
+    // Map defaults for CRM form
+    const defaultValues = {
+      default_name:
+        `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
+        "Unnamed Lead",
+      default_phone: lead.phone_number || "",
+      default_email_from: lead.email || "",
+      default_description: lead.comments || "",
+      default_city: lead.city || "",
+      default_ref: lead.vendor_lead_code || "",
+      default_vicidial_lead_id: lead.id, // custom field in crm.lead
+      default_services: "false",
+    };
+
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: false,
+      res_id: false, // always new record
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
-      context: {
-        default_services: "false",
-      },
+      context: defaultValues,
     });
 
-    console.log("✅ [showModalWithLeadData] Modal opened successfully");
-
-    // Optional: Set default field values after modal loads
-    setTimeout(() => {
-      const waitForFieldAndSetValue = () => {
-        const select = document.querySelector("#services_0");
-        if (select) {
-          select.value = "false";
-          select.dispatchEvent(new Event("change", { bubbles: true }));
-          console.info("✅ Services field reset to 'false'");
-        }
-      };
-      waitForFieldAndSetValue();
-    }, 500);
+    console.log(
+      "✅ [showModalWithLeadData] CRM lead form opened with defaults"
+    );
   } catch (error) {
     console.error("❌ [showModalWithLeadData] Error:", error);
     alert("Failed to open lead modal: " + error.message);
@@ -258,9 +289,7 @@ const interval = setInterval(async () => {
       stage_id: { id: lead.stage_id, name: stageMap[lead.stage_id] || "New" },
     }));
 
-
     console.log("enrich leads are ", enrichedLeads);
-    
 
     const newRenderedHTML = enrichedLeads.map(renderer).join("\n");
 

@@ -128,9 +128,7 @@ class VicidialWebhookController(http.Controller):
                         "rank": lead.get("rank"),
                         "owner": lead.get("owner"),
                         "entry_list_id": str(lead.get("entry_list_id")),
-                        # 🎯 FIX: Remove fields that don't belong to vicidial.lead model
-                        # "companyName": "K N K TRADERS",  # This belongs to CRM lead
-                        # "stage_id": default_stage.id,    # This belongs to CRM lead
+                        
                     }
                     
                     # 🎯 FIX: Proper CRM lead values
