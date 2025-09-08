@@ -59,7 +59,7 @@ const renderer = (item) => `
 // ---------------- Modal Logic ----------------
 
 // Solution 1: Create record first, then open form
-async function showModalWithLeadData_Solution1(leadId) {
+async function showModalWithLeadData(leadId) {
   try {
     const orm = owl.Component.env.services.orm;
 
