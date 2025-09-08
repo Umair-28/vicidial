@@ -11,3 +11,4 @@ access_dodo_bnb_form_user,Stage-wise DODO NBN Form Data,model_custom_dodo_nbn_fo
 access_optus_nbn_form_user,Optus NBN form,model_custom_optus_nbn_form,base.group_user,1,1,1,0
 access_first_energy_form_user,First Energy Form,model_custom_first_energy_form,base.group_user,1,1,1,0
 access_dodo_power_form_user,DODO Power Form,model_custom_dodo_power_form,base.group_user,1,1,1,0
+access_vicidial_lead_user,Vicidial Lead Data,model_vicidial_lead,base.group_user,1,1,1,1
