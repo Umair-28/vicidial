@@ -68,7 +68,7 @@ async function showModalWithLeadData(leadId) {
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(leadId),
+      res_id: false,
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,

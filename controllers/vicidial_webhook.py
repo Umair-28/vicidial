@@ -152,14 +152,16 @@ class VicidialWebhookController(http.Controller):
                         _logger.info("✅ Created vicidial lead with ID: %s", vicidial_rec.id)
                         
                         # Step 2: Set the vicidial_lead_id in CRM vals
-                        crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
+                        # crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
                         
                         # Step 3: Create CRM lead
                         # crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
                         # _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
                         
                         # Step 4: Link CRM lead back to Vicidial record
-                        vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
+                        # vicidial_rec.write({'crm_lead_id': 0})
+
+                        # vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
                         _logger.info("🔗 Linked vicidial lead %s to CRM lead %s", vicidial_rec.id, crm_lead_rec.id)
                         
                         created_records.append(vicidial_rec.id)
@@ -173,18 +175,18 @@ class VicidialWebhookController(http.Controller):
                         _logger.info("✅ Updated vicidial lead ID: %s", existing_vicidial_lead.id)
                         
                         # Step 2: Handle CRM lead
-                        if existing_vicidial_lead.crm_lead_id:
-                            # Update existing CRM lead
-                            crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id  # Ensure consistency
-                            existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
-                            _logger.info("✅ Updated existing CRM lead ID: %s", existing_vicidial_lead.crm_lead_id.id)
-                        else:
-                            # Create missing CRM lead
-                            _logger.warning("⚠️ CRM lead missing for vicidial lead %s, creating new one", existing_vicidial_lead.id)
-                            crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
-                            crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                            existing_vicidial_lead.write({'crm_lead_id': crm_lead_rec.id})
-                            _logger.info("✅ Created and linked new CRM lead ID: %s", crm_lead_rec.id)
+                        # if existing_vicidial_lead.crm_lead_id:
+                        #     # Update existing CRM lead
+                        #     crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id  # Ensure consistency
+                        #     existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
+                        #     _logger.info("✅ Updated existing CRM lead ID: %s", existing_vicidial_lead.crm_lead_id.id)
+                        # else:
+                        #     # Create missing CRM lead
+                        #     _logger.warning("⚠️ CRM lead missing for vicidial lead %s, creating new one", existing_vicidial_lead.id)
+                        #     crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
+                        #     crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                        #     existing_vicidial_lead.write({'crm_lead_id': crm_lead_rec.id})
+                        #     _logger.info("✅ Created and linked new CRM lead ID: %s", crm_lead_rec.id)
                         
                         created_records.append(existing_vicidial_lead.id)
 
