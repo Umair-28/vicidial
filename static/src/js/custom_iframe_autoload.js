@@ -58,7 +58,8 @@ const renderer = (item) => `
 
 // ---------------- Modal Logic ----------------
 
-async function showModalWithLeadData(leadId) {
+// Solution 1: Create record first, then open form
+async function showModalWithLeadData_Solution1(leadId) {
   try {
     const orm = owl.Component.env.services.orm;
 
@@ -75,9 +76,7 @@ async function showModalWithLeadData(leadId) {
         "comments",
         "city",
         "state",
-        "country_code",
         "vendor_lead_code",
-        "lead_id",
       ]
     );
 
@@ -86,130 +85,254 @@ async function showModalWithLeadData(leadId) {
     }
 
     const lead = vicidialLeadData[0];
+    const getLeadValue = (field) => lead[field] || "";
+    const getFullName = () =>
+      `${getLeadValue("first_name")} ${getLeadValue("last_name")}`.trim() ||
+      "Unnamed Lead";
 
-    console.log(
-      "🎯 [showModalWithLeadData] Opening CRM form with Vicidial lead:",
-      lead
-    );
+    // Create the record with default values
+    const recordData = {
+      // Standard fields
+      name: getFullName(),
+      phone: getLeadValue("phone_number"),
+      email_from: getLeadValue("email"),
+      description: getLeadValue("comments"),
+      city: getLeadValue("city"),
+      vicidial_lead_id: lead.id,
+      services: false,
+
+      // Contact Card (cc_)
+      cc_first_name: getLeadValue("first_name"),
+      cc_last_name: getLeadValue("last_name"),
+      cc_phone: getLeadValue("phone_number"),
+      cc_email: getLeadValue("email"),
+
+      // Home Moving (hm_)
+      hm_first_name: getLeadValue("first_name"),
+      hm_last_name: getLeadValue("last_name"),
+      hm_mobile: getLeadValue("phone_number"),
+      hm_email: getLeadValue("email"),
+
+      // Energy (en_)
+      en_name: getFullName(),
+      en_contact_number: getLeadValue("phone_number"),
+      en_email: getLeadValue("email"),
+
+      // Internet (in_)
+      in_name: getFullName(),
+      in_contact_number: getLeadValue("phone_number"),
+      in_email: getLeadValue("email"),
+
+      // Business Services (bs_)
+      bs_first_name: getLeadValue("first_name"),
+      bs_last_name: getLeadValue("last_name"),
+      bs_email: getLeadValue("email"),
+
+      // Housing Lead (hl_)
+      hl_first_name: getLeadValue("first_name"),
+      hl_last_name: getLeadValue("last_name"),
+      hl_contact: getLeadValue("phone_number"),
+      hl_email: getLeadValue("email"),
+
+      // Home Internet/Insurance (hi_)
+      hi_full_name: getFullName(),
+      hi_contact_number: getLeadValue("phone_number"),
+      hi_email: getLeadValue("email"),
+
+      // Dodo (do_)
+      do_first_name: getLeadValue("first_name"),
+      do_last_name: getLeadValue("last_name"),
+      do_mobile_no: getLeadValue("phone_number"),
+
+      // Other Plans/Optus (op_)
+      op_customer_name: getFullName(),
+      op_contact_number: getLeadValue("phone_number"),
+      op_email: getLeadValue("email"),
+      op_notes: getLeadValue("comments"),
+
+      // First Energy (fe_)
+      fe_first_name: getLeadValue("first_name"),
+      fe_last_name: getLeadValue("last_name"),
+      fe_phone_mobile: getLeadValue("phone_number"),
+      fe_email: getLeadValue("email"),
+
+      // DP
+      dp_first_name: getLeadValue("first_name"),
+      dp_last_name: getLeadValue("last_name"),
+      dp_contact_number: getLeadValue("phone_number"),
+      dp_email_contact: getLeadValue("email"),
+    };
+
+    console.log("Creating record with data:", recordData);
+
+    // Create the record first
+    const newRecordId = await orm.create("crm.lead", [recordData]);
 
     const env = owl.Component.env;
     const actionService = env.services.action;
 
-    // Map defaults for CRM form
-    const defaultValues = {
-      // Standard CRM lead defaults
-      default_name:
-        `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
-        "Unnamed Lead",
-      default_phone: lead.phone_number || "",
-      default_email_from: lead.email || "",
-      default_description: lead.comments || "",
-      default_city: lead.city || "",
-      default_ref: lead.vendor_lead_code || "",
-      default_vicidial_lead_id: lead.id, // custom field in crm.lead
-      default_services: "false",
-
-      // --- Custom Forms Mapping ---
-      // Contact Card (cc_)
-      default_cc_first_name: lead.first_name || "",
-      default_cc_last_name: lead.last_name || "",
-      default_cc_job_title: lead.title || "",
-      default_cc_phone: lead.phone_number || "",
-      default_cc_email: lead.email || "",
-
-      // Home Moving (hm_)
-      default_hm_first_name: lead.first_name || "",
-      default_hm_last_name: lead.last_name || "",
-      default_hm_address: lead.address1 || "",
-      default_hm_suburb: lead.city || "",
-      default_hm_state: lead.state || "",
-      default_hm_postcode: lead.postal_code || "",
-      default_hm_mobile: lead.phone_number || "",
-      default_hm_email: lead.email || "",
-
-      // Energy (en_)
-      default_en_name: lead.first_name || lead.last_name || "",
-      default_en_contact_number: lead.phone_number || "",
-      default_en_email: lead.email || "",
-
-      // Internet (in_)
-      default_in_name: lead.first_name || lead.last_name || "",
-      default_in_contact_number: lead.phone_number || "",
-      default_in_email: lead.email || "",
-
-      // Billing Services (bs_)
-      default_bs_first_name: lead.first_name || "",
-      default_bs_last_name: lead.last_name || "",
-      default_bs_email: lead.email || "",
-
-      // Housing Lead (hl_)
-      default_hl_first_name: lead.first_name || "",
-      default_hl_last_name: lead.last_name || "",
-      default_hl_contact: lead.phone_number || "",
-      default_hl_email: lead.email || "",
-
-      // Home Internet (hi_)
-      default_hi_full_name: lead.first_name || lead.last_name || "",
-
-      default_hi_contact_number: lead.phone_number || "",
-      default_hi_email: lead.email || "",
-
-      // Do (do_)
-      default_do_first_name: lead.first_name || "",
-      default_do_last_name: lead.last_name || "",
-      default_do_mobile_no: lead.phone_number || "",
-      default_do_installation_address: lead.address1 || "",
-      default_do_suburb: lead.city || "",
-      default_do_state: lead.state || "",
-      default_do_post_code: lead.postal_code || "",
-      default_do_closer_name: lead.agent_user || "",
-
-      // Other Plans (op_)
-      default_op_customer_name:lead.first_name || lead.last_name || "",
-      
-      default_op_contact_number: lead.phone_number || "",
-      default_op_email: lead.email || "",
-      default_op_notes: lead.comments || "",
-
-      // FE (fe_)
-      default_fe_first_name: lead.first_name || "",
-      default_fe_last_name: lead.last_name || "",
-      default_fe_phone_mobile: lead.phone_number || "",
-      default_fe_email: lead.email || "",
-
-      // DP (dp_)
-      default_dp_first_name: lead.first_name || "",
-      default_dp_last_name: lead.last_name || "",
-      default_dp_contact_number: lead.phone_number || "",
-      default_dp_email_contact: lead.email || "",
-    };
-
-    console.log("Default values are ", defaultValues);
-    
-
-
-
+    // Then open the form with the created record
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: false, // always new record
+      res_id: newRecordId[0], // Use the created record ID
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
-      context: defaultValues,
     });
 
-    console.log(
-      "✅ [showModalWithLeadData] CRM lead form opened with defaults"
-    );
+    console.log("✅ Record created and form opened:", newRecordId[0]);
   } catch (error) {
-    console.error("❌ [showModalWithLeadData] Error:", error);
+    console.error("❌ Error:", error);
     alert("Failed to open lead modal: " + error.message);
   }
 }
 
-// 🎯 FIX: This function now correctly fetches the CRM Lead ID
-// Corrected JavaScript function
+// async function showModalWithLeadData(leadId) {
+//   try {
+//     const orm = owl.Component.env.services.orm;
+
+//     // Fetch Vicidial lead data
+//     const vicidialLeadData = await orm.searchRead(
+//       "vicidial.lead",
+//       [["id", "=", parseInt(leadId)]],
+//       [
+//         "id",
+//         "first_name",
+//         "last_name",
+//         "phone_number",
+//         "email",
+//         "comments",
+//         "city",
+//         "state",
+//         "country_code",
+//         "vendor_lead_code",
+//         "lead_id",
+//       ]
+//     );
+
+//     if (!vicidialLeadData.length) {
+//       throw new Error("Vicidial lead not found");
+//     }
+
+//     const lead = vicidialLeadData[0];
+
+//     console.log(
+//       "🎯 [showModalWithLeadData] Opening CRM form with Vicidial lead:",
+//       lead
+//     );
+
+//     const env = owl.Component.env;
+//     const actionService = env.services.action;
+
+//     // Map defaults for CRM form
+//     const defaultValues = {
+//       // Standard CRM lead defaults
+//       default_name:
+//         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
+//         "Unnamed Lead",
+//       default_phone: lead.phone_number || "",
+//       default_email_from: lead.email || "",
+//       default_description: lead.comments || "",
+//       default_city: lead.city || "",
+//       default_ref: lead.vendor_lead_code || "",
+//       default_vicidial_lead_id: lead.id, // custom field in crm.lead
+//       default_services: "false",
+
+//       // --- Custom Forms Mapping ---
+//       // Contact Card (cc_)
+//       default_cc_first_name: lead.first_name || "",
+//       default_cc_last_name: lead.last_name || "",
+//       default_cc_job_title: lead.title || "",
+//       default_cc_phone: lead.phone_number || "",
+//       default_cc_email: lead.email || "",
+
+//       // Home Moving (hm_)
+//       default_hm_first_name: lead.first_name || "",
+//       default_hm_last_name: lead.last_name || "",
+//       default_hm_address: lead.address1 || "",
+//       default_hm_suburb: lead.city || "",
+//       default_hm_state: lead.state || "",
+//       default_hm_postcode: lead.postal_code || "",
+//       default_hm_mobile: lead.phone_number || "",
+//       default_hm_email: lead.email || "",
+
+//       // Energy (en_)
+//       default_en_name: lead.first_name || lead.last_name || "",
+//       default_en_contact_number: lead.phone_number || "",
+//       default_en_email: lead.email || "",
+
+//       // Internet (in_)
+//       default_in_name: lead.first_name || lead.last_name || "",
+//       default_in_contact_number: lead.phone_number || "",
+//       default_in_email: lead.email || "",
+
+//       // Billing Services (bs_)
+//       default_bs_first_name: lead.first_name || "",
+//       default_bs_last_name: lead.last_name || "",
+//       default_bs_email: lead.email || "",
+
+//       // Housing Lead (hl_)
+//       default_hl_first_name: lead.first_name || "",
+//       default_hl_last_name: lead.last_name || "",
+//       default_hl_contact: lead.phone_number || "",
+//       default_hl_email: lead.email || "",
+
+//       // Home Internet (hi_)
+//       default_hi_full_name: lead.first_name || lead.last_name || "",
+
+//       default_hi_contact_number: lead.phone_number || "",
+//       default_hi_email: lead.email || "",
+
+//       // Do (do_)
+//       default_do_first_name: lead.first_name || "",
+//       default_do_last_name: lead.last_name || "",
+//       default_do_mobile_no: lead.phone_number || "",
+//       default_do_installation_address: lead.address1 || "",
+//       default_do_suburb: lead.city || "",
+//       default_do_state: lead.state || "",
+//       default_do_post_code: lead.postal_code || "",
+//       default_do_closer_name: lead.agent_user || "",
+
+//       // Other Plans (op_)
+//       default_op_customer_name:lead.first_name || lead.last_name || "",
+
+//       default_op_contact_number: lead.phone_number || "",
+//       default_op_email: lead.email || "",
+//       default_op_notes: lead.comments || "",
+
+//       // FE (fe_)
+//       default_fe_first_name: lead.first_name || "",
+//       default_fe_last_name: lead.last_name || "",
+//       default_fe_phone_mobile: lead.phone_number || "",
+//       default_fe_email: lead.email || "",
+
+//       // DP (dp_)
+//       default_dp_first_name: lead.first_name || "",
+//       default_dp_last_name: lead.last_name || "",
+//       default_dp_contact_number: lead.phone_number || "",
+//       default_dp_email_contact: lead.email || "",
+//     };
+
+//     console.log("Default values are ", defaultValues);
+//     await actionService.doAction({
+//       type: "ir.actions.act_window",
+//       res_model: "crm.lead",
+//       res_id: false, // always new record
+//       views: [[false, "form"]],
+//       target: "new",
+//       fullscreen: true,
+//       context: defaultValues,
+//     });
+
+//     console.log(
+//       "✅ [showModalWithLeadData] CRM lead form opened with defaults"
+//     );
+//   } catch (error) {
+//     console.error("❌ [showModalWithLeadData] Error:", error);
+//     alert("Failed to open lead modal: " + error.message);
+//   }
+// }
 
 async function openCustomModal(vicidialLeadId) {
   console.log(
