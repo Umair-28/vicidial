@@ -141,15 +141,11 @@ async function openCustomModal(vicidialLeadId) {
 
     console.log("📊 [openCustomModal] Vicidial lead data:", vicidialLeadData);
 
-    if (vicidialLeadData.length > 0 && vicidialLeadData[0].crm_lead_id) {
-      const crmLeadId = Array.isArray(vicidialLeadData[0].crm_lead_id)
-        ? vicidialLeadData[0].crm_lead_id[0]
-        : vicidialLeadData[0].crm_lead_id;
+    if (vicidialLeadData.length > 0) {
+      // const crmLeadId = Array.isArray(vicidialLeadData[0].crm_lead_id)
+      //   ? vicidialLeadData[0].crm_lead_id[0]
+      //   : vicidialLeadData[0].crm_lead_id;
 
-      console.log(
-        "✅ [openCustomModal] Found CRM lead ID via direct lookup:",
-        crmLeadId
-      );
       await showModalWithLeadData(vicidialLeadId);
 
       // await showModalWithLeadData(crmLeadId);
