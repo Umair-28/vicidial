@@ -155,8 +155,8 @@ class VicidialWebhookController(http.Controller):
                         crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
                         
                         # Step 3: Create CRM lead
-                        crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                        _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
+                        # crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
+                        # _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
                         
                         # Step 4: Link CRM lead back to Vicidial record
                         vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
