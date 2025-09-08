@@ -58,9 +58,9 @@ const renderer = (item) => `
 
 // ---------------- Modal Logic ----------------
 
-async function showModalWithLeadData(crmLeadId) {
+async function showModalWithLeadData(leadId) {
   try {
-    console.log("🎯 [showModalWithLeadData] Opening CRM lead ID:", crmLeadId);
+    console.log("🎯 [showModalWithLeadData] Opening CRM lead ID:", leadId);
 
     const env = owl.Component.env;
     const actionService = env.services.action;
@@ -68,7 +68,7 @@ async function showModalWithLeadData(crmLeadId) {
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: parseInt(crmLeadId),
+      res_id: parseInt(leadId),
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
@@ -150,7 +150,9 @@ async function openCustomModal(vicidialLeadId) {
         "✅ [openCustomModal] Found CRM lead ID via direct lookup:",
         crmLeadId
       );
-      await showModalWithLeadData(crmLeadId);
+      await showModalWithLeadData(vicidialLeadId);
+
+      // await showModalWithLeadData(crmLeadId);
       return;
     }
 
