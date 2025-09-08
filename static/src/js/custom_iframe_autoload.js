@@ -184,18 +184,10 @@ async function showModalWithLeadData(leadId) {
       default_dp_email_contact: lead.email || "",
     };
 
-    // const defaultValues = {
-    //   default_name:
-    //     `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
-    //     "Unnamed Lead",
-    //   default_phone: lead.phone_number || "",
-    //   default_email_from: lead.email || "",
-    //   default_description: lead.comments || "",
-    //   default_city: lead.city || "",
-    //   default_ref: lead.vendor_lead_code || "",
-    //   default_vicidial_lead_id: lead.id, // custom field in crm.lead
-    //   default_services: "false",
-    // };
+    console.log("Default values are ", defaultValues);
+    
+
+
 
     await actionService.doAction({
       type: "ir.actions.act_window",
