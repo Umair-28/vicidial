@@ -128,16 +128,12 @@ async function showModalWithLeadData(leadId) {
       default_hm_email: lead.email || "",
 
       // Energy (en_)
-      default_en_name: `${lead.first_name || ""} ${
-        lead.last_name || ""
-      }`.trim(),
+      default_en_name: lead.first_name || lead.last_name || "",
       default_en_contact_number: lead.phone_number || "",
       default_en_email: lead.email || "",
 
       // Internet (in_)
-      default_in_name: `${lead.first_name || ""} ${
-        lead.last_name || ""
-      }`.trim(),
+      default_in_name: lead.first_name || lead.last_name || "",
       default_in_contact_number: lead.phone_number || "",
       default_in_email: lead.email || "",
 
@@ -153,9 +149,8 @@ async function showModalWithLeadData(leadId) {
       default_hl_email: lead.email || "",
 
       // Home Internet (hi_)
-      default_hi_full_name: `${lead.first_name || ""} ${
-        lead.last_name || ""
-      }`.trim(),
+      default_hi_full_name: lead.first_name || lead.last_name || "",
+
       default_hi_contact_number: lead.phone_number || "",
       default_hi_email: lead.email || "",
 
@@ -170,9 +165,8 @@ async function showModalWithLeadData(leadId) {
       default_do_closer_name: lead.agent_user || "",
 
       // Other Plans (op_)
-      default_op_customer_name: `${lead.first_name || ""} ${
-        lead.last_name || ""
-      }`.trim(),
+      default_op_customer_name:lead.first_name || lead.last_name || "",
+      
       default_op_contact_number: lead.phone_number || "",
       default_op_email: lead.email || "",
       default_op_notes: lead.comments || "",
