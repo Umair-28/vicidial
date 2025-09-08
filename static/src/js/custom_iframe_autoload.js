@@ -110,25 +110,25 @@ async function openCustomModal(vicidialLeadId) {
     const orm = owl.Component.env.services.orm;
 
     // Strategy 1: Search CRM lead using vicidial_lead_id field
-    console.log(
-      "🔍 [openCustomModal] Searching crm.lead with vicidial_lead_id =",
-      vicidialLeadId
-    );
+    // console.log(
+    //   "🔍 [openCustomModal] Searching crm.lead with vicidial_lead_id =",
+    //   vicidialLeadId
+    // );
 
-    const crmLeadData = await orm.searchRead(
-      "crm.lead",
-      [["vicidial_lead_id", "=", parseInt(vicidialLeadId)]],
-      ["id", "name", "vicidial_lead_id"]
-    );
+    // const crmLeadData = await orm.searchRead(
+    //   "crm.lead",
+    //   [["vicidial_lead_id", "=", parseInt(vicidialLeadId)]],
+    //   ["id", "name", "vicidial_lead_id"]
+    // );
 
-    console.log("📊 [openCustomModal] CRM lead search result:", crmLeadData);
+    // console.log("📊 [openCustomModal] CRM lead search result:", crmLeadData);
 
-    if (crmLeadData.length > 0) {
-      const crmLeadId = crmLeadData[0].id;
-      console.log("✅ [openCustomModal] Found CRM lead ID:", crmLeadId);
-      await showModalWithLeadData(crmLeadId);
-      return;
-    }
+    // if (crmLeadData.length > 0) {
+    //   const crmLeadId = crmLeadData[0].id;
+    //   console.log("✅ [openCustomModal] Found CRM lead ID:", crmLeadId);
+    //   await showModalWithLeadData(crmLeadId);
+    //   return;
+    // }
 
     // Strategy 2: Direct lookup via vicidial.lead -> crm_lead_id
     console.log("🔍 [openCustomModal] Strategy 2: Direct vicidial lookup");
