@@ -166,7 +166,6 @@ async function showModalWithLeadData(leadId) {
     console.log("Creating record with data:", recordData);
 
     // Create the record first
-    const newRecordId = await orm.create("crm.lead", [recordData]);
 
     const env = owl.Component.env;
     const actionService = env.services.action;
