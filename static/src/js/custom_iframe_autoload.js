@@ -175,13 +175,13 @@ async function showModalWithLeadData(leadId) {
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: newRecordId[0], // Use the created record ID
+      res_id: false, // Use the created record ID
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
     });
 
-    console.log("✅ Record created and form opened:", newRecordId[0]);
+    // console.log("✅ Record created and form opened:", newRecordId[0]);
   } catch (error) {
     console.error("❌ Error:", error);
     alert("Failed to open lead modal: " + error.message);
