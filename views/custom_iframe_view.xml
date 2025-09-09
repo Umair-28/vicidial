@@ -80,7 +80,7 @@ Please select a service to continue...
                                 </group>
 
                                 <field name="show_credit_card_tab" invisible="1"/>
-                                <group invisible="show_credit_card_tab == False">
+                                <group invisible="show_credit_card_tab == True">
                                     <group>
                                         <field name="cc_stage" widget="selection"/>
                                     </group>
@@ -131,7 +131,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 HOME MOVING FORM
-                                <group invisible="show_home_moving_tab == False">
+                                <group invisible="show_home_moving_tab == True">
                                     <group>
                                         <field name="hm_home_stage" widget="selection"/>
                                     </group>
@@ -231,7 +231,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 ENERGY FORM
-                                <group invisible="show_energy_tab == False">
+                                <group invisible="show_energy_tab == True">
                                     <group>
                                         <field name="en_energy_stage" widget="selection"/>
                                     </group>
@@ -317,7 +317,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 BROADBAND FORM
-                                <group invisible="show_internet_tab == False">
+                                <group invisible="show_internet_tab == True">
                                     <group>
                                         <field name="in_internet_stage" widget="selection"/>
                                     </group>
@@ -375,7 +375,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 BUSINESS LOAN FORM
-                                <group invisible="show_business_loan_tab == False">
+                                <group invisible="show_business_loan_tab == True">
                                     <group>
                                         <field name="bs_business_loan_stage" widget="selection"/>
                                     </group>
@@ -410,7 +410,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 HOME LOAN FORM
-                                <group invisible="show_home_loan_tab == False">
+                                <group invisible="show_home_loan_tab == True">
                                     <group>
                                         <field name="hl_home_loan_stage" widget="selection"/>
                                     </group>
@@ -465,7 +465,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 <!-- HEALTH INSURNACE FORM -->
-                                <group invisible="show_health_insurance_tab == False">
+                                <group invisible="show_health_insurance_tab == True">
                                     <group>
                                         <field name="hi_stage" widget="selection"/>
                                     </group>
@@ -506,7 +506,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 <!-- DODO NBN FORM -->
-                                <group invisible="show_dodo_nbn_tab == False">
+                                <group invisible="show_dodo_nbn_tab == True">
                                     <!-- Stage -->
                                     <group>
                                         <field name="dodo_form_stage" widget="selection"/>
@@ -565,7 +565,7 @@ In order to best process this lead, the salesperson should contact:
 
                                 <!-- OPTUS NBN FORM -->
 
-                                <group invisible="show_optus_nbn_tab == False">
+                                <group invisible="show_optus_nbn_tab == True">
                                     <!-- Stage -->
                                     <group>
                                         <field name="optus_form_stage" widget="selection"/>
@@ -616,7 +616,7 @@ In order to best process this lead, the salesperson should contact:
 
                                 <!-- FIRST ENERGY FORM -->
 
-                                <group invisible="show_first_energy_tab == False">
+                                <group invisible="show_first_energy_tab == True">
                                     <group>
                                         <field name="first_energy_form_stage"/>
                                     </group>
@@ -812,7 +812,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 <!-- DOOD POWER AND GAS FORM -->
-                                <group invisible="show_dodo_power_tab == False">
+                                <group invisible="show_dodo_power_tab == True">
                                     <!-- Power Stage Selection -->
                                     <group>
                                         <field name="dodo_power_stage"/>
