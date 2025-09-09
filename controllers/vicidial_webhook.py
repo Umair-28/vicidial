@@ -52,6 +52,7 @@ class VicidialWebhookController(http.Controller):
 
             # 3. Iterate and create/update records
             for lead in leads:
+                _logger.info("inside a single lead %s : ", lead)
                 try:
 
                     if lead.get("agent_status") == 'PAUSED':
