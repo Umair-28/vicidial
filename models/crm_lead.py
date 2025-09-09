@@ -254,19 +254,49 @@ class CrmLead(models.Model):
     @api.depends('services')
     def _compute_show_dodo_power_tab(self):
         for rec in self:
-            rec.show_dodo_power_tab = rec.services ==  'dodo_power'                                  
+            rec.show_dodo_power_tab = rec.services ==  'dodo_power'   
 
-    def create(self, vals):
+        def create(self, vals):
         _logger.info("🔄 CREATE triggered with vals: %s", vals)
+
+        # Create lead
         lead = super().create(vals)
+
+        # Assign vicidial_lead_id after record exists
+        if not vals.get("vicidial_lead_id"):
+            lead.vicidial_lead_id = lead.id   # or link to vicidial record if needed
+            _logger.info("✅ Vicidial Lead ID set to %s", lead.vicidial_lead_id)
+
         lead._run_form_stage_saver()
         return lead
 
     def write(self, vals):
         _logger.info("🔄 WRITE triggered with vals: %s", vals)
+
         res = super().write(vals)
-        self._run_form_stage_saver()
-        return res 
+
+        # Ensure vicidial_lead_id stays updated
+        for record in self:
+            if not vals.get("vicidial_lead_id") and not record.vicidial_lead_id:
+                record.vicidial_lead_id = record.id
+                _logger.info("✏️ Updated Vicidial Lead ID for %s", record.id)
+
+            record._run_form_stage_saver()
+
+        return res
+                                       
+
+    # def create(self, vals):
+    #     _logger.info("🔄 CREATE triggered with vals: %s", vals)
+    #     lead = super().create(vals)
+    #     lead._run_form_stage_saver()
+    #     return lead
+
+    # def write(self, vals):
+    #     _logger.info("🔄 WRITE triggered with vals: %s", vals)
+    #     res = super().write(vals)
+    #     self._run_form_stage_saver()
+    #     return res 
 
     def _run_form_stage_saver(self):
         for lead in self:

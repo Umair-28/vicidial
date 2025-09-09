@@ -41,6 +41,8 @@
         <field name="name">crm.lead.form.custom</field>
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="vicidial_lead_id" invisible="1"/>
+
         <field name="arch" type="xml">
             <!-- Add content to the form (outside notebook) -->
             <xpath expr="//form" position="inside">
