@@ -80,7 +80,7 @@ Please select a service to continue...
                                 </group>
 
                                 <field name="show_credit_card_tab" invisible="1"/>
-                                <group invisible="show_credit_card_tab == True">
+                                <group invisible="show_credit_card_tab == False">
                                     <group>
                                         <field name="cc_stage" widget="selection"/>
                                     </group>
@@ -131,7 +131,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 HOME MOVING FORM
-                                <group invisible="show_home_moving_tab == True">
+                                <group invisible="show_home_moving_tab == False">
                                     <group>
                                         <field name="hm_home_stage" widget="selection"/>
                                     </group>
