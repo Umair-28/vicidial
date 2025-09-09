@@ -34,7 +34,7 @@ class VicidialWebhookController(http.Controller):
         try:
             
             _logger.info("✅ API HITTED......")
-            userSIP = request.env.user.x_studio_sip_extension
+            userSIP = request.env.user
             _logger.info("user SIP is %s", userSIP)
 
             # 1. Parse JSON payload
