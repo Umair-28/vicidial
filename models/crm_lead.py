@@ -256,7 +256,7 @@ class CrmLead(models.Model):
         for rec in self:
             rec.show_dodo_power_tab = rec.services ==  'dodo_power'   
 
-        def create(self, vals):
+    def create(self, vals):
         _logger.info("🔄 CREATE triggered with vals: %s", vals)
 
         # Create lead
