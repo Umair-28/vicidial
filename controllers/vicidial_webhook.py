@@ -59,7 +59,7 @@ class VicidialWebhookController(http.Controller):
 
             # 3. Iterate and create/update records
             for lead in leads:
-                _logger.info("➡️ Inside a single lead %s", lead)
+                # _logger.info("➡️ Inside a single lead %s", lead)
                 try:
                     # =========================
                     # CASE 1: Handle PAUSED agent events
