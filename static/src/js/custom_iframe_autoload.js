@@ -109,7 +109,7 @@ async function showModalWithLeadData(leadId) {
       default_city: lead.city || "",
       default_ref: lead.vendor_lead_code || "",
       default_vicidial_lead_id: lead.id, // custom field in crm.lead
-      default_services: "credit_card",
+      default_services: "false",
 
       // --- Custom Forms Mapping ---
       // Contact Card (cc_)
