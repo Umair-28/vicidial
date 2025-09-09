@@ -317,7 +317,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
                                 </group>
                                 BROADBAND FORM
-                                <group invisible="show_internet_tab == True">
+                                <group invisible="show_internet_tab == False">
                                     <group>
                                         <field name="in_internet_stage" widget="selection"/>
                                     </group>
