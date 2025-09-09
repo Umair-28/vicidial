@@ -86,9 +86,9 @@ class VicidialWebhookController(http.Controller):
                         "entry_date": entry_date_obj,
                         "modify_date": modify_date_obj,
                         # "agent_user": agent,
-                        "agent_user":lead.get("user")
+                        "agent_user":lead.get("user"),
                         # "extension": extension,
-                        "extension":lead.get("extension")
+                        "extension":lead.get("extension"),
                         # "user": lead.get("user"),
                         "vendor_lead_code": lead.get("vendor_lead_code"),
                         "source_id": lead.get("source_id"),
