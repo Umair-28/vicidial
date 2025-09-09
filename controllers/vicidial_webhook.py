@@ -54,7 +54,7 @@ class VicidialWebhookController(http.Controller):
             for lead in leads:
                 try:
 
-                    if lead.get("agent_status") === 'PAUSED':
+                    if lead.get("agent_status") == 'PAUSED':
                         paused_user_sip = lead.extension
                         vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", paused_user_sip)])
                         deleted_count = len(vicidial_leads)
@@ -405,7 +405,7 @@ class VicidialWebhookController(http.Controller):
     def get_iframe_data(self, **kwargs):
         try:
             
-            userSIP = request.env.user.x_studio_sip_extension or request.env.user.vicidial_entension
+            userSIP = (request.env.user.x_studio_sip_extension or request.env.user.vicidial_extension)
 
             _logger.info("user SIP is %s", userSIP)
 
