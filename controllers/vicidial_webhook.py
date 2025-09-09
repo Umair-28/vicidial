@@ -32,7 +32,6 @@ class VicidialWebhookController(http.Controller):
     @http.route('/vici/webhook', type='json', auth='public', methods=['POST'], csrf=False, cors="*")
     def vicidial_webhook(self, **kwargs):
         try:
-            
             _logger.info("✅ API HITTED......")
 
             # 1. Parse JSON payload
@@ -45,52 +44,60 @@ class VicidialWebhookController(http.Controller):
 
             leads = data.get("leads", [])
 
+            # Summary counters
             created_records = []
+            updated_records = []
+            deleted_records = []
+            skipped_records = []
+
+            # Default CRM Stage
             default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
             if not default_stage:
                 default_stage = request.env['crm.stage'].sudo().create({'name': 'New'})
 
+            VicidialLead = request.env["vicidial.lead"].sudo()
+
             # 3. Iterate and create/update records
             for lead in leads:
-                _logger.info("inside a single lead %s : ", lead)
+                _logger.info("➡️ Inside a single lead %s", lead)
                 try:
+                    # =========================
+                    # CASE 1: Handle PAUSED agent events
+                    # =========================
+                    if lead.get("agent_status") == "PAUSED":
+                        paused_user_sip = lead.get("extension")
+                        if paused_user_sip:
+                            vicidial_leads = VicidialLead.search([("extension", "=", paused_user_sip)])
+                            deleted_count = len(vicidial_leads)
+                            vicidial_leads.unlink()
+                            _logger.info("✅ Deleted %d vicidial leads for extension %s", deleted_count, paused_user_sip)
+                            deleted_records.append({"extension": paused_user_sip, "count": deleted_count})
+                        else:
+                            _logger.warning("⚠️ PAUSED event received without extension")
+                        continue  # Skip to next lead
 
-                    if lead.get("agent_status") == 'PAUSED':
-                        paused_user_sip = lead.extension
-                        vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", paused_user_sip)])
-                        deleted_count = len(vicidial_leads)
-                        vicidial_leads.unlink()
-                        _logger.info("✅ Deleted %d vicidial leads, CRM leads preserved", deleted_count)
-                        return {
-                            "status": "success",
-                            "message": "Deleted {} vicidial leads for extension {}".format(deleted_count, extension)
-                        }
+                    # =========================
+                    # CASE 2: Skip invalid leads without lead_id
+                    # =========================
+                    if not lead.get("lead_id"):
+                        _logger.warning("⚠️ Skipping record without lead_id: %s", lead)
+                        skipped_records.append(lead)
+                        continue
 
+                    # =========================
+                    # CASE 3: Normal Vicidial Lead Processing
+                    # =========================
+                    # Parse date fields
+                    def parse_dt(dt_str):
+                        return datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S') if dt_str else False
 
-                    # Correctly parse the datetime fields
-                    entry_date_str = lead.get("entry_date")
-                    modify_date_str = lead.get("modify_date")
-                    last_local_call_time_str = lead.get("last_local_call_time")
-
-                    entry_date_obj = datetime.strptime(entry_date_str, '%Y-%m-%dT%H:%M:%S') if entry_date_str else False
-                    modify_date_obj = datetime.strptime(modify_date_str, '%Y-%m-%dT%H:%M:%S') if modify_date_str else False
-                    last_local_call_time_obj = datetime.strptime(last_local_call_time_str, '%Y-%m-%dT%H:%M:%S') if last_local_call_time_str else False
-                    
-                    # 🎯 FIX: Search by lead_id instead of duplicating the search
-                    VicidialLead = request.env["vicidial.lead"].sudo()
-                    existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
-                    
-                    # Common values for vicidial records
                     vicidial_vals = {
                         "lead_id": str(lead.get("lead_id")),
                         "status": lead.get("status"),
-                        "entry_date": entry_date_obj,
-                        "modify_date": modify_date_obj,
-                        # "agent_user": agent,
-                        "agent_user":lead.get("user"),
-                        # "extension": extension,
-                        "extension":lead.get("extension"),
-                        # "user": lead.get("user"),
+                        "entry_date": parse_dt(lead.get("entry_date")),
+                        "modify_date": parse_dt(lead.get("modify_date")),
+                        "agent_user": lead.get("user"),
+                        "extension": lead.get("extension"),
                         "vendor_lead_code": lead.get("vendor_lead_code"),
                         "source_id": lead.get("source_id"),
                         "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
@@ -117,80 +124,45 @@ class VicidialWebhookController(http.Controller):
                         "security_phrase": lead.get("security_phrase"),
                         "comments": lead.get("comments"),
                         "called_count": lead.get("called_count"),
-                        "last_local_call_time": last_local_call_time_obj,
+                        "last_local_call_time": parse_dt(lead.get("last_local_call_time")),
                         "rank": lead.get("rank"),
                         "owner": lead.get("owner"),
                         "entry_list_id": str(lead.get("entry_list_id")),
-                        
                     }
-                    
-                    # 🎯 FIX: Proper CRM lead values
-                    # crm_vals = {
-                    #     'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
-                    #     'partner_name': 'K N K TRADERS',
-                    #     'phone': lead.get('phone_number'),
-                    #     'stage_id': default_stage.id,
-                    #     'description': lead.get('comments'),
-                    #     'vicidial_lead_id': None,  # Will be set below
-                    # }
-                    
+
+                    # Check if lead already exists
+                    existing_vicidial_lead = VicidialLead.search([("lead_id", "=", str(lead.get("lead_id")))], limit=1)
+
                     if not existing_vicidial_lead:
-                        # ========== CREATING NEW LEAD ==========
-                        _logger.info("📝 Creating new lead with lead_id: %s", lead.get("lead_id"))
-                        
-                        # Step 1: Create Vicidial lead first
+                        # Create new Vicidial lead
                         vicidial_rec = VicidialLead.create(vicidial_vals)
                         _logger.info("✅ Created vicidial lead with ID: %s", vicidial_rec.id)
-                        
-                        # Step 2: Set the vicidial_lead_id in CRM vals
-                        # crm_vals['vicidial_lead_id'] = vicidial_rec.id  # Use the actual vicidial record ID
-                        
-                        # Step 3: Create CRM lead
-                        # crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                        # _logger.info("✅ Created CRM lead with ID: %s", crm_lead_rec.id)
-                        
-                        # Step 4: Link CRM lead back to Vicidial record
-                        # vicidial_rec.write({'crm_lead_id': 0})
-
-                        # vicidial_rec.write({'crm_lead_id': crm_lead_rec.id})
-                        _logger.info("🔗 Linked vicidial lead %s to CRM lead %s", vicidial_rec.id, crm_lead_rec.id)
-                        
                         created_records.append(vicidial_rec.id)
-
                     else:
-                        # ========== UPDATING EXISTING LEAD ==========
-                        _logger.info("📝 Updating existing lead with lead_id: %s", lead.get("lead_id"))
-                        
-                        # Step 1: Update Vicidial record
+                        # Update existing Vicidial lead
                         existing_vicidial_lead.write(vicidial_vals)
                         _logger.info("✅ Updated vicidial lead ID: %s", existing_vicidial_lead.id)
-                        
-                        # Step 2: Handle CRM lead
-                        # if existing_vicidial_lead.crm_lead_id:
-                        #     # Update existing CRM lead
-                        #     crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id  # Ensure consistency
-                        #     existing_vicidial_lead.crm_lead_id.sudo().write(crm_vals)
-                        #     _logger.info("✅ Updated existing CRM lead ID: %s", existing_vicidial_lead.crm_lead_id.id)
-                        # else:
-                        #     # Create missing CRM lead
-                        #     _logger.warning("⚠️ CRM lead missing for vicidial lead %s, creating new one", existing_vicidial_lead.id)
-                        #     crm_vals['vicidial_lead_id'] = existing_vicidial_lead.id
-                        #     crm_lead_rec = request.env['crm.lead'].sudo().create(crm_vals)
-                        #     existing_vicidial_lead.write({'crm_lead_id': crm_lead_rec.id})
-                        #     _logger.info("✅ Created and linked new CRM lead ID: %s", crm_lead_rec.id)
-                        
-                        created_records.append(existing_vicidial_lead.id)
+                        updated_records.append(existing_vicidial_lead.id)
 
                 except Exception as lead_error:
                     _logger.error("❌ Error processing lead %s: %s", lead.get("lead_id"), str(lead_error))
                     continue
 
-            _logger.info("✅ Successfully processed %s leads", len(created_records))
+            # =========================
+            # Final summary
+            # =========================
+            _logger.info("✅ Webhook Summary: %d created, %d updated, %d deleted, %d skipped",
+                         len(created_records), len(updated_records), len(deleted_records), len(skipped_records))
 
             return {
                 "status": "success",
-                "created_records": created_records,
-                "message": "{} leads processed successfully".format(len(created_records))
+                "created": len(created_records),
+                "updated": len(updated_records),
+                "deleted": deleted_records,
+                "skipped": len(skipped_records),
+                "message": "{} created, {} updated, {} deleted, {} skipped".format(
+                    len(created_records), len(updated_records), len(deleted_records), len(skipped_records)
+                )
             }
 
         except Exception as e:
