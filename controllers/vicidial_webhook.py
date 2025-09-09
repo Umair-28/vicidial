@@ -446,7 +446,7 @@ class VicidialWebhookController(http.Controller):
                         "crm_lead_id": crm_lead_id,  # Link to CRM lead
                         "stage_id": stage_id,
                         "stage_name": stage_name,
-                        "companyName": "K N K TRADERS",  # Required by renderer
+                        "companyName": "NOT PROVIDED",  # Required by renderer
                         
                         # All your existing fields
                         "province": lead.province or "",

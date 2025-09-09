@@ -1,10 +1,6 @@
 /** @odoo-module **/
 
 import { Component, onMounted, onWillUnmount, xml } from "@odoo/owl";
-import { registry } from "@web/core/registry";
-import { useService } from "@web/core/utils/hooks";
-import { Dialog } from "@web/core/dialog/dialog";
-
 console.log("[VICIDIAL] Loading custom_iframe_autoload.js module...");
 
 // ---------------- Widget Class ----------------
@@ -60,7 +56,6 @@ const renderer = (item) => `
 
 // Solution 1: Create record first, then open form
 
-
 async function showModalWithLeadData(leadId) {
   try {
     const orm = owl.Component.env.services.orm;
@@ -98,6 +93,10 @@ async function showModalWithLeadData(leadId) {
     const env = owl.Component.env;
     const actionService = env.services.action;
 
+    // First, check what fields actually exist in your crm.lead model
+    const crmLeadFields = await orm.call("crm.lead", "fields_get", []);
+    console.log("Available CRM Lead fields:", Object.keys(crmLeadFields));
+
     // Map defaults for CRM form
     const defaultValues = {
       // Standard CRM lead defaults
@@ -121,29 +120,29 @@ async function showModalWithLeadData(leadId) {
       default_cc_email: lead.email || "",
 
       // Home Moving (hm_)
-      default_hm_first_name: lead.first_name || "",
-      default_hm_last_name: lead.last_name || "",
-      default_hm_address: lead.address1 || "",
-      default_hm_suburb: lead.city || "",
-      default_hm_state: lead.state || "",
-      default_hm_postcode: lead.postal_code || "",
-      default_hm_mobile: lead.phone_number || "",
-      default_hm_email: lead.email || "",
+      default_hm_first_name: lead.first_name,
+      default_hm_last_name: lead.last_name,
+      default_hm_address: lead.address1,
+      default_hm_suburb: lead.city,
+      default_hm_state: lead.state,
+      default_hm_postcode: lead.postal_code,
+      default_hm_mobile: lead.phone_number,
+      default_hm_email: lead.email,
 
       // Energy (en_)
-      default_en_name: lead.first_name || lead.last_name || "",
-      default_en_contact_number: lead.phone_number || "",
-      default_en_email: lead.email || "",
+      default_en_name: lead.first_name || lead.last_name,
+      default_en_contact_number: lead.phone_number,
+      default_en_email: lead.email,
 
       // Internet (in_)
-      default_in_name: lead.first_name || lead.last_name || "",
-      default_in_contact_number: lead.phone_number || "",
-      default_in_email: lead.email || "",
+      default_in_name: lead.first_name || lead.last_name,
+      default_in_contact_number: lead.phone_number,
+      default_in_email: lead.email,
 
       // Billing Services (bs_)
-      default_bs_first_name: lead.first_name || "",
-      default_bs_last_name: lead.last_name || "",
-      default_bs_email: lead.email || "",
+      default_bs_first_name: lead.first_name,
+      default_bs_last_name: lead.last_name,
+      default_bs_email: lead.email,
 
       // Housing Lead (hl_)
       default_hl_first_name: lead.first_name || "",
@@ -168,7 +167,7 @@ async function showModalWithLeadData(leadId) {
       default_do_closer_name: lead.agent_user || "",
 
       // Other Plans (op_)
-      default_op_customer_name:lead.first_name || lead.last_name || "",
+      default_op_customer_name: lead.first_name || lead.last_name || "",
 
       default_op_contact_number: lead.phone_number || "",
       default_op_email: lead.email || "",
@@ -216,27 +215,6 @@ async function openCustomModal(vicidialLeadId) {
   try {
     const orm = owl.Component.env.services.orm;
 
-    // Strategy 1: Search CRM lead using vicidial_lead_id field
-    // console.log(
-    //   "🔍 [openCustomModal] Searching crm.lead with vicidial_lead_id =",
-    //   vicidialLeadId
-    // );
-
-    // const crmLeadData = await orm.searchRead(
-    //   "crm.lead",
-    //   [["vicidial_lead_id", "=", parseInt(vicidialLeadId)]],
-    //   ["id", "name", "vicidial_lead_id"]
-    // );
-
-    // console.log("📊 [openCustomModal] CRM lead search result:", crmLeadData);
-
-    // if (crmLeadData.length > 0) {
-    //   const crmLeadId = crmLeadData[0].id;
-    //   console.log("✅ [openCustomModal] Found CRM lead ID:", crmLeadId);
-    //   await showModalWithLeadData(crmLeadId);
-    //   return;
-    // }
-
     // Strategy 2: Direct lookup via vicidial.lead -> crm_lead_id
     console.log("🔍 [openCustomModal] Strategy 2: Direct vicidial lookup");
 
@@ -249,10 +227,6 @@ async function openCustomModal(vicidialLeadId) {
     console.log("📊 [openCustomModal] Vicidial lead data:", vicidialLeadData);
 
     if (vicidialLeadData.length > 0) {
-      // const crmLeadId = Array.isArray(vicidialLeadData[0].crm_lead_id)
-      //   ? vicidialLeadData[0].crm_lead_id[0]
-      //   : vicidialLeadData[0].crm_lead_id;
-
       await showModalWithLeadData(vicidialLeadId);
 
       // await showModalWithLeadData(crmLeadId);
