@@ -365,7 +365,8 @@ class CrmLead(models.Model):
             # Check if record for this lead and stage exists
             existing = CreditCardForm.search([
                 ('lead_id', '=', lead.id),
-                ('stage', '=', lead.cc_stage)
+                ('stage', '=', lead.cc_stage),
+                ('vicidial_lead_id', '=', lead.vicidial_lead_id)
             ], limit=1)
 
             cc_vals = {
@@ -401,7 +402,8 @@ class CrmLead(models.Model):
 
             record = self.env['custom.credit.card.form'].search([
                 ('lead_id', '=', rec._origin.id),
-                ('stage', '=', rec.cc_stage)
+                ('stage', '=', rec.cc_stage),
+                ('vicidial_lead_id', '=', rec.vicidial_lead_id)
             ], limit=1)
             
             _logger.info("Fetched credit card form for lead %s", rec._origin.id)
