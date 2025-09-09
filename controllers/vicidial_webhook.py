@@ -34,7 +34,6 @@ class VicidialWebhookController(http.Controller):
         try:
             
             _logger.info("✅ API HITTED......")
-            
 
             # 1. Parse JSON payload
             try:
@@ -45,38 +44,28 @@ class VicidialWebhookController(http.Controller):
                 return {"status": "error", "message": "Invalid JSON payload"}
 
             leads = data.get("leads", [])
-            agent = data.get("agent")
-            extension = data.get("extension", "SIP/8011")
-            # env = request.env(su=True)
-
-            # 2. Handle empty leads -> delete records
-            if not leads:
-                _logger.warning("⚠️ No leads found in payload. Deleting vicidial records for extension=%s", extension)
-                
-                # 🎯 SIMPLE FIX: Only delete vicidial leads
-                vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", extension)])
-                deleted_count = len(vicidial_leads)
-                vicidial_leads.unlink()
-                
-                _logger.info("✅ Deleted %d vicidial leads, CRM leads preserved", deleted_count)
-                
-                return {
-                    "status": "success",
-                    "message": "Deleted {} vicidial leads for extension {}".format(deleted_count, extension)
-                }
-
-            _logger.info("📩 Processing %s leads for agent=%s, extension=%s", len(leads), agent, extension)
 
             created_records = []
             default_stage = request.env['crm.stage'].sudo().search([('name', '=', 'New')], limit=1)
             if not default_stage:
                 default_stage = request.env['crm.stage'].sudo().create({'name': 'New'})
 
-            _logger.info("Default stage is %s", default_stage)    
-
             # 3. Iterate and create/update records
             for lead in leads:
                 try:
+
+                    if lead.get("agent_status") === 'PAUSED':
+                        paused_user_sip = lead.extension
+                        vicidial_leads = request.env["vicidial.lead"].sudo().search([("extension", "=", paused_user_sip)])
+                        deleted_count = len(vicidial_leads)
+                        vicidial_leads.unlink()
+                        _logger.info("✅ Deleted %d vicidial leads, CRM leads preserved", deleted_count)
+                        return {
+                            "status": "success",
+                            "message": "Deleted {} vicidial leads for extension {}".format(deleted_count, extension)
+                        }
+
+
                     # Correctly parse the datetime fields
                     entry_date_str = lead.get("entry_date")
                     modify_date_str = lead.get("modify_date")
@@ -96,9 +85,11 @@ class VicidialWebhookController(http.Controller):
                         "status": lead.get("status"),
                         "entry_date": entry_date_obj,
                         "modify_date": modify_date_obj,
-                        "agent_user": agent,
-                        "extension": extension,
-                        "user": lead.get("user"),
+                        # "agent_user": agent,
+                        "agent_user":lead.get("user")
+                        # "extension": extension,
+                        "extension":lead.get("extension")
+                        # "user": lead.get("user"),
                         "vendor_lead_code": lead.get("vendor_lead_code"),
                         "source_id": lead.get("source_id"),
                         "list_id": str(lead.get("list_id")) if lead.get("list_id") else False,
@@ -133,14 +124,14 @@ class VicidialWebhookController(http.Controller):
                     }
                     
                     # 🎯 FIX: Proper CRM lead values
-                    crm_vals = {
-                        'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
-                        'partner_name': 'K N K TRADERS',
-                        'phone': lead.get('phone_number'),
-                        'stage_id': default_stage.id,
-                        'description': lead.get('comments'),
-                        'vicidial_lead_id': None,  # Will be set below
-                    }
+                    # crm_vals = {
+                    #     'name': lead.get('first_name', '') + (' ' + lead.get('last_name', '')).strip() or lead.get('comments', 'Unnamed Lead'),
+                    #     'partner_name': 'K N K TRADERS',
+                    #     'phone': lead.get('phone_number'),
+                    #     'stage_id': default_stage.id,
+                    #     'description': lead.get('comments'),
+                    #     'vicidial_lead_id': None,  # Will be set below
+                    # }
                     
                     if not existing_vicidial_lead:
                         # ========== CREATING NEW LEAD ==========
@@ -413,15 +404,14 @@ class VicidialWebhookController(http.Controller):
     @http.route('/vici/iframe/session', type='http', auth='user', methods=['GET'], csrf=False)
     def get_iframe_data(self, **kwargs):
         try:
-            # ✅ Hardcoded extension (later replace with kwargs.get('sip_exten'))
-            extension = "SIP/8011"
-            userSIP = request.env.user.x_studio_sip_extension 
+            
+            userSIP = request.env.user.x_studio_sip_extension or request.env.user.vicidial_entension
 
             _logger.info("user SIP is %s", userSIP)
 
             # 1. Fetch leads from vicidial.lead model
-            leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)], order='id desc')
-            _logger.info("Found %d leads for extension %s", len(leads), extension)
+            leads = request.env['vicidial.lead'].sudo().search([('extension', '=', userSIP)], order='id desc')
+            _logger.info("Found %d leads for extension %s", len(leads), userSIP)
 
             leads_data = []
             for lead in leads:
@@ -503,7 +493,7 @@ class VicidialWebhookController(http.Controller):
             return http.Response(
                 json.dumps({
                     'status': 'success',
-                    'extension': extension,
+                    'extension': userSIP,
                     'total_leads': len(leads_data),
                     'leads': leads_data
                 }),
