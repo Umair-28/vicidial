@@ -34,9 +34,7 @@ class VicidialWebhookController(http.Controller):
         try:
             
             _logger.info("✅ API HITTED......")
-            userSIP = request.env.user.x_studio_sip_extension 
-
-            _logger.info("user SIP is %s", userSIP)
+            
 
             # 1. Parse JSON payload
             try:
@@ -417,6 +415,9 @@ class VicidialWebhookController(http.Controller):
         try:
             # ✅ Hardcoded extension (later replace with kwargs.get('sip_exten'))
             extension = "SIP/8011"
+            userSIP = request.env.user.x_studio_sip_extension 
+
+            _logger.info("user SIP is %s", userSIP)
 
             # 1. Fetch leads from vicidial.lead model
             leads = request.env['vicidial.lead'].sudo().search([('extension', '=', extension)], order='id desc')
