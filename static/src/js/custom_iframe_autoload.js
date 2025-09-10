@@ -202,7 +202,7 @@ async function showModalWithLeadData(leadId) {
     );
   } catch (error) {
     console.error("❌ [showModalWithLeadData] Error:", error);
-    alert("Failed to open lead modal: " + error.message);
+    // alert("Failed to open lead modal: " + error.message);
   }
 }
 
@@ -256,9 +256,9 @@ async function openCustomModal(vicidialLeadId) {
     console.log("🔍 [DEBUG] Sample CRM leads:", allCrmLeads);
     console.log("🔍 [DEBUG] Sample Vicidial leads:", allVicidialLeads);
 
-    alert(
-      `Lead cannot be opened in CRM.\nVicidial Lead ID: ${vicidialLeadId}\nCheck browser console for debug info.`
-    );
+    // alert(
+    //   `Lead cannot be opened in CRM.\nVicidial Lead ID: ${vicidialLeadId}\nCheck browser console for debug info.`
+    // );
   } catch (err) {
     console.error("❌ [openCustomModal] Critical error:", err);
     // alert("Error opening lead modal: " + err.message);
@@ -282,7 +282,7 @@ document.addEventListener("click", async function (e) {
 
       if (!vicidialLeadId || vicidialLeadId === "undefined") {
         console.error("❌ [click] Invalid vicidial lead ID");
-        alert("Invalid lead ID. Cannot open modal.");
+        // alert("Invalid lead ID. Cannot open modal.");
         return;
       }
 
@@ -308,7 +308,7 @@ document.addEventListener("click", async function (e) {
       previousRenderedHTML = "";
     } catch (err) {
       console.error(`[lead_auto_refresh] Failed to delete lead ${leadId}`, err);
-      alert("Failed to delete lead. Check server logs.");
+      // alert("Failed to delete lead. Check server logs.");
     }
   }
 });
