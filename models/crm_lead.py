@@ -28,19 +28,25 @@ class CrmLead(models.Model):
 
     # stage_id = fields.Many2one('crm.stage', string="Stage")
 
+    def action_open_dialer_plans(self):
+    self.ensure_one()
+    return self.env.ref("dialer.action_display_plans").read()[0]
+
+
     
 
 
     services = fields.Selection([
         ("false" , "Select a service"),
         ('credit_card', 'Credit Card AMEX'),
-        ('energy', 'Energy (compare plans from leading retailers)'),
         ('broadband', 'Broadband (NBN)'),
+        ('e_g', 'Electricity & Gas')
         ('business_loan', 'Business Loans'),
         ('insurance', 'Health Insurance'),
         ('home_loan', 'Home Loans'),
         ('upgrades', 'Victorian Energy Upgrades (VEU)'),
         ('moving_home', 'Home Moving'),
+        ('energy', 'Energy (compare plans from leading retailers)'),
         ('dodo_nbn', 'DODO NBN Form'),
         ('optus_nbn', 'Optus NBN Form'),
         ('first_energy', 'First Energy Form'),
@@ -77,7 +83,9 @@ class CrmLead(models.Model):
             elif rec.services == 'first_energy':
                 rec.selected_tab = 'first_energy_tab'  
             elif rec.services == 'dodo_power':
-                rec.selected_tab = 'dodo_power_tab'                          
+                rec.selected_tab = 'dodo_power_tab' 
+            elif rec.services  == 'e_g':
+                rec.selected_tab == 'e_g_tab'                         
 
 
 
@@ -131,7 +139,11 @@ class CrmLead(models.Model):
 
     show_dodo_power_tab = fields.Boolean(
         compute = "_compute_show_dodo_power_tab"
-    )    
+    )
+
+    show_e_g_tab = fields.Boolean(
+        compute = "_compute_show_e_g_tab"
+    )  
 
     @api.depends('services')
     def _compute_show_credit_card_tab(self):
@@ -266,7 +278,12 @@ class CrmLead(models.Model):
     @api.depends('services')
     def _compute_show_dodo_power_tab(self):
         for rec in self:
-            rec.show_dodo_power_tab = rec.services ==  'dodo_power'   
+            rec.show_dodo_power_tab = rec.services ==  'dodo_power' 
+
+    @api.depends('services')
+    def _compute_show_e_g_tab(self):
+        for rec in self:
+            rec.show_e_g_tab = rec.services == 'e_g'          
 
 
                                        

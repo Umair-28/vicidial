@@ -512,6 +512,14 @@ In order to best process this lead, the salesperson should contact:
 
                                     </group>
                                 </group>
+                                
+                                <!-- Electricity and Gas -->
+                                <group invisible="show_e_g_tab == False">
+                                    <group col="1" colspan="2">
+                                        <button name="action_open_dialer_plans" type="object" string="View Plans" class="btn-primary"/>
+                                    </group>
+                                </group>
+
                                 <!-- HEALTH INSURNACE FORM -->
                                 <group invisible="show_health_insurance_tab == False">
                                     <group>
