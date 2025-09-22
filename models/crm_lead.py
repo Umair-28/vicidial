@@ -29,8 +29,8 @@ class CrmLead(models.Model):
     # stage_id = fields.Many2one('crm.stage', string="Stage")
 
     def action_open_dialer_plans(self):
-    self.ensure_one()
-    return self.env.ref("dialer.action_display_plans").read()[0]
+        self.ensure_one()
+        return self.env.ref("dialer.action_display_plans").read()[0]
 
 
     
