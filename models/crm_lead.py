@@ -40,7 +40,7 @@ class CrmLead(models.Model):
         ("false" , "Select a service"),
         ('credit_card', 'Credit Card AMEX'),
         ('broadband', 'Broadband (NBN)'),
-        ('e_g', 'Electricity & Gas')
+        ('e_g', 'Electricity & Gas'),
         ('business_loan', 'Business Loans'),
         ('insurance', 'Health Insurance'),
         ('home_loan', 'Home Loans'),
