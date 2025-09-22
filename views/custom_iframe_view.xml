@@ -411,7 +411,7 @@ In order to best process this lead, the salesperson should contact:
 
                                     </group>
                                 </group>
-                                HOME LOAN FORM
+                                <!-- HOME LOAN FORM -->
                                 <group invisible="show_home_loan_tab == False">
                                     <group>
                                         <field name="hl_home_loan_stage" widget="selection"/>
@@ -463,6 +463,52 @@ In order to best process this lead, the salesperson should contact:
                                             <field name="hl_email" />
                                             <field name="hl_accept_terms"/>
                                         </group>
+
+                                    </group>
+                                </group>
+                                <!-- UPGRADES FORM -->
+                                <group invisible="show_upgrades_tab == False">
+                                    <group>
+                                        <field name="u_stage" widget="selection"/>
+                                    </group>
+                                    <group col="1" colspan="2">
+
+                                        <group col="1" string="Energy Upgrades">
+                                            <div class="o_row">
+                                                <label for="u_first_name">First Name</label>
+                                                <field name="u_first_name"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_last_name">Last Name</label>
+                                                <field name="u_last_name"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_mobile_no">Mobile No</label>
+                                                <field name="u_mobile_no"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_email">Email</label>
+                                                <field name="u_email"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_post_code">Postal Code</label>
+                                                <field name="u_post_code"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_interested_in">Rebate Interested In</label>
+                                                <field name="u_interested_in"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_how">How did you hear about us</label>
+                                                <field name="u_how"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="u_accept_terms">By submitting your details you agree that you have read and agreed to the terms and conditions and privacy policy</label>
+                                                <field name="u_accept_terms"/>
+                                            </div>
+
+                                        </group>
+
 
                                     </group>
                                 </group>

@@ -33,14 +33,14 @@ class CrmLead(models.Model):
 
     services = fields.Selection([
         ("false" , "Select a service"),
-        ('credit_card', 'Credit Card'),
+        ('credit_card', 'Credit Card AMEX'),
         ('energy', 'Energy (compare plans from leading retailers)'),
-        ('broadband', 'Broadband (fast broadband at lower cost)'),
-        ('business_loan', 'Business Loan'),
+        ('broadband', 'Broadband (NBN)'),
+        ('business_loan', 'Business Loans'),
         ('insurance', 'Health Insurance'),
-        ('home_loan', 'Home Loan'),
-        # ('energy_upgrades', 'Victorian Energy Upgrades'),
-        ('moving_home', 'New Connection (Moving Home)'),
+        ('home_loan', 'Home Loans'),
+        ('upgrades', 'Victorian Energy Upgrades (VEU)'),
+        ('moving_home', 'Home Moving'),
         ('dodo_nbn', 'DODO NBN Form'),
         ('optus_nbn', 'Optus NBN Form'),
         ('first_energy', 'First Energy Form'),
@@ -66,6 +66,8 @@ class CrmLead(models.Model):
                 rec.selected_tab =  'business_loan_tab'
             elif rec.services == 'insurance':
                 rec.selected_tab = 'insurance_tab'
+            elif rec.services == 'upgrades':
+                rec.selected_tab = 'upgrades_tab'    
             elif rec.services == 'home_loan':
                 rec.selected_tab = 'home_loab_tab' 
             elif rec.services == 'dodo_nbn':
@@ -106,6 +108,10 @@ class CrmLead(models.Model):
     show_home_loan_tab = fields.Boolean(
         compute = "_compute_show_home_loan_tab"
     ) 
+
+    show_upgrades_tab = fields.Boolean(
+        compute = "_compute_show_upgrades_tab"
+    )
 
     show_health_insurance_tab = fields.Boolean(
         compute = "_compute_show_health_insurance_tab"
@@ -158,6 +164,7 @@ class CrmLead(models.Model):
                 'broadband': ('custom.broadband.form.data', 'in_internet_stage'),
                 'business_loan': ('custom.business.loan.data', 'bs_business_loan_stage'),
                 'insurance': ('custom.health.insurance.form.data', 'hi_stage'),
+                'upgrades':('custom.upgrades.form', 'u_stage'),
                 'home_loan': ('custom.home.loan.data', 'hl_home_loan_stage'),
                 'dodo_nbn':('custom.dodo.nbn.form', 'dodo_form_stage'),
                 'optus_nbn':('custom.optus.nbn.form', 'optus_form_stage'),
@@ -237,6 +244,11 @@ class CrmLead(models.Model):
             rec.show_health_insurance_tab = rec.services == 'insurance'
 
     @api.depends('services')
+    def _compute_show_upgrades_tab(self):
+        for rec in self:
+            rec.show_upgrades_tab = rec.services == 'upgrades'      
+
+    @api.depends('services')
     def _compute_show_dodo_nbn_tab(self):
         for rec in self:
             rec.show_dodo_nbn_tab = rec.services == 'dodo_nbn'
@@ -287,6 +299,8 @@ class CrmLead(models.Model):
                 lead._sync_health_insurance_form_to_stage()
             elif lead.services == 'home_loan':
                 lead._sync_home_loan_form_to_stage()
+            elif lead.services == 'upgrades':
+                lead._sync_upgrades_form()    
             elif lead.services == 'energy':
                 lead._save_energy_stage_data()
             elif lead.services == 'dodo_nbn':
@@ -2676,7 +2690,101 @@ class CrmLead(models.Model):
             else:
                 # Reset all fields to defaults if no existing data found
                 rec.update({fname: False for fname in self._fields if fname.startswith("dp_")})
-                      
+
+    
+    #**** Upgrades Form *****#            
+
+    u_stage = fields.Selection([
+        ('1', 'Stage 1'),
+        ('2', 'Stage 2'),
+        ('3', 'Stage 3'),
+        ('4', 'Stage 4'),
+        ('5', 'Stage 5')
+    ], string='Stage', required=False)  
+    u_first_name = fields.Char(string="First Name")
+    u_last_name = fields.Char(string="Last Name")
+    u_mobile_no = fields.Char(string="Mobile No")
+    u_email = fields.Char(string="Email")
+    u_post_code = fields.Char("Post Code")
+    u_interested_in = fields.Selection([
+        ('air', 'Air Conitioning Rebate'),
+        ('water_res','Hot Water System (Residential)'),
+        ('water_com','Hot Water System (Commercial)')
+
+    ], string="Rebate Interested In", default="air")
+    u_how = fields.Text(string="How did you hear about us")
+    u_accept_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the terms and conditions and privacy policy",default=False) 
+
+    def _sync_upgrades_form(self):
+        """
+        Save Home Loan form data per stage in custom.home.loan.form.data
+        """
+        for lead in self:
+            stage = lead.u_stage
+            if not stage:
+                continue
+
+            UpgradesForm = self.env['custom.upgrades.form']
+
+            existing = UpgradesForm.search([
+                ('lead_id', '=', lead.id),
+                ('stage', '=', stage)
+            ], limit=1)
+
+            upgrades_vals = {
+                'lead_id': lead.id,
+                'stage': stage,
+                'first_name': lead.u_first_name,
+                'last_name': lead.u_last_name,
+                'mobile_no': lead.u_mobile_no,
+                'email': lead.u_email,
+                'post_code': lead.u_post_code,
+                'interested_in': lead.u_interested_in,
+                'how': lead.u_how,
+                'accept_terms': lead.u_accept_terms,
+            }
+
+            if existing:
+                existing.write(upgrades_vals)
+            else:
+                UpgradesForm.create(upgrades_vals)
+
+   
+    @api.onchange('u_stage')
+    def _onchange_upgrades_stage(self):
+
+        for rec in self:
+            if not rec.u_stage:
+                return
+
+            UpgradesForm = self.env['custom.upgrades.form']
+            existing = UpgradesForm.search([
+                ('lead_id', '=', rec._origin.id),
+                ('stage', '=', rec.u_stage)
+            ], limit=1)
+            _logger.info("home loan id is %s ", rec._origin.id)
+            
+            if existing:
+                rec.u_first_name = existing.first_name
+                rec.u_last_name = existing.last_name
+                rec.u_mobile_no = existing.mobile_no
+                rec.u_email = existing.email
+                rec.u_post_code = existing.post_code
+                rec.u_interested_in = existing.interested_in
+                rec.u_how = existing.how
+                rec.u_accept_terms = existing.accept_terms
+            else:
+                # Reset fields if no existing data is found
+                rec.u_first_name = False
+                rec.u_last_name = False
+                rec.u_mobile_no = False
+                rec.u_email = False
+                rec.u_post_code = False
+                rec.u_interested_in =  self._fields['u_interested_in'].default(rec) or False
+                rec.u_how = False
+                rec.u_accept_terms = False          
+
+
 
                           
            
