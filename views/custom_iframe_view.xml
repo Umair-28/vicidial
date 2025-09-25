@@ -68,16 +68,19 @@
                         <field name="assignation_id"/>
                     </group>
                 </page>
-                <page string="Utility Services Forms" name="custom_page">
+                <page string="Utility Services Forms">
                     <group>
-                        <field name="services"/>
-                        <!-- Add more fields or content as needed -->
+                        <field name="services" />
+                    </group>
+                    <group>
+                        <!-- <field name="services"/> -->
+
                         <notebook>
                             <page string="Form">
                                 <field name="show_nothing_tab" invisible="1"/>
                                 <group invisible="show_nothing_tab == False">
                                     <div class="o_form_label text-muted">
-Please select a service to continue...
+                                        Please select a service to continue...
                                     </div>
                                 </group>
 
@@ -86,7 +89,7 @@ Please select a service to continue...
                                     <group>
                                         <field name="cc_stage" widget="selection"/>
                                     </group>
-    CREDIT CARD STAGE 1
+                                    <!-- CREDIT CARD STAGE 1 -->
                                     <group col="1" colspan="2">
                                         <group string="Contact's Information" col="2">
                                             <field name="cc_prefix"/>
@@ -132,12 +135,12 @@ In order to best process this lead, the salesperson should contact:
                                         </group>
                                     </group>
                                 </group>
-                                HOME MOVING FORM
+                                <!-- HOME MOVING FORM -->
                                 <group invisible="show_home_moving_tab == False">
                                     <group>
                                         <field name="hm_home_stage" widget="selection"/>
                                     </group>
-                                HOME MOVING STAGE 1
+                                    <!-- HOME MOVING STAGE 1 -->
                                     <group col="1" colspan="2">
                                         <group col="1" string="Moving Details">
                                             <div class="o_row">
@@ -232,7 +235,7 @@ In order to best process this lead, the salesperson should contact:
                                         </group>
                                     </group>
                                 </group>
-                                ENERGY FORM
+                                <!-- ENERGY FORM -->
                                 <group invisible="show_energy_tab == False">
                                     <group>
                                         <field name="en_energy_stage" widget="selection"/>
@@ -318,7 +321,7 @@ In order to best process this lead, the salesperson should contact:
                                         </group>
                                     </group>
                                 </group>
-                                BROADBAND FORM
+                                <!-- BROADBAND FORM -->
                                 <group invisible="show_internet_tab == False">
                                     <group>
                                         <field name="in_internet_stage" widget="selection"/>
@@ -376,7 +379,7 @@ In order to best process this lead, the salesperson should contact:
 
                                     </group>
                                 </group>
-                                BUSINESS LOAN FORM
+                                <!-- BUSINESS LOAN FORM -->
                                 <group invisible="show_business_loan_tab == False">
                                     <group>
                                         <field name="bs_business_loan_stage" widget="selection"/>
@@ -512,13 +515,13 @@ In order to best process this lead, the salesperson should contact:
 
                                     </group>
                                 </group>
-                                
+
                                 <!-- Electricity and Gas -->
-                                <group invisible="show_e_g_tab == False">
+                                <!-- <group invisible="show_e_g_tab == False">
                                     <group col="1" colspan="2">
                                         <button name="action_open_dialer_plans" type="object" string="View Plans" class="btn-primary"/>
                                     </group>
-                                </group>
+                                </group> -->
 
                                 <!-- HEALTH INSURNACE FORM -->
                                 <group invisible="show_health_insurance_tab == False">
@@ -618,6 +621,150 @@ In order to best process this lead, the salesperson should contact:
                                         <group/>
                                     </group>
                                 </group>
+
+                                <!-- MOMENTUM ENERGY FORM -->
+                                <group invisible="show_momentum_energy_tab == False">
+                                    <group>
+                                        <field name="momentum_energy_stage" widget="selection"/>
+                                    </group>
+
+                                    <group col="1" colspan="2">
+                                        <!-- Transaction Info -->
+                                        <group col="1" string="Transaction Information">
+                                            <div class="o_row">
+                                                <label for="momentum_energy_transaction_reference"/>
+                                                <field name="momentum_energy_transaction_reference"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="momentum_energy_transaction_channel"/>
+                                                <field name="momentum_energy_transaction_channel"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="momentum_energy_transaction_date"/>
+                                                <field name="momentum_energy_transaction_date"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="momentum_energy_transaction_verification_code"/>
+                                                <field name="momentum_energy_transaction_verification_code"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="momentum_energy_transaction_source"/>
+                                                <field name="momentum_energy_transaction_source"/>
+                                            </div>
+                                        </group>
+
+                                        <!-- Customer Info -->
+                                        <group col="2" string="Customer Information">
+                                            <field name="momentum_energy_customer_type"/>
+                                            <field name="momentum_energy_customer_sub_type"/>
+                                            <field name="momentum_energy_communication_preference" widget="radio"/>
+                                            <field name="momentum_energy_promotion_allowed"/>
+                                        </group>
+
+                                        <!-- Identity Docs -->
+                                        <group string="Identity Documents" col="2">
+                                            <field name="momentum_energy_passport_id"/>
+                                            <field name="momentum_energy_passport_expiry"/>
+                                            <field name="momentum_energy_passport_country"/>
+                                            <field name="momentum_energy_driving_license_id"/>
+                                            <field name="momentum_energy_driving_license_expiry"/>
+                                            <field name="momentum_energy_driving_license_state"/>
+                                            <field name="momentum_energy_medicare_id"/>
+                                            <field name="momentum_energy_medicare_number"/>
+                                            <field name="momentum_energy_medicare_expiry"/>
+                                        </group>
+
+                                        <!-- Entity Details -->
+                                        <group string="Entity Details" col="2">
+                                            <field name="momentum_energy_industry"/>
+                                            <field name="momentum_energy_entity_name"/>
+                                            <field name="momentum_energy_trading_name"/>
+                                            <field name="momentum_energy_trustee_name"/>
+                                            <field name="momentum_energy_abn_document_id"/>
+                                            <field name="momentum_energy_acn_document_id"/>
+                                        </group>
+
+                                        <!-- Primary Contact -->
+                                        <group string="Primary Contact" col="2">
+                                            <field name="momentum_energy_primary_contact_type"/>
+                                            <field name="momentum_energy_primary_salutation"/>
+                                            <field name="momentum_energy_primary_first_name"/>
+                                            <field name="momentum_energy_primary_middle_name"/>
+                                            <field name="momentum_energy_primary_last_name"/>
+                                            <field name="momentum_energy_primary_country_of_birth"/>
+                                            <field name="momentum_energy_primary_date_of_birth"/>
+                                            <field name="momentum_energy_primary_email"/>
+                                            <field name="momentum_energy_primary_address_type"/>
+                                            <field name="momentum_energy_primary_street_number"/>
+                                            <field name="momentum_energy_primary_street_name"/>
+                                            <field name="momentum_energy_primary_unit_number"/>
+                                            <field name="momentum_energy_primary_suburb"/>
+                                            <field name="momentum_energy_primary_state"/>
+                                            <field name="momentum_energy_primary_post_code"/>
+                                            <field name="momentum_energy_primary_phone_work"/>
+                                            <field name="momentum_energy_primary_phone_home"/>
+                                            <field name="momentum_energy_primary_phone_mobile"/>
+                                        </group>
+
+                                        <!-- Secondary Contact -->
+                                        <group string="Secondary Contact" col="2">
+                                            <field name="momentum_energy_secondary_contact_type"/>
+                                            <field name="momentum_energy_secondary_salutation"/>
+                                            <field name="momentum_energy_secondary_first_name"/>
+                                            <field name="momentum_energy_secondary_middle_name"/>
+                                            <field name="momentum_energy_secondary_last_name"/>
+                                            <field name="momentum_energy_secondary_country_of_birth"/>
+                                            <field name="momentum_energy_secondary_date_of_birth"/>
+                                            <field name="momentum_energy_secondary_email"/>
+                                            <field name="momentum_energy_secondary_address_type"/>
+                                            <field name="momentum_energy_secondary_street_number"/>
+                                            <field name="momentum_energy_secondary_street_name"/>
+                                            <field name="momentum_energy_secondary_unit_number"/>
+                                            <field name="momentum_energy_secondary_suburb"/>
+                                            <field name="momentum_energy_secondary_state"/>
+                                            <field name="momentum_energy_secondary_post_code"/>
+                                            <field name="momentum_energy_secondary_phone_work"/>
+                                            <field name="momentum_energy_secondary_phone_home"/>
+                                            <field name="momentum_energy_secondary_phone_mobile"/>
+                                        </group>
+
+                                        <!-- Service Info -->
+                                        <group string="Service Information" col="2">
+                                            <field name="momentum_energy_service_type"/>
+                                            <field name="momentum_energy_service_sub_type"/>
+                                            <field name="momentum_energy_service_connection_id"/>
+                                            <field name="momentum_energy_service_meter_id"/>
+                                            <field name="momentum_energy_service_start_date"/>
+                                            <field name="momentum_energy_estimated_annual_kwhs"/>
+                                            <field name="momentum_energy_lot_number"/>
+                                            <field name="momentum_energy_service_street_number"/>
+                                            <field name="momentum_energy_service_street_name"/>
+                                            <field name="momentum_energy_service_street_type_code"/>
+                                            <field name="momentum_energy_service_suburb"/>
+                                            <field name="momentum_energy_service_state"/>
+                                            <field name="momentum_energy_service_post_code"/>
+                                            <field name="momentum_energy_service_access_instructions"/>
+                                            <field name="momentum_energy_service_safety_instructions"/>
+                                        </group>
+
+                                        <!-- Offer and Contract -->
+                                        <group string="Offer and Contract" col="2">
+                                            <field name="momentum_energy_offer_quote_date"/>
+                                            <field name="momentum_energy_service_offer_code"/>
+                                            <field name="momentum_energy_service_plan_code"/>
+                                            <field name="momentum_energy_contract_term_code"/>
+                                            <field name="momentum_energy_contract_date"/>
+                                        </group>
+
+                                        <!-- Billing -->
+                                        <group string="Billing and Payment" col="2">
+                                            <field name="momentum_energy_payment_method"/>
+                                            <field name="momentum_energy_bill_cycle_code"/>
+                                            <field name="momentum_energy_bill_delivery_method"/>
+                                        </group>
+                                    </group>
+                                </group>
+
 
                                 <!-- OPTUS NBN FORM -->
 
@@ -797,7 +944,7 @@ In order to best process this lead, the salesperson should contact:
                                             <field name="fe_gas_site_post_code"/>
                                         </group>
 
-                                        <!-- Meter & Product -->
+                                        <!-- Meter and Product -->
                                         <group string="Meter And Product Info" colspan="1">
                                             <field name="fe_network_tariff_code"/>
                                             <field name="fe_nmi"/>
@@ -820,7 +967,7 @@ In order to best process this lead, the salesperson should contact:
                                     </group>
 
                                     <group colspan="2">
-                                        <!-- Billing & Postal -->
+                                        <!-- Billing and Postal -->
                                         <group string="Billing And Postal" colspan="1">
                                             <field name="fe_is_owner"/>
                                             <field name="fe_has_accepted_marketing"/>
@@ -856,7 +1003,7 @@ In order to best process this lead, the salesperson should contact:
                                         </group>
                                     </group>
 
-                                    <!-- Admin & QC -->
+                                    <!-- Admin and QC -->
                                     <group string="QC / Admin Info" colspan="2">
                                         <field name="fe_centre_name"/>
                                         <field name="fe_qc_name"/>
