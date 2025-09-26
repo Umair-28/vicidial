@@ -13,28 +13,47 @@ class CustomHomeMovingForm(models.Model):
     # Moving Details
     moving_date = fields.Date("Moving Date")
     address = fields.Char("Address")
-    suburb = fields.Char("Suburb")
-    state = fields.Char("State")
-    postcode = fields.Char("Postcode")
+    property_type = fields.Selection([
+        ('business',"Business"),
+        ('residential',"Residential"),
+    ],string="What type of propery")
+    ownership =  fields.Selection([
+        ('own',"Own"),
+        ('rent',"Rent"),
+    ],string="Property Ownership")
 
     # Personal Details
+    status = fields.Selection([
+        ('n/a',"N/A"),
+        ('dr',"Dr."),
+        ('mr',"Mr."),
+        ('mrs',"Mrs."),
+        ('ms',"Ms."),
+        ('miss',"Miss."),
+
+    ],string="Status")
     first_name = fields.Char("First Name")
     last_name = fields.Char("Last Name")
     job_title = fields.Char("Job Title")
     dob = fields.Date("Date of Birth")
-    friend_code = fields.Char("Refer a Friend Code")
 
     # Contact Details
     mobile = fields.Char("Mobile")
     work_phone = fields.Char("Work Phone")
+    home_phone = fields.Char("Home Phone")
     email = fields.Char("Email")
     how_heard = fields.Selection([
         ('google', 'Google'),
-        ('social', 'Social Media'),
-        ('friend', 'Friend Referral'),
+        ('facebook', 'Facebook'),
+        ('word_of_mouth', 'Word of Mouth'),
+        ('real_estate', "Real Estate"),
         ('other', 'Other')
     ], string="How did you hear about us?")
 
+    #Real Estate Info
+    agency_name = fields.Char("Real estate agency name")
+    broker_name = fields.Char("Broker name")
+    agency_contact_number = fields.Char("Real estate contact number")
     # Services
     connect_electricity = fields.Boolean("Electricity")
     connect_gas = fields.Boolean("Gas")

@@ -25,10 +25,13 @@ class CreditCardForm(models.Model):
 
     annual_revenue = fields.Selection([
         ('under_2m', 'Under ~ $2M'), ('2m_10m', '$2M ~ $10M'), ('10m_50m', '$10M ~ $50M'),
-        ('50m_100m', '$50M ~ $100M'), ('100m_above', 'Above $100M')
+        ('50m_300m', '$50M ~ $300M'), ('300m_above', 'Above $300M')
     ], string="Annual Revenue")
 
-    annual_spend = fields.Char("Annual Spend")
+    annual_spend = fields.Selection([
+        ('under_1m', 'Under ~ $1M'), ('2m_5m', '$2M ~ $5M'), ('6m_10m', '$6M ~ $10M'),
+        ('11m_15m', '$11M ~ $15M'), ('16m_20m', '$16M ~ $20M'),('20m_above', 'Above $20M')
+    ], string="Annual Revenue")
     existing_products = fields.Char("Existing Competitor Products")
     expense_tools = fields.Char("Expense Management Tools")
     additional_info = fields.Text("Additional information for sales team")

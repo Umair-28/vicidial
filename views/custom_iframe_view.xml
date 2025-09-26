@@ -113,21 +113,21 @@
 
                                             <div class="o_row">
                                                 <label for="cc_consent_personal_info" class="o_form_label" style="display:block;">
-I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
+                                                    I have obtained the express consent of above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of individual.
                                                 </label>
                                                 <field name="cc_consent_personal_info"/>
                                             </div>
 
                                             <div class="o_row" style="display:block;">
                                                 <label for="cc_consent_contact_method" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-I have obtained the consent of above companies to contact the appointed representative via:
+                                                    I have obtained the consent of above companies to contact the appointed representative via:
                                                 </label>
                                                 <field name="cc_consent_contact_method" widget="radio" style="display: inline; margin-top: 0.5rem;"/>
                                             </div>
 
                                             <div class="o_row" style="display:block;">
                                                 <label for="cc_contact_preference" class="o_form_label" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-In order to best process this lead, the salesperson should contact:
+                                                    In order to best process this lead, the salesperson should contact:
                                                 </label>
                                                 <field name="cc_contact_preference" widget="radio" style="display: inline;margin-top: 0.5rem;"/>
                                             </div>
@@ -152,20 +152,20 @@ In order to best process this lead, the salesperson should contact:
                                                 <field name="hm_address"/>
                                             </div>
                                             <div class="o_row">
-                                                <label for="hm_suburb">Suburb</label>
-                                                <field name="hm_suburb"/>
+                                                <label for="hm_property_type">What type of property</label>
+                                                <field name="hm_property_type"/>
                                             </div>
                                             <div class="o_row">
-                                                <label for="hm_state">State</label>
-                                                <field name="hm_state"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hm_postcode">Postcode</label>
-                                                <field name="hm_postcode"/>
+                                                <label for="hm_ownership">Property Ownership</label>
+                                                <field name="hm_ownership"/>
                                             </div>
                                         </group>
 
                                         <group col="1" colspan="1" string="Personal Details">
+                                            <div class="o_row">
+                                                <label for="hm_status">Status</label>
+                                                <field name="hm_status"/>
+                                            </div>
                                             <div class="o_row">
                                                 <label for="hm_first_name">First Name</label>
                                                 <field name="hm_first_name"/>
@@ -175,16 +175,8 @@ In order to best process this lead, the salesperson should contact:
                                                 <field name="hm_last_name"/>
                                             </div>
                                             <div class="o_row">
-                                                <label for="hm_job_title">Job Title</label>
-                                                <field name="hm_job_title"/>
-                                            </div>
-                                            <div class="o_row">
                                                 <label for="hm_dob">Date of Birth</label>
                                                 <field name="hm_dob"/>
-                                            </div>
-                                            <div class="o_row">
-                                                <label for="hm_friend_code">Friend Code</label>
-                                                <field name="hm_friend_code"/>
                                             </div>
                                         </group>
 
@@ -198,12 +190,31 @@ In order to best process this lead, the salesperson should contact:
                                                 <field name="hm_work_phone"/>
                                             </div>
                                             <div class="o_row">
+                                                <label for="hm_home_phone">Home Phone</label>
+                                                <field name="hm_home_phone"/>
+                                            </div>
+                                            <div class="o_row">
                                                 <label for="hm_email">Email</label>
                                                 <field name="hm_email"/>
                                             </div>
                                             <div class="o_row">
                                                 <label for="hm_how_heard">How Did You Hear?</label>
                                                 <field name="hm_how_heard"/>
+                                            </div>
+                                        </group>
+
+                                        <group col="1" string="Real Estate Details">
+                                            <div class="o_row">
+                                                <label for="hm_agency_name">Real estate agency name</label>
+                                                <field name="hm_agency_name"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="hm_broker_name">Broker name</label>
+                                                <field name="hm_broker_name"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="hm_agency_contact_number">Agency contact number</label>
+                                                <field name="hm_agency_contact_number"/>
                                             </div>
                                         </group>
 
@@ -278,11 +289,15 @@ In order to best process this lead, the salesperson should contact:
                                                 <field name="en_concesion_card_holder"/>
                                             </div>
                                             <div class="o_row">
-                                                <label for="en_electricity_provider">Do you have rooftop solar panels?</label>
+                                                <label for="en_rooftop_solar">Do you have rooftop solar panels?</label>
+                                                <field name="en_rooftop_solar"/>
+                                            </div>
+                                            <div class="o_row">
+                                                <label for="en_electricity_provider">What is your current Electricity provider?</label>
                                                 <field name="en_electricity_provider"/>
                                             </div>
                                             <div class="o_row">
-                                                <label for="en_gas_provider">Who is your current gas provider?</label>
+                                                <label for="en_gas_provider">Who is your current Gas provider?</label>
                                                 <field name="en_gas_provider"/>
                                             </div>
                                         </group>

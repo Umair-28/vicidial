@@ -48,10 +48,10 @@ class CrmLead(models.Model):
         ('home_loan', 'Home Loans'),
         ('upgrades', 'Victorian Energy Upgrades (VEU)'),
         ('moving_home', 'Home Moving'),
-        ('energy', 'Energy (compare plans from leading retailers)'),
+        ('energy', 'Electicity & Gas'),
         ('dodo_nbn', 'DODO NBN Form'),
         ('optus_nbn', 'Optus NBN Form'),
-        ('first_energy', 'First Energy Form'),
+        ('first_energy', '1st Energy Form'),
         ('dodo_power', 'DODO Power And Gas Form')
     ],  required=True)
 
@@ -358,7 +358,10 @@ class CrmLead(models.Model):
     cc_annual_revenue = fields.Selection([
         ('under_2m', 'Under ~ $2M'), ('2m_10m', '$2M ~ $10M'), ('10m_50m', '$10M ~ $50M'), ('50m_100m', '$50M ~ $100M'), ('100m_above', 'Above $100M')
     ], string="Annual Revenue")
-    cc_annual_spend = fields.Char("Annual Spend")
+    cc_annual_spend = fields.Selection([
+        ('under_1m', 'Under ~ $1M'), ('2m_5m', '$2M ~ $5M'), ('6m_10m', '$6M ~ $10M'),
+        ('11m_15m', '$11M ~ $15M'), ('16m_20m', '$16M ~ $20M'),('20m_above', 'Above $20M')
+    ], string="Annual Revenue")
     cc_existing_products = fields.Char("Existing Competitor Products")
     cc_expense_tools = fields.Char("Expense Management Tools")
     cc_additional_info = fields.Text("Additional information for sales team")
@@ -488,9 +491,22 @@ class CrmLead(models.Model):
     string="Home Moving Stage", default="1")
     hm_moving_date = fields.Date("Moving Date")
     hm_address = fields.Char("Address")
-    hm_suburb = fields.Char("Suburb")
-    hm_state = fields.Char("State")
-    hm_postcode = fields.Char("Postcode")
+    hm_property_type = fields.Selection([
+        ('business',"Business"),
+        ('residential',"Residential"),
+    ],string="What type of propery")
+    hm_ownership = fields.Selection([
+        ('own',"Own"),
+        ('rent',"Rent"),
+    ],string="Property Ownership")
+    hm_status = fields.Selection([
+        ('n/a',"N/A"),
+        ('dr',"Dr."),
+        ('mr',"Mr."),
+        ('mrs',"Mrs."),
+        ('ms',"Ms."),
+        ('miss',"Miss."),
+    ],string="Status")
     hm_first_name = fields.Char("First Name")
     hm_last_name = fields.Char("Last Name")
     hm_job_title = fields.Char("Job Title")
@@ -498,13 +514,19 @@ class CrmLead(models.Model):
     hm_friend_code = fields.Char("Refer a Friend Code")
     hm_mobile = fields.Char("Mobile")
     hm_work_phone = fields.Char("Work Phone")
+    hm_home_phone = fields.Char("Home Phone")
+
     hm_email = fields.Char("Email")
     hm_how_heard = fields.Selection([
         ('google', 'Google'),
-        ('social', 'Social Media'),
-        ('friend', 'Friend Referral'),
-        ('other', 'Other')
+        ('facebook', 'Facebook'),
+        ('word_of_mouth', 'Word of Mouth'),
+        ('real_estate', "Real Estate"),
+        ('other', 'Other'),
     ], string="How did you hear about us?")
+    hm_agency_name = fields.Char("Real estate agency name")
+    hm_broker_name = fields.Char("Broker name")
+    hm_agency_contact_number = fields.Char("Real estate contact number")
     hm_connect_electricity = fields.Boolean("Electricity")
     hm_connect_gas = fields.Boolean("Gas")
     hm_connect_internet = fields.Boolean("Internet")
@@ -656,7 +678,7 @@ class CrmLead(models.Model):
     ], string="Usage Profile")
     en_require_life_support = fields.Boolean(string="Does anyone residing or intending to reside at your premises require life support equipment?")
     en_concesion_card_holder = fields.Boolean("Are you a concession card holder?")
-    en_rooftop_solar = fields.Boolean(string="Do you have rooftop solar panels")
+    en_rooftop_solar = fields.Boolean(string="Do you have rooftop solar panels :")
     en_electricity_provider = fields.Selection([
         ('1st_energy', '1st Energy'),
         ('actew_agl', 'ActewAGL'),
@@ -682,7 +704,7 @@ class CrmLead(models.Model):
         ('tango_energy', 'Tango Energy'),
         ('other', 'Other/Unknown'),
 
-    ],"Current electricity provide")
+    ],"Current electricity provider")
 
     en_gas_provider = fields.Selection([
         ('1st_energy', '1st Energy'),
@@ -709,10 +731,10 @@ class CrmLead(models.Model):
         ('tango_energy', 'Tango Energy'),
         ('other', 'Other/Unknown'),
 
-    ],"Current gas provide")
-    en_name = fields.Char("name")
-    en_contact_number = fields.Char("contact_number")
-    en_email = fields.Char("email")
+    ],"Current gas provider")
+    en_name = fields.Char("Name")
+    en_contact_number = fields.Char("Contact Number")
+    en_email = fields.Char("Email")
     en_request_callback = fields.Boolean(string="Request a call back")
     en_accpeting_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.")
 
@@ -830,30 +852,30 @@ class CrmLead(models.Model):
         ("social_media", "Social Media"),
         ("gaming", "Online Gaming"),
         ("streaming", "Streaming video/TV/Movies")       
-    ], string="Internet Usage Type")
+    ], string="How will you use the internet?", default="work")
 
-    in_internet_users_count = fields.Integer(string="Number of Users")
+    in_internet_users_count = fields.Integer(string="How many people are using the internet?")
     in_important_feature = fields.Selection([
         ("speed", "Speed"),
         ("price", "Price"),
         ("reliability", "Reliability"),      
-    ], string="Most Important Feature")
+    ], string="What is the most important feature to you?", default="speed")
     in_speed_preference = fields.Selection([
         ("25Mb", "25 Mbps"),
         ("50Mb", "50 Mbps"),
         ("100Mb", "100 Mbps"),
         ("not_sure", "Not Sure"),   
-    ], string="Speed Preference")
+    ], string="Do you have a speed preferece?", default="25MB")
     in_broadband_reason = fields.Selection([
         ("moving", "I am Moving"),
         ("better_plan", "I want a better plan"),
         ("connection", "I need broadband connected"),
-    ], string="Reason for Broadband")
+    ], string="Why are you looking into broadband options?",default="moving")
     in_when_to_connect_type = fields.Selection([
         ("asap", "ASAP"),
         ("dont_mind", "I don't mind"),
         ("specific_date", "Choose a date"),
-    ], string="When would you like broadband connected?")
+    ], string="When would you like broadband connected?",default="asap")
     in_when_to_connect_date = fields.Date(string="Select connection date?")
     in_compare_plans = fields.Boolean(string="Would you also like to comapre your energy plans to see if you could save?")
     in_name = fields.Char(string="Full Name")
