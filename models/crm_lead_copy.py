@@ -29,24 +29,46 @@ class CrmLead(models.Model):
 
     services = fields.Selection([
         ('credit_card', 'Credit Card AMEX'),
-        ('energy', 'Electicity & Gas'),
+        ('energy', 'Electricity & Gas'),
         ('optus_nbn', 'Optus NBN Form'),
     ],  required=True)
 
-    @api.onchange('services')
-    def _onchange_services(self):
-        if self.services == "credit_card":
-            _logger.info("User has selected credit card option")
-        elif self.services == "energy":
-            _logger.info("User has selected energy option")
-        elif self.services == "optus_nbn":
-            _logger.info("User has selected nbn option")
+    @api.model
+    def _get_stage_sequence(self):
+        """Return the ordered stages for the wizard navigation."""
+        return ["1", "2", "3"]  # your lead_stage values
+
+    def action_next_stage(self):
+        for lead in self:
+            if lead.lead_stage and lead.lead_stage != "3":
+                lead.lead_stage = str(int(lead.lead_stage) + 1)
+        return True
+
+    def action_prev_stage(self):
+        for lead in self:
+            if lead.lead_stage and lead.lead_stage != "1":
+                lead.lead_stage = str(int(lead.lead_stage) - 1)
+        return True
+
+    @api.depends('services')
+    def _compute_lead_for(self):
+        for record in self:
+            if record.services:
+                record.lead_for = record.services
+            else:
+                record.lead_for = False
             
 
 
     # Core fields that trigger stage computation
     customer_name = fields.Char(string="Customer Name")
     customer_mobile_number = fields.Char(string="Customer Mobile Number")
+    lead_for = fields.Char(
+    string="Lead for", 
+    readonly=True, 
+    compute="_compute_lead_for",
+    store=True
+)
     
     # Lead stage field - computed and stored
     lead_stage = fields.Selection([
@@ -54,7 +76,7 @@ class CrmLead(models.Model):
         ("2", "Stage 2"),
         ("3", "Stage 3"),
         ("4", "Stage 4"),
-    ], string="Lead Current Stage", default="1", store=True, readonly=True)
+    ], string="Lead Current Stage : ", default="1", store=True, readonly=True)
 
     en_current_address = fields.Char(string="Current Address")
     en_what_to_compare = fields.Selection([
@@ -186,13 +208,10 @@ class CrmLead(models.Model):
     stage_2_closer_name = fields.Char(string="Closer Name")
     stage_2_sale_date = fields.Date(string="Sale Date")
     stage_2_campign_name = fields.Selection([
-        ("dodo_nbn", "DODO NBN"),
-        ("dodo_gas", "DODO & Gas"),
+        ("dodo_power_gas", "DODO Power & Gas"),
         ("first_energy", "1st energy"),
-        ("optus", "Optus"),
-        ("amex", "Amex"),
         ("momentum","Momentum")
-    ],string="Campign Name", default="dodo_nbn")
+    ],string="Campign Name", default="dodo_power_gas")
     stage_2_lead_source = fields.Char(string="Lead Source")
     stage_2_lead_agent_notes = fields.Text(string="Notes By Lead Agent")
     disposition = fields.Selection([
@@ -353,6 +372,253 @@ class CrmLead(models.Model):
     ], string="Disposition by QA Team")
     qa_notes = fields.Char("Notes by QA")
 
+    # DODO POWER AND GAS
+    dp_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
+    dp_existing_sale = fields.Char(string="Existing Sale with NMI & Phone Number (Internal)")
+    dp_online_enquiry_form = fields.Char(string="Online Enquiry Form")
+    dp_sales_name = fields.Char(string="Sales Name")
+    dp_sales_reference = fields.Char(string="Sales Reference")
+    dp_agreement_date = fields.Date(string="Agreement Date")
+    dp_site_address_postcode = fields.Char(string="Site Address Postcode")
+    dp_site_addr_unit_type = fields.Char(string="Site Addr Unit Type")
+    dp_site_addr_unit_no = fields.Char(string="Site Addr Unit No")
+    dp_site_addr_floor_type = fields.Char(string="Site Addr Floor Type")
+    dp_site_addr_floor_no = fields.Char(string="Site Addr Floor No")
+    dp_site_addr_street_no = fields.Char(string="Site Addr Street No")
+    dp_site_addr_street_no_suffix = fields.Char(string="Site Addr Street No Suffix")
+    dp_site_addr_street_name = fields.Char(string="Site Addr Street Name")
+    dp_site_addr_street_type = fields.Char(string="Site Addr Street Type")
+    dp_site_addr_suburb = fields.Char(string="Site Addr Suburb")
+    dp_site_addr_state = fields.Char(string="Site Addr State")
+    dp_site_addr_postcode = fields.Char(string="Site Addr Postcode")
+    dp_site_addr_desc = fields.Text(string="Site Address Description")
+    dp_site_access = fields.Text(string="Site Access")
+    dp_site_more_than_12_months = fields.Boolean(string="At Site > 12 Months")
+    dp_prev_addr_1 = fields.Char(string="Previous Address Line 1")
+    dp_prev_addr_2 = fields.Char(string="Previous Address Line 2")
+    dp_prev_addr_state = fields.Char(string="Previous Address State")
+    dp_prev_addr_postcode = fields.Char(string="Previous Address Postcode")
+    dp_billing_address = fields.Boolean(string="Billing Address")
+    dp_bill_addr_1 = fields.Char(string="Bill Address Line 1")
+    dp_bill_addr_2 = fields.Char(string="Bill Address Line 2")
+    dp_bill_addr_state = fields.Char(string="Bill Address State")
+    dp_bill_addr_postcode = fields.Char(string="Bill Address Postcode")
+    dp_concession = fields.Boolean(string="Concession")
+    dp_concession_card_type = fields.Char(string="Concession Card Type")
+    dp_concession_card_no = fields.Char(string="Concession Card No")
+    dp_concession_start_date = fields.Date(string="Concession Start Date")
+    dp_concession_exp_date = fields.Date(string="Concession Expiry Date")
+    dp_concession_first_name = fields.Char(string="Concession First Name")
+    dp_concession_middle_name = fields.Char(string="Concession Middle Name")
+    dp_concession_last_name = fields.Char(string="Concession Last Name")
+    dp_product_code = fields.Char(string="Product Code")
+    dp_meter_type = fields.Char(string="Meter Type")
+    dp_kwh_usage_per_day = fields.Float(string="kWh Usage Per Day")
+    dp_how_many_people = fields.Integer(string="Number of People")
+    dp_how_many_bedrooms = fields.Integer(string="Number of Bedrooms")
+    dp_solar_power = fields.Boolean(string="Solar Power")
+    dp_solar_type = fields.Char(string="Solar Type")
+    dp_solar_output = fields.Float(string="Solar Output")
+    dp_green_energy = fields.Boolean(string="Green Energy")
+    dp_winter_gas_usage = fields.Float(string="Winter Gas Usage")
+    dp_summer_gas_usage = fields.Float(string="Summer Gas Usage")
+    dp_monthly_winter_spend = fields.Float(string="Monthly Winter Spend")
+    dp_monthly_summer_spend = fields.Float(string="Monthly Summer Spend")
+    dp_invoice_method = fields.Selection([
+        ('email', 'Email'),
+        ('post', 'Post'),
+        ('sms', 'SMS')
+    ], string="Invoice Method")
+    dp_customer_salutation = fields.Char(string="Customer Salutation")
+    dp_first_name = fields.Char(string="First Name")
+    dp_last_name = fields.Char(string="Last Name")
+    dp_date_of_birth = fields.Date(string="Date of Birth")
+    dp_email_contact = fields.Char(string="Email Contact")
+    dp_contact_number = fields.Char(string="Contact Number")
+    dp_hearing_impaired = fields.Boolean(string="Hearing Impaired", default=False)
+    dp_secondary_contact = fields.Boolean(string="Secondary Contact", default=False)
+    dp_secondary_salutation = fields.Char(string="Secondary Salutation")
+    dp_secondary_first_name = fields.Char(string="Secondary First Name")
+    dp_secondary_last_name = fields.Char(string="Secondary Last Name")
+    dp_secondary_date_of_birth = fields.Date(string="Secondary Date of Birth")
+    dp_secondary_email = fields.Char(string="Secondary Email")
+    dp_referral_code = fields.Char(string="Referral Code")
+    dp_new_username = fields.Char(string="New Username")
+    dp_new_password = fields.Char(string="New Password")
+    dp_customer_dlicense = fields.Char(string="Driver License")
+    dp_customer_dlicense_state = fields.Char(string="DL State")
+    dp_customer_dlicense_exp = fields.Date(string="DL Expiry")
+    dp_customer_passport = fields.Char(string="Passport")
+    dp_customer_passport_exp = fields.Date(string="Passport Expiry")
+    dp_customer_medicare = fields.Char(string="Medicare")
+    dp_customer_medicare_ref = fields.Char(string="Medicare Ref")
+    dp_position_at_current_employer = fields.Char(string="Position at Current Employer")
+    dp_employment_status = fields.Char(string="Employment Status")
+    dp_current_employer = fields.Char(string="Current Employer")
+    dp_employer_contact_number = fields.Char(string="Employer Contact Number")
+    dp_years_in_employment = fields.Integer(string="Years in Employment")
+    dp_months_in_employment = fields.Integer(string="Months in Employment")
+    dp_employment_confirmation = fields.Boolean(string="Employment Confirmation")
+    dp_life_support = fields.Boolean(string="Life Support", default=False)
+    dp_life_support_machine_type = fields.Char(string="Life Support Machine Type")
+    dp_life_support_details = fields.Text(string="Life Support Details")
+    dp_nmi = fields.Char(string="NMI")
+    dp_nmi_source = fields.Char(string="NMI Source")
+    dp_mirn = fields.Char(string="MIRN")
+    dp_mirn_source = fields.Char(string="MIRN Source")
+    dp_connection_date = fields.Date(string="Connection Date")
+    dp_electricity_connection = fields.Boolean(string="Electricity Connection")
+    dp_gas_connection = fields.Boolean(string="Gas Connection")
+    dp_12_month_disconnection = fields.Boolean(string="12 Month Disconnection")
+    dp_cert_electrical_safety = fields.Boolean(string="Electrical Safety Cert")
+    dp_cert_electrical_safety_id = fields.Char(string="Cert Electrical Safety ID")
+    dp_cert_electrical_safety_sent = fields.Boolean(string="Cert Sent")
+    dp_explicit_informed_consent = fields.Boolean(string="Explicit Informed Consent")
+    dp_center_name = fields.Char(string="Center Name")
+    dp_closer_name = fields.Char(string="Closer Name")
+    dp_dnc_wash_number = fields.Char(string="DNC Wash Number")
+    dp_dnc_exp_date = fields.Date(string="DNC Exp Date")
+    dp_audit_1 = fields.Char(string="Audit-1")
+    dp_audit_2 = fields.Char(string="Audit-2")
+    dp_welcome_call = fields.Boolean(string="Welcome Call")  
+
+    # MOMENTUM ENERGY FORM
+    momentum_energy_transaction_reference = fields.Char("Transaction Reference")
+    momentum_energy_transaction_channel = fields.Char("Transaction Channel")
+    momentum_energy_transaction_date = fields.Datetime("Transaction Date")
+    momentum_energy_transaction_verification_code = fields.Char("Transaction Verification Code")
+    momentum_energy_transaction_source = fields.Char("Transaction Source")
+
+    momentum_energy_customer_type = fields.Selection([
+        ('resident', 'Resident'),
+        ('company', 'Company')
+    ], string="Customer Type", required=True)
+
+    momentum_energy_customer_sub_type = fields.Char("Customer Sub Type")
+    momentum_energy_communication_preference = fields.Selection([
+        ('email', 'Email'),
+        ('phone', 'Phone'),
+        ('sms', 'SMS')
+    ], string="Communication Preference")
+    momentum_energy_promotion_allowed = fields.Boolean("Promotion Allowed")
+    momentum_energy_passport_id = fields.Char("Passport Number")
+    momentum_energy_passport_expiry = fields.Date("Passport Expiry Date")
+    momentum_energy_passport_country = fields.Char("Passport Issuing Country")
+    momentum_energy_driving_license_id = fields.Char("Driving License Number")
+    momentum_energy_driving_license_expiry = fields.Date("Driving License Expiry Date")
+    momentum_energy_driving_license_state = fields.Char("Issuing State")
+    momentum_energy_medicare_id = fields.Char("Medicare Number")
+    momentum_energy_medicare_number = fields.Char("Medicare Document Number")
+    momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date")
+    momentum_energy_industry = fields.Char("Industry")
+    momentum_energy_entity_name = fields.Char("Entity Name")
+    momentum_energy_trading_name = fields.Char("Trading Name")
+    momentum_energy_trustee_name = fields.Char("Trustee Name")
+    momentum_energy_abn_document_id = fields.Char("ABN Document ID")
+    momentum_energy_acn_document_id = fields.Char("ACN Document ID")
+    momentum_energy_primary_contact_type = fields.Char("Primary Contact Type")
+    momentum_energy_primary_salutation = fields.Char("Primary Salutation")
+    momentum_energy_primary_first_name = fields.Char("Primary First Name")
+    momentum_energy_primary_middle_name = fields.Char("Primary Middle Name")
+    momentum_energy_primary_last_name = fields.Char("Primary Last Name")
+    momentum_energy_primary_country_of_birth = fields.Char("Primary Country of Birth")
+    momentum_energy_primary_date_of_birth = fields.Date("Primary Date of Birth")
+    momentum_energy_primary_email = fields.Char("Primary Email")
+    momentum_energy_primary_address_type = fields.Char("Primary Address Type")
+    momentum_energy_primary_street_number = fields.Char("Primary Street Number")
+    momentum_energy_primary_street_name = fields.Char("Primary Street Name")
+    momentum_energy_primary_unit_number = fields.Char("Primary Unit Number")
+    momentum_energy_primary_suburb = fields.Char("Primary Suburb")
+    momentum_energy_primary_state = fields.Char("Primary State")
+    momentum_energy_primary_post_code = fields.Char("Primary Post Code")
+    momentum_energy_primary_phone_work = fields.Char("Primary Work Phone")
+    momentum_energy_primary_phone_home = fields.Char("Primary Home Phone")
+    momentum_energy_primary_phone_mobile = fields.Char("Primary Mobile Phone")
+    momentum_energy_secondary_contact_type = fields.Char("Secondary Contact Type")
+    momentum_energy_secondary_salutation = fields.Char("Secondary Salutation")
+    momentum_energy_secondary_first_name = fields.Char("Secondary First Name")
+    momentum_energy_secondary_middle_name = fields.Char("Secondary Middle Name")
+    momentum_energy_secondary_last_name = fields.Char("Secondary Last Name")
+    momentum_energy_secondary_country_of_birth = fields.Char("Secondary Country of Birth")
+    momentum_energy_secondary_date_of_birth = fields.Date("Secondary Date of Birth")
+    momentum_energy_secondary_email = fields.Char("Secondary Email")
+    momentum_energy_secondary_address_type = fields.Char("Secondary Address Type")
+    momentum_energy_secondary_street_number = fields.Char("Secondary Street Number")
+    momentum_energy_secondary_street_name = fields.Char("Secondary Street Name")
+    momentum_energy_secondary_unit_number = fields.Char("Secondary Unit Number")
+    momentum_energy_secondary_suburb = fields.Char("Secondary Suburb")
+    momentum_energy_secondary_state = fields.Char("Secondary State")
+    momentum_energy_secondary_post_code = fields.Char("Secondary Post Code")
+    momentum_energy_secondary_phone_work = fields.Char("Secondary Work Phone")
+    momentum_energy_secondary_phone_home = fields.Char("Secondary Home Phone")
+    momentum_energy_secondary_phone_mobile = fields.Char("Secondary Mobile Phone")
+    momentum_energy_service_type = fields.Selection([
+        ('power', 'Power'),
+        ('gas', 'Gas'),
+        ('other', 'Other')
+    ], string="Service Type")
+    momentum_energy_service_sub_type = fields.Char("Service Sub Type")
+    momentum_energy_service_connection_id = fields.Char("Service Connection ID")
+    momentum_energy_service_meter_id = fields.Char("Service Meter ID")
+    momentum_energy_service_start_date = fields.Date("Service Start Date")
+    momentum_energy_estimated_annual_kwhs = fields.Integer("Estimated Annual kWhs")
+    momentum_energy_lot_number = fields.Char("Lot Number")
+    momentum_energy_service_street_number = fields.Char("Service Street Number")
+    momentum_energy_service_street_name = fields.Char("Service Street Name")
+    momentum_energy_service_street_type_code = fields.Char("Service Street Type Code")
+    momentum_energy_service_suburb = fields.Char("Service Suburb")
+    momentum_energy_service_state = fields.Char("Service State")
+    momentum_energy_service_post_code = fields.Char("Service Post Code")
+    momentum_energy_service_access_instructions = fields.Text("Service Access Instructions")
+    momentum_energy_service_safety_instructions = fields.Text("Service Safety Instructions")
+    momentum_energy_offer_quote_date = fields.Datetime("Offer Quote Date")
+    momentum_energy_service_offer_code = fields.Char("Service Offer Code")
+    momentum_energy_service_plan_code = fields.Char("Service Plan Code")
+    momentum_energy_contract_term_code = fields.Char("Contract Term Code")
+    momentum_energy_contract_date = fields.Datetime("Contract Date")
+    momentum_energy_payment_method = fields.Selection([
+        ('cheque', 'Cheque'),
+        ('card', 'Card'),
+        ('bank_transfer', 'Bank Transfer')
+    ], string="Payment Method")
+    momentum_energy_bill_cycle_code = fields.Char("Bill Cycle Code")
+    momentum_energy_bill_delivery_method = fields.Selection([
+        ('email', 'Email'),
+        ('post', 'Post')
+    ], string="Bill Delivery Method")
+
+    #AMEX CREDIT CARD FIELDS
+    cc_prefix = fields.Selection([
+        ('n/a', 'N/A'), ('mr', 'Mr.'), ('mrs', 'Mrs.'), ('ms', 'Ms.'), ('dr', 'Dr.'), ('miss', 'Miss')
+    ], string="Prefix")
+    cc_first_name = fields.Char("First Name")
+    cc_last_name = fields.Char("Last Name")
+    cc_job_title = fields.Char("Job Title")
+    cc_phone = fields.Char("Phone")
+    cc_email = fields.Char("Email")
+    cc_annual_revenue = fields.Selection([
+        ('under_2m', 'Under ~ $2M'), ('2m_10m', '$2M ~ $10M'), ('10m_50m', '$10M ~ $50M'), ('50m_100m', '$50M ~ $100M'), ('100m_above', 'Above $100M')
+    ], string="Annual Revenue")
+    cc_annual_spend = fields.Selection([
+        ('under_1m', 'Under ~ $1M'), ('2m_5m', '$2M ~ $5M'), ('6m_10m', '$6M ~ $10M'),
+        ('11m_15m', '$11M ~ $15M'), ('16m_20m', '$16M ~ $20M'),('20m_above', 'Above $20M')
+    ], string="Annual Revenue")
+    cc_existing_products = fields.Char("Existing Competitor Products")
+    cc_expense_tools = fields.Char("Expense Management Tools")
+    cc_additional_info = fields.Text("Additional information for sales team")
+    cc_consent_personal_info = fields.Boolean(
+        string="I have obtained the express consent of the above individual to provide their personal information as noted above to American Express for purposes of offering American Express Commercial Payment Products to the business of the individual."
+    )
+    cc_consent_contact_method = fields.Selection([
+        ('phone', 'Phone'),
+        ('email', 'Email')
+    ], string="I have obtained the consent of above companies to contact the appointed representative via")
+
+    cc_contact_preference = fields.Selection([
+        ('me_first', 'Me first'),
+        ('referred_first', 'The referred contact first')
+    ], string="In order to best process this lead the salesperson should contact")
+
 
 
     def read(self, fields=None, load='_classic_read'):
@@ -387,110 +653,79 @@ class CrmLead(models.Model):
 
     def write(self, vals):
         """Override write to handle stage assignment after field updates"""
-        rainbow_leads = self.env["crm.lead"].browse()
         _logger.info("Updating lead %s with values: %s", self.ids, vals)
-        # trigger_rainbow = (
-        #     'stage_3_dispostion' in vals and 
-        #     vals.get('stage_3_dispostion') == 'closed'
-        # )
 
         res = super().write(vals)
 
+        # Skip stage assignment if context flag is set
+        if self.env.context.get("skip_stage_assign"):
+            return res
+
         Stage = self.env["crm.stage"]
+        
+        # Pre-fetch or create all possible stages ONCE before the loop
+        stages_cache = {}
+        stage_definitions = [
+            ("Won", 12),
+            ("On Hold", 13),
+            ("Failed", 14),
+            ("Call Back", 11),
+            ("Lost", 6),
+            ("Sold-Pending Quality", 8),
+        ]
+        
+        for stage_name, sequence in stage_definitions:
+            stage = Stage.search([("name", "=", stage_name)], limit=1)
+            if not stage:
+                stage = Stage.create({"name": stage_name, "sequence": sequence})
+            stages_cache[stage_name] = stage
+
+        # Process each lead
         for lead in self:
-            _logger.info("Lead being saved: %s", lead.id)
+            _logger.info("Processing lead: %s, lead_for: %s", lead.id, lead.lead_for)
+            
+            new_stage = None
 
-            #LEAD CLOSED
-            if lead.lead_stage == "3" and lead.stage_3_dispostion == "closed":
-                closed_stage = Stage.search([("name","=","Won")],limit=1)
-                if not closed_stage:
-                    closed_stage = Stage.create({
-                        "name":"Closed",
-                        "sequence":12
-                    })
+            # STAGE 3 DISPOSITIONS
+            if lead.lead_stage == "3":
+                if lead.stage_3_dispostion == "closed":
+                    new_stage = stages_cache["Won"]
+                    _logger.info("Lead %s - Moving to Won stage", lead.id)
+                elif lead.stage_3_dispostion == "on_hold":
+                    new_stage = stages_cache["On Hold"]
+                    _logger.info("Lead %s - Moving to On Hold stage", lead.id)
+                elif lead.stage_3_dispostion == "failed":
+                    new_stage = stages_cache["Failed"]
+                    _logger.info("Lead %s - Moving to Failed stage", lead.id)
+            
+            # STAGE 2 DISPOSITIONS
+            elif lead.lead_stage == "2":
+                if lead.disposition == "callback":
+                    new_stage = stages_cache["Call Back"]
+                    _logger.info("Lead %s - Moving to Call Back stage", lead.id)
+                elif lead.disposition == "lost":
+                    new_stage = stages_cache["Lost"]
+                    _logger.info("Lead %s - Moving to Lost stage", lead.id)
+                elif lead.disposition == "sold_pending_quality":
+                    new_stage = stages_cache["Sold-Pending Quality"]
+                    _logger.info("Lead %s - Moving to Sold-Pending Quality stage", lead.id)
 
-                if lead.stage_id.id != closed_stage.id:
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id":closed_stage.id
-                    })
-                    
-
-            #LEAD ONHOLD
-            if lead.lead_stage == "3" and lead.stage_3_dispostion == "on_hold":
-                hold_stage = Stage.search([("name","=","On Hold")],limit=1)
-                if not hold_stage:
-                    hold_stage = Stage.create({
-                        "name":"On Hold",
-                        "sequence":13
-                    })
-
-                if lead.stage_id.id != hold_stage.id:
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id":hold_stage.id
-                    }) 
-
-            #LEAD FAILED
-            if lead.lead_stage == "3" and lead.stage_3_dispostion == "failed":
-                failed_stage = Stage.search([("name","=","Failed")],limit=1)
-                if not failed_stage:
-                    failed_stage = Stage.create({
-                        "name":"Failed",
-                        "sequence":13
-                    })
-
-                if lead.stage_id.id != failed_stage.id:
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id":failed_stage.id
-                    })                   
-
-            # Call Back
-            if lead.lead_stage == "2" and lead.disposition == "callback":
-                callback_stage = Stage.search([("name", "=", "Call Back")], limit=1)
-                if not callback_stage:
-                    callback_stage = Stage.create({
-                        "name": "Call Back",
-                        "sequence": 11,
-                    })
-
-                if lead.stage_id.id != callback_stage.id:
-                    _logger.info("Moving lead %s to Call Back stage", lead.id)
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id": callback_stage.id
-                    })
-
-            # Lost
-            elif lead.lead_stage == "2" and lead.disposition == "lost":
-                lost_stage = Stage.search([("name", "=", "Lost")], limit=1)
-                if not lost_stage:
-                    lost_stage = Stage.create({
-                        "name": "Lost",
-                        "sequence": 6,
-                    })
-
-                if lead.stage_id.id != lost_stage.id:
-                    _logger.info("Moving lead %s to Lost stage", lead.id)
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id": lost_stage.id
-                    })
-
-            # Sold-Pending Quality
-            elif lead.lead_stage == "2" and lead.disposition == "sold_pending_quality":
-                pending = Stage.search([("name", "=", "Sold-Pending Quality")], limit=1)
-                if not pending:
-                    pending = Stage.create({
-                        "name": "Sold-Pending Quality",
-                        "sequence": 8,
-                    })
-
-                if lead.stage_id.id != pending.id:
-                    _logger.info("Moving lead %s to Pending stage", lead.id)
-                    lead.with_context(skip_stage_assign=True).write({
-                        "stage_id": pending.id
-                    })
-
-            # ✅ Otherwise run your normal assignment
-            elif not self.env.context.get("skip_stage_assign"):
-                lead._assign_lead_assigned_stage()       
+            # Apply stage update if needed
+            if new_stage:
+                if lead.stage_id.id != new_stage.id:
+                    _logger.info("Applying stage update for lead %s: %s -> %s", 
+                            lead.id, lead.stage_id.name, new_stage.name)
+                    # Use SQL update to avoid recursion
+                    self.env.cr.execute(
+                        "UPDATE crm_lead SET stage_id = %s WHERE id = %s",
+                        (new_stage.id, lead.id)
+                    )
+                    # Invalidate cache to ensure fresh data
+                    lead.invalidate_recordset(['stage_id'])
+            else:
+                # Run normal stage assignment for other cases
+                _logger.info("Running normal stage assignment for lead %s", lead.id)
+                lead._assign_lead_assigned_stage()
 
         return res
 
@@ -527,7 +762,7 @@ class CrmLead(models.Model):
                         lead.with_context(skip_stage_assign=True).write({"stage_id": default_stage.id})
 
 
-    #                         #CREDIT CARD - AMEX FIELDS
+    #CREDIT CARD - AMEX FIELDS
     # amex_date = fields.Date(string="Date")
     # amex_center = fields.Char(string="Center")
     # amex_company_name = fields.Char(string="Company Name")

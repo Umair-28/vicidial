@@ -3,7 +3,6 @@
 console.log("[SERVICES] widget bootstrap…");
 
 function injectServicesWidget() {
-
   // Find wrapper
   const wrapper = document.querySelector("[name=services]");
   if (!wrapper) {
@@ -43,7 +42,6 @@ function injectServicesWidget() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.dataset.value = opt.value;
-
     const ICON_MAP = {
       credit_card: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" id="Icons" viewBox="0 0 60 60" width="300" height="300"><g width="100%" height="100%" transform="matrix(0.67,0,0,0.67,9.9008483644668,9.900340849261266)"><path d="M6.391,41.774l0,0,0,0,3.6,3.6V55a5.006,5.006,0,0,0,5,5H55a5.006,5.006,0,0,0,5-5V30a4.992,4.992,0,0,0-4.65-4.965,5.01,5.01,0,0,0-.853-5.882L41.763,6.411,41.757,6.4l-.009,0L36.817,1.463a5,5,0,0,0-7.064,0L1.461,29.766a5.033,5.033,0,0,0,0,7.081ZM36.81,4.284l2.825,2.827L21.756,25H16.1ZM10,36.756l-2.9,2.9L4.274,36.83,10,31.1ZM8.514,41.07,10,39.584v2.972ZM58,30V55a3,3,0,0,1-3,3H15a3,3,0,0,1-3-3V30a3,3,0,0,1,3-3H55A3,3,0,0,1,58,30Zm-4.917-5.187L52.9,25H24.583L41.049,8.526,53.08,20.564A3.016,3.016,0,0,1,53.083,24.813ZM2.877,31.177l28.29-28.3A3.068,3.068,0,0,1,35.4,2.871L12.676,25.6A5,5,0,0,0,10.6,27.675L2.862,35.414A3.026,3.026,0,0,1,2.877,31.177Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M16,38h6a2,2,0,0,0,2-2V32a2,2,0,0,0-2-2H16a2,2,0,0,0-2,2v4A2,2,0,0,0,16,38Zm0-6h6l0,4H16Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M15,44a1,1,0,0,0,1-1V41a1,1,0,0,0-2,0v2A1,1,0,0,0,15,44Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,19,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M22,41v2a1,1,0,0,0,2,0V41a1,1,0,0,0-2,0Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,27,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M31,44a1,1,0,0,0,1-1V41a1,1,0,0,0-2,0v2A1,1,0,0,0,31,44Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M39,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,39,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M43,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,43,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M47,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,47,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M51,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,51,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,46H15a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,46H23a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,50H15a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,50H23a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M35,46H31a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path></g></svg>`,
       broadband: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" width="300" height="300"><g width="100%" height="100%" transform="matrix(1,0,0,1,0,0)"><g>			<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="77.945" y1="138.843" x2="113.57" y2="280.49" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>	<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
@@ -72,6 +70,7 @@ function injectServicesWidget() {
       dodo_power: "fa-battery-half",
       momentum_energy: "fa-sun",
     };
+
     function getIcon(value) {
       const icon = ICON_MAP[value];
       if (!icon) return '<i class="fa fa-circle"></i>'; // fallback
@@ -123,10 +122,4 @@ function injectServicesWidget() {
 // Keep checking until mounted
 const interval = setInterval(() => {
   injectServicesWidget();
-
-//   const wrapper = document.querySelector("[name=services]");
-//   if (wrapper) {
-//     clearInterval(interval);
-//     console.log("[SERVICES] Interval cleared 🛑");
-//   }
 }, 1000);
