@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_custom_iframe_form" model="ir.ui.view">
-        <field name="name">custom.iframe.form</field>
+        <field name="name">custom.iframe.form </field>
         <field name="model">custom.iframe</field>
         <field name="arch" type="xml">
             <form string="Vicidial Iframe" create="false" edit="true">
