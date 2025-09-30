@@ -43,6 +43,7 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
 
+
             <!-- Add content inside notebook -->
             <xpath expr="//notebook" position="inside">
 
@@ -57,9 +58,9 @@
                     </group>
                 </page>
 
-                <page string="Utility Services Forms">
+                <page string="Utility Services Forms" name="utility_services" default_active="1">
                     <group>
-                        <field name="id" invisible="1"/>
+                        <field name="id" invisible="True"/>
                     </group>
                     <group>
                         <field name="services" />
@@ -72,7 +73,7 @@
                     </group>
                     <!-- Electricty and GAS Stage 1 Form -->
 
-                    <group string="Stage 1 Form" invisible="services != 'energy'">
+                    <group string="Stage 1 Form" invisible="lead_for != 'energy' or lead_stage != '1'">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
@@ -82,7 +83,7 @@
 
                             <group col="2" colspan="4">
                                 <group string="Customer Details" colspan="1">
-                                    <field name="en_name" required="services == 'energy'" invisible="services != 'energy'"/>
+                                    <field name="en_name" required="services == 'energy'" invisible="lead_for != 'energy'"/>
                                     <field name="en_contact_number"/>
                                     <field name="en_customer_alt_phone"/>
                                     <field name="en_email" widget="email"/>
@@ -139,7 +140,7 @@
 
 
                     <!-- ENERGY STAGE 2 SHEET -->
-                    <group string="Stage 2: Verification by Expert" invisible="services != 'energy' or  (lead_stage != '2' and lead_stage != '3')">
+                    <group string="Stage 2: Verification by Expert" invisible="lead_for != 'energy' or lead_stage != '2'">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -201,7 +202,8 @@
                     </group>
 
                     <!-- Energy State 2 1st Energy Form -->
-                    <group string="1st Energy Form" invisible="services != 'energy' or stage_2_campign_name != 'first_energy' or lead_stage not in ['2', '3']">
+                    <group string="1st Energy Form" invisible="lead_for != 'energy' or stage_2_campign_name != 'first_energy' or lead_stage != '2'">
+
                         <sheet >
 
                             <div class="oe_title">
@@ -394,7 +396,7 @@
                     <!-- Energy State 2 1st Energy Form END-->
 
                     <!-- Energy State 2 DODO Power and Gas Form -->
-                    <group string="DODO Power and Gas Form" invisible="services != 'energy' or stage_2_campign_name != 'dodo_power_gas' or lead_stage not in ['2', '3']">
+                    <group string="DODO Power and Gas Form" invisible="lead_for != 'energy' or lead_stage != '2' or stage_2_campign_name != 'dodo_power_gas'">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -564,7 +566,7 @@
 
 
                     <!-- Energy State 2 - Momentum Energy Form -->
-                    <group string="Momentum Energy Form" invisible="services != 'energy' or stage_2_campign_name != 'momentum' or lead_stage not in ['2', '3']">
+                    <group string="Momentum Energy Form" invisible="lead_for != 'energy' or stage_2_campign_name != 'momentum' or lead_stage != '2'">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -724,7 +726,7 @@
 
 
                     <!-- Credit Card Stage 1 Form -->
-                    <group string="Stage 1: Lead Information Form For Amex" invisible="services != 'credit_card'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1: Lead Information Form For Amex" invisible="lead_for != 'credit_card' or lead_stage != '1'" class="o_form_sheet_bg_gray">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -769,7 +771,7 @@
 
 
                     <!-- QA Stage FORM - Stage 3 -->
-                    <group string="Stage 3: Quality Audit" invisible="services != 'energy' or lead_stage != '3'">
+                    <group string="Stage 3: Quality Audit" invisible="lead_for != 'energy' or lead_stage != '3'">
                         <sheet >
                             <div class="oe_title">
                                 <h1>

@@ -38,17 +38,70 @@ class CrmLead(models.Model):
         """Return the ordered stages for the wizard navigation."""
         return ["1", "2", "3"]  # your lead_stage values
 
-    def action_next_stage(self):
-        for lead in self:
-            if lead.lead_stage and lead.lead_stage != "3":
-                lead.lead_stage = str(int(lead.lead_stage) + 1)
-        return True
-
     def action_prev_stage(self):
+        """Move to previous stage"""
+        _logger.info("Previous button clicked for lead IDs: %s", self.ids)
+
+        result = {}
         for lead in self:
-            if lead.lead_stage and lead.lead_stage != "1":
-                lead.lead_stage = str(int(lead.lead_stage) - 1)
-        return True
+            current_stage = int(lead.lead_stage or "1")
+
+            if current_stage <= 1:
+                _logger.warning("Lead %s already at minimum stage", lead.id)
+                result = {"success": False, "error": "Already at first stage"}
+            else:
+                new_stage = str(current_stage - 1)
+                lead.with_context(skip_stage_assign=True).write({"lead_stage": new_stage})
+                _logger.info("Lead %s moved from stage %s to %s", lead.id, current_stage, new_stage)
+                result = {"success": True, "new_stage": new_stage}
+
+        return result
+
+
+    def action_next_stage(self):
+        _logger.info("self is %s ", self)
+        """Move to next stage"""
+        _logger.info("Next button clicked for lead IDs: %s", self.ids)
+
+        result = {}
+        for lead in self:
+            _logger.info("Lead current state is %s", lead.lead_stage)
+            current_stage = int(lead.lead_stage or "1")
+
+            if current_stage >= 3:
+                _logger.warning("Lead %s already at maximum stage", lead.id)
+                result = {"success": False, "error": "Already at last stage"}
+                continue
+  
+            # Stage 1 → Stage 2
+            if current_stage == 1:
+                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name:
+                    new_stage = "2"
+                    lead.with_context(skip_stage_assign=True).write({"lead_stage": new_stage})
+                    _logger.info("Lead current state after writing is %s", lead.lead_stage)
+
+                    _logger.info("Lead %s moved 1 → 2", lead.id)
+                    result = {"success": True, "new_stage": new_stage}
+                else:
+                    result = {"success": False, "error": "Please fill required fields before moving to stage 2"}
+
+            # Stage 2 → Stage 3
+            elif current_stage == 2:
+                if lead.disposition == "sold_pending_quality":
+                    new_stage = "3"
+                    _logger.info("Lead current state after stage 2 wroting is %s", lead.lead_stage)
+
+                    lead.with_context(skip_stage_assign=True).write({"lead_stage": new_stage})
+                    _logger.info("Lead %s moved 2 → 3", lead.id)
+                    result = {"success": True, "new_stage": new_stage}
+                else:
+                    result = {"success": False, "error": "Please set disposition before moving to stage 3"}
+
+        return result
+
+
+
+
 
     @api.depends('services')
     def _compute_lead_for(self):
@@ -621,27 +674,27 @@ class CrmLead(models.Model):
 
 
 
-    def read(self, fields=None, load='_classic_read'):
-        """Override read to check and update lead stage when record is accessed"""
-        result = super().read(fields, load)
+    # def read(self, fields=None, load='_classic_read'):
+    #     """Override read to check and update lead stage when record is accessed"""
+    #     result = super().read(fields, load)
         
-        # Check if we need to update lead stage for each record
-        for record in self:
-            current_stage = record.lead_stage
+    #     # Check if we need to update lead stage for each record
+    #     for record in self:
+    #         current_stage = record.lead_stage
             
-            # Check if lead is in stage 1 but should be in stage 2
-            if current_stage == '1' and record.en_name:
-                _logger.info("Lead %s should be updated from stage 1 to stage 2", record.id)
-                # Update to stage 2
-                record.with_context(skip_stage_assign=True).write({'lead_stage': '2'})
-                # Also trigger CRM stage assignment
-                record._assign_lead_assigned_stage()
-                _logger.info("Lead %s updated to stage 2", record.id)
+    #         # Check if lead is in stage 1 but should be in stage 2
+    #         if current_stage == '1' and record.en_name:
+    #             _logger.info("Lead %s should be updated from stage 1 to stage 2", record.id)
+    #             # Update to stage 2
+    #             record.with_context(skip_stage_assign=True).write({'lead_stage': '2'})
+    #             # Also trigger CRM stage assignment
+    #             record._assign_lead_assigned_stage()
+    #             _logger.info("Lead %s updated to stage 2", record.id)
 
-            if current_stage == "2" and record.disposition == "sold_pending_quality":
-                record.with_context(skip_stage_assign=True).write({'lead_stage':'3'}) 
+    #         if current_stage == "2" and record.disposition == "sold_pending_quality":
+    #             record.with_context(skip_stage_assign=True).write({'lead_stage':'3'}) 
         
-        return result
+    #     return result
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -672,6 +725,7 @@ class CrmLead(models.Model):
             ("Call Back", 11),
             ("Lost", 6),
             ("Sold-Pending Quality", 8),
+            ("Lead Assigned", 5)
         ]
         
         for stage_name, sequence in stage_definitions:
@@ -708,7 +762,14 @@ class CrmLead(models.Model):
                     _logger.info("Lead %s - Moving to Lost stage", lead.id)
                 elif lead.disposition == "sold_pending_quality":
                     new_stage = stages_cache["Sold-Pending Quality"]
+                    lead.with_context(skip_stage_assign=True).write({"lead_stage":"3"})
                     _logger.info("Lead %s - Moving to Sold-Pending Quality stage", lead.id)
+            
+
+            elif lead.lead_stage == "1":
+                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name:
+                    lead.with_context(skip_stage_assign=True).write({"lead_stage":"2"})
+                    new_stage = stages_cache["Lead Assigned"]        
 
             # Apply stage update if needed
             if new_stage:

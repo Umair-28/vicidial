@@ -25,6 +25,41 @@ class VicidialWebhookController(http.Controller):
             content_type='application/json;charset=utf-8'
         )
 
+    @http.route('/vicidial/lead/<string:phone>', type='http', auth='user', methods=['GET'], csrf=False)
+    def get_lead_details(self, phone):
+        """Return details of a lead by phone or phone_sanitized in JSON format"""
+
+        # Normalize input - also remove parentheses
+        sanitized_input = phone.strip()
+        _logger.info("input is %s ", sanitized_input)
+
+        # Search for lead where either `phone` OR `phone_sanitized` matches
+        lead = request.env['crm.lead'].sudo().search([
+            '|',
+            ('phone', '=', sanitized_input),
+            ('phone_sanitized', '=', sanitized_input)
+        ], limit=1)
+
+        if not lead:
+            data = {"error": f"Lead with phone {sanitized_input} not found"}
+        else:
+            data = {
+                "id": lead.id,
+                "name": lead.name,
+                "phone": lead.phone,
+                "phone_sanitized": lead.phone_sanitized,
+                "email": lead.email_from,
+                "company": lead.partner_id.name if lead.partner_id else None,
+                "lead_stage":lead.lead_stage,
+                "user_id": lead.user_id.name if lead.user_id else None,
+                "stage": lead.stage_id.name if lead.stage_id else None,
+            }
+        
+        return http.Response(
+            json.dumps(data),
+            content_type="application/json;charset=utf-8",
+        ) 
+
     @http.route('/vici/test', type='http', auth='public', methods=['GET'], csrf=False)
     def vici_test(self, **kwargs):
         return "✅ Vici webhook test route is working!"    

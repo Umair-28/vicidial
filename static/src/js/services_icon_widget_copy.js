@@ -1,42 +1,180 @@
 /** @odoo-module **/
+import { rpc } from "@web/core/network/rpc";
 
 console.log("[SERVICES] widget bootstrap…");
 
 function injectServicesWidget() {
   // Find wrapper
-  const wrapper = document.querySelector("[name=services]");
-  if (!wrapper) {
-    // console.warn("[SERVICES] Wrapper not found.");
-    return;
-  }
+  const wrapper = document.querySelector(" [name=services]");
+  if (!wrapper) return;
 
   if (wrapper.dataset.widgetMounted === "1") {
     console.log("[SERVICES] Already mounted, skipping.");
     return;
   }
 
-  console.log("[SERVICES] Wrapper found:", wrapper);
+  const formEl = wrapper.closest(".o_form_view");
 
+  // --- Fetch Lead by Phone ---
+  async function fetchLeadByPhone(phone) {
+    try {
+      const response = await fetch(
+        `/vicidial/lead/${encodeURIComponent(phone)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      const data = await response.json();
+      console.log("[SERVICES] Lead by phone:", data);
+
+      if (!data.error) {
+        setupStageNav(wrapper, data); // build stage nav after lead loaded
+      } else {
+        console.warn("[SERVICES] No lead found:", data.error);
+      }
+    } catch (err) {
+      console.error("[SERVICES] Error fetching lead:", err);
+    }
+  }
+
+  // --- Stage Navigation ---
+  function setupStageNav(wrapper, lead) {
+    const container = document.createElement("div");
+    container.className = "o_stage_nav_container";
+    container.style.cssText = `
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  gap:20px;
+  display: flex;
+  justify-content: center; /* keeps prev left, next right */
+  padding: 12px 24px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  z-index: 1050; /* make sure it’s above Odoo UI */
+`;
+
+    const prevBtn = document.createElement("button");
+    prevBtn.className = "btn btn-secondary";
+    prevBtn.innerHTML = '<i class="fa fa-arrow-left"></i> Previous';
+
+    const nextBtn = document.createElement("button");
+    nextBtn.className = "btn btn-primary";
+    nextBtn.innerHTML = 'Next <i class="fa fa-arrow-right"></i>';
+
+    container.appendChild(prevBtn);
+    container.appendChild(nextBtn);
+
+    // Add to body instead of after the wrapper
+    document.body.appendChild(container);
+
+    function updateButtonState() {
+      const stage = parseInt(lead.lead_stage || "1");
+      prevBtn.disabled = stage <= 1;
+      nextBtn.disabled = stage >= 3;
+    }
+    updateButtonState();
+
+    // Prev click
+    prevBtn.addEventListener("click", async () => {
+      try {
+        prevBtn.disabled = true;
+        nextBtn.disabled = true; // Disable both during operation
+        prevBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Loading...';
+
+        console.log("Calling prev stage for lead:", lead.id);
+
+        const res = await rpc(
+          "/web/dataset/call_kw/crm.lead/action_prev_stage",
+          {
+            model: "crm.lead",
+            method: "action_prev_stage",
+            args: [[lead.id]],
+            kwargs: {},
+          }
+        );
+
+        console.log("Previous button response:", res);
+        if (res?.error) {
+          alert(res.error);
+          nextBtn.disabled = false;
+          prevBtn.disabled = false;
+          nextBtn.innerHTML = 'Next <i class="fa fa-arrow-right"></i>';
+        } else {
+          // Reload the page to reflect changes in invisible fields
+          window.location.reload();
+        }
+
+        // Reload the page to reflect changes in invisible fields
+      } catch (err) {
+        console.error("[SERVICES] Prev stage error:", err);
+        alert("Failed to move to previous stage: " + (err.message || err));
+
+        // Re-enable buttons on error
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
+        prevBtn.innerHTML = '<i class="fa fa-arrow-left"></i> Previous';
+      }
+    });
+
+    // Next click
+    nextBtn.addEventListener("click", async () => {
+      try {
+        nextBtn.disabled = true;
+        prevBtn.disabled = true; // Disable both during operation
+        nextBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Loading...';
+
+        console.log("Calling next stage for lead:", lead.id);
+
+        const res = await rpc(
+          "/web/dataset/call_kw/crm.lead/action_next_stage",
+          {
+            model: "crm.lead",
+            method: "action_next_stage",
+            args: [[lead.id]],
+            kwargs: {},
+          }
+        );
+
+        console.log("Next button response:", res);
+
+        if (res?.error) {
+          alert(res.error);
+          nextBtn.disabled = false;
+          prevBtn.disabled = false;
+          nextBtn.innerHTML = 'Next <i class="fa fa-arrow-right"></i>';
+        } else {
+          // Reload the page to reflect changes in invisible fields
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("[SERVICES] Next stage error:", err);
+        alert("Failed to move to next stage: " + (err.message || err));
+
+        // Re-enable buttons on error
+        nextBtn.disabled = false;
+        prevBtn.disabled = false;
+        nextBtn.innerHTML = 'Next <i class="fa fa-arrow-right"></i>';
+      }
+    });
+  }
+
+
+  // --- Existing Service Selector ---
   const select = wrapper.querySelector("select");
   if (!select) {
     console.error("[SERVICES] No <select> found inside wrapper!");
     return;
   }
-  console.log("[SERVICES] Select found:", select);
-
-  // Mark as mounted
-  wrapper.dataset.widgetMounted = "1";
-
-  // Hide select
   select.style.display = "none";
 
-  // Create container
   const container = document.createElement("div");
   container.classList.add("o_service_selector");
   select.insertAdjacentElement("afterend", container);
 
-  // Build buttons
-  Array.from(select.options).forEach((opt, idx) => {
+  Array.from(select.options).forEach((opt) => {
     if (!opt.value || opt.style.display === "none") return;
 
     const btn = document.createElement("button");
@@ -73,28 +211,15 @@ function injectServicesWidget() {
 
     function getIcon(value) {
       const icon = ICON_MAP[value];
-      if (!icon) return '<i class="fa fa-circle"></i>'; // fallback
-
-      // If it looks like an SVG string, return it directly
-      if (icon.startsWith("<svg")) {
-        return icon;
-      }
-
-      // If it looks like a URL, return an img tag
+      if (!icon) return '<i class="fa fa-circle"></i>';
+      if (icon.startsWith("<svg")) return icon;
       if (icon.startsWith("http://") || icon.startsWith("https://")) {
-        return `<img src="${icon}" alt="${value}" style="width: 24px; height: 24px; display: inline-block;">`;
+        return `<img src="${icon}" alt="${value}" style="width:24px;height:24px;">`;
       }
-
-      // Otherwise treat it as a FontAwesome class
       return `<i class="fa ${icon}"></i>`;
     }
 
-    console.log("value is ", ICON_MAP[opt.value], opt);
     const cleanValue = opt.value.replace(/['"]+/g, "").trim();
-    console.log("raw:", opt.value, "clean:", cleanValue);
-
-    // Use the getIcon function to handle both SVG and FontAwesome
-    // btn.innerHTML = `${getIcon(cleanValue)} <span>${opt.text}</span>`;
     btn.innerHTML = `<div class="icon-container">${getIcon(
       cleanValue
     )}</div><span>${opt.text}</span>`;
@@ -116,10 +241,179 @@ function injectServicesWidget() {
     container.appendChild(btn);
   });
 
-  console.log("[SERVICES] Widget mounted successfully ✅");
+  // --- Get phone field & fetch lead ---
+  const phoneWrapper = formEl?.querySelector("[name=phone]");
+  const phoneValue =
+    phoneWrapper?.querySelector("input")?.value ||
+    phoneWrapper?.textContent?.trim();
+
+  if (phoneValue) {
+    console.log("Phone value:", phoneValue);
+    fetchLeadByPhone(phoneValue);
+  } else {
+    console.warn("[SERVICES] No phone found in form.");
+  }
+
+  wrapper.dataset.widgetMounted = "1";
+  console.log("[SERVICES] Widget + StageNav mounted ✅");
 }
 
 // Keep checking until mounted
 const interval = setInterval(() => {
   injectServicesWidget();
 }, 1000);
+
+// /** @odoo-module **/
+
+// console.log("[SERVICES] widget bootstrap…");
+
+// function injectServicesWidget() {
+//   // Find wrapper
+//   const wrapper = document.querySelector("[name=services]");
+
+//   if (!wrapper) {
+//     // console.warn("[SERVICES] Wrapper not found.");
+//     return;
+//   }
+
+//   if (wrapper.dataset.widgetMounted === "1") {
+//     console.log("[SERVICES] Already mounted, skipping.");
+//     return;
+//   }
+
+//   if (wrapper) {
+//     const formEl = wrapper.closest(".o_form_view");
+
+//     // Grab phone field
+//     const phoneWrapper = formEl.querySelector("[name=phone]");
+//     const phoneValue =
+//       phoneWrapper?.querySelector("input")?.value ||
+//       phoneWrapper?.textContent?.trim();
+//     fetchLeadByPhone(phoneValue);
+
+//     console.log("Phone value:", phoneValue);
+//   }
+
+//   async function fetchLeadByPhone(phone) {
+//     const response = await fetch(
+//       `/vicidial/lead/${encodeURIComponent(phone)}`,
+//       {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     const data = await response.json();
+//     console.log("Lead by phone:", data);
+//   }
+
+//   console.log("[SERVICES] Wrapper found:", wrapper);
+
+//   const select = wrapper.querySelector("select");
+//   if (!select) {
+//     console.error("[SERVICES] No <select> found inside wrapper!");
+//     return;
+//   }
+//   console.log("[SERVICES] Select found:", select);
+
+//   // Mark as mounted
+//   wrapper.dataset.widgetMounted = "1";
+
+//   // Hide select
+//   select.style.display = "none";
+
+//   // Create container
+//   const container = document.createElement("div");
+//   container.classList.add("o_service_selector");
+//   select.insertAdjacentElement("afterend", container);
+
+//   // Build buttons
+//   Array.from(select.options).forEach((opt, idx) => {
+//     if (!opt.value || opt.style.display === "none") return;
+
+//     const btn = document.createElement("button");
+//     btn.type = "button";
+//     btn.dataset.value = opt.value;
+
+//     function getIcon(value) {
+//       const icon = ICON_MAP[value];
+//       if (!icon) return '<i class="fa fa-circle"></i>'; // fallback
+
+//       // If it looks like an SVG string, return it directly
+//       if (icon.startsWith("<svg")) {
+//         return icon;
+//       }
+
+//       // If it looks like a URL, return an img tag
+//       if (icon.startsWith("http://") || icon.startsWith("https://")) {
+//         return `<img src="${icon}" alt="${value}" style="width: 24px; height: 24px; display: inline-block;">`;
+//       }
+
+//       // Otherwise treat it as a FontAwesome class
+//       return `<i class="fa ${icon}"></i>`;
+//     }
+
+//     console.log("value is ", ICON_MAP[opt.value], opt);
+//     const cleanValue = opt.value.replace(/['"]+/g, "").trim();
+//     console.log("raw:", opt.value, "clean:", cleanValue);
+
+//     // Use the getIcon function to handle both SVG and FontAwesome
+//     // btn.innerHTML = `${getIcon(cleanValue)} <span>${opt.text}</span>`;
+//     btn.innerHTML = `<div class="icon-container">${getIcon(
+//       cleanValue
+//     )}</div><span>${opt.text}</span>`;
+//     btn.classList.add("o_service_btn");
+
+//     btn.addEventListener("click", () => {
+//       select.value = opt.value;
+//       select.dispatchEvent(new Event("change", { bubbles: true }));
+//       container
+//         .querySelectorAll("button")
+//         .forEach((b) => b.classList.remove("selected"));
+//       btn.classList.add("selected");
+//     });
+
+//     if (opt.selected) {
+//       btn.classList.add("selected");
+//     }
+
+//     container.appendChild(btn);
+//   });
+
+//   console.log("[SERVICES] Widget mounted successfully ✅");
+// }
+
+// // Keep checking until mounted
+// const interval = setInterval(() => {
+//   injectServicesWidget();
+// }, 1000);
+
+//  const ICON_MAP = {
+//     credit_card: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" id="Icons" viewBox="0 0 60 60" width="300" height="300"><g width="100%" height="100%" transform="matrix(0.67,0,0,0.67,9.9008483644668,9.900340849261266)"><path d="M6.391,41.774l0,0,0,0,3.6,3.6V55a5.006,5.006,0,0,0,5,5H55a5.006,5.006,0,0,0,5-5V30a4.992,4.992,0,0,0-4.65-4.965,5.01,5.01,0,0,0-.853-5.882L41.763,6.411,41.757,6.4l-.009,0L36.817,1.463a5,5,0,0,0-7.064,0L1.461,29.766a5.033,5.033,0,0,0,0,7.081ZM36.81,4.284l2.825,2.827L21.756,25H16.1ZM10,36.756l-2.9,2.9L4.274,36.83,10,31.1ZM8.514,41.07,10,39.584v2.972ZM58,30V55a3,3,0,0,1-3,3H15a3,3,0,0,1-3-3V30a3,3,0,0,1,3-3H55A3,3,0,0,1,58,30Zm-4.917-5.187L52.9,25H24.583L41.049,8.526,53.08,20.564A3.016,3.016,0,0,1,53.083,24.813ZM2.877,31.177l28.29-28.3A3.068,3.068,0,0,1,35.4,2.871L12.676,25.6A5,5,0,0,0,10.6,27.675L2.862,35.414A3.026,3.026,0,0,1,2.877,31.177Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M16,38h6a2,2,0,0,0,2-2V32a2,2,0,0,0-2-2H16a2,2,0,0,0-2,2v4A2,2,0,0,0,16,38Zm0-6h6l0,4H16Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M15,44a1,1,0,0,0,1-1V41a1,1,0,0,0-2,0v2A1,1,0,0,0,15,44Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,19,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M22,41v2a1,1,0,0,0,2,0V41a1,1,0,0,0-2,0Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,27,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M31,44a1,1,0,0,0,1-1V41a1,1,0,0,0-2,0v2A1,1,0,0,0,31,44Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M39,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,39,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M43,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,43,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M47,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,47,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M51,40a1,1,0,0,0-1,1v2a1,1,0,0,0,2,0V41A1,1,0,0,0,51,40Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,46H15a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,46H23a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M19,50H15a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M27,50H23a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path><path d="M35,46H31a1,1,0,0,0,0,2h4a1,1,0,0,0,0-2Z" fill="#e36e1c" fill-opacity="1" data-original-color="#000000ff" stroke="none" stroke-opacity="1"></path></g></svg>`,
+//     broadband: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" id="Capa_1" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" width="300" height="300"><g width="100%" height="100%" transform="matrix(1,0,0,1,0,0)"><g>			<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="77.945" y1="138.843" x2="113.57" y2="280.49" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>	<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 	M70.22,280.49L8.14,33.65c-2.83-11.26,4-22.68,15.26-25.51c1.72-0.43,3.44-0.64,5.14-0.64c9.41,0,17.97,6.36,20.37,15.9
+// 	l20.408,81.143" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>	<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 	M398.43,280.49L463.09,23.4c2.4-9.54,10.96-15.9,20.37-15.9c1.7,0,3.42,0.21,5.14,0.64c11.26,2.83,18.09,14.25,15.26,25.51
+// 	l-62.08,246.84" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>	<g>		<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 		M152.99,459.49v35.01c0,5.52-4.48,10-10,10H47.5c-5.52,0-10-4.48-10-10v-35.01" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>		<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 		M474.5,459.49v35.01c0,5.52-4.48,10-10,10h-95.49c-5.52,0-10-4.48-10-10v-35.01" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>		<g>			<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 			M474.5,459.489h-437c-16.569,0-30-13.431-30-30v-119c0-16.569,13.431-30,30-30h437c16.569,0,30,13.431,30,30v119
+// 			C504.5,446.058,491.069,459.489,474.5,459.489z" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>							<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="7.5" y1="319.706" x2="504.5" y2="319.706" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>							<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="379.128" y1="420.273" x2="7.5" y2="420.273" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>							<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="504.5" y1="420.273" x2="414.128" y2="420.273" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>		</g>					<circle style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" cx="67.5" cy="369.989" r="15" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></circle>					<circle style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" cx="142.5" cy="369.989" r="15" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></circle>					<circle style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" cx="217.5" cy="369.989" r="15" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></circle>	</g>			<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="459.5" y1="369.989" x2="276.833" y2="369.989" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>	<g>					<circle style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" cx="256" cy="84.608" r="77.108" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></circle>		<g>			<g>				<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 				M206.88,70.719c27.128-27.128,71.112-27.128,98.241,0" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>				<path style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" d="
+// 				M234.684,92.138c11.754-11.754,30.879-11.754,42.633,0" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></path>			</g>							<line style="stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10;" x1="256" y1="118.844" x2="256" y2="118.844" fill="none" fill-opacity="1" stroke="#e36e1c" stroke-opacity="1" data-original-stroke-color="#000000ff" stroke-width="10" data-original-stroke-width="15"></line>		</g>	</g></g></g></svg>`,
+//     energy: "fa-bolt",
+//     moving_home: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" x="0" y="0" viewBox="0 0 682.667 682.667" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><defs stroke-width="9" style="stroke-width: 9;"><clipPath id="a" clipPathUnits="userSpaceOnUse" stroke-width="9" style="stroke-width: 9;"><path d="M0 512h512V0H0Z" fill="#e36e1c" opacity="1" data-original="#000000" class="" stroke-width="9" style="stroke-width: 9;"></path></clipPath></defs><g clip-path="url(#a)" transform="matrix(1.33333 0 0 -1.33333 0 682.667)" stroke-width="9" style="stroke-width: 9;"><path d="M0 0v31.85a25.858 25.858 0 0 1-8.968 19.581l-8.102 6.991a25.86 25.86 0 0 0-8.522 14.806l-18.113 96.405c-2.297 12.228-12.976 21.087-25.418 21.087h-80.89" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(492.254 213.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-18.815c-8.286 0-15-6.716-15-15v-24.5" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(488.15 213.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-61.887c-6.625 0-11.996-5.371-11.996-11.996v-59.091c0-6.626 5.371-11.997 11.996-11.997h82.673" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(447.547 359)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h221.743c8.284 0 15-6.716 15-15v-247.625" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(101.187 437.334)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0v245.732c0 8.285 6.716 15 15 15h36.44" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(19.747 176.601)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h17.757c8.284 0 15-6.716 15-15v-31.159" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(24.91 224)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-20.41c-8.284 0-15 6.716-15 15v15.833c0 8.285 6.716 15 15 15h33.4" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(42.91 128)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-84.871" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(249.587 128)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-72.654" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(352.24 128)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h35.166c8.284 0 15-6.716 15-15v-15.833c0-8.285-6.716-15-15-15H18.96" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(454.334 173.833)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h219.702" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(145.9 173.833)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0c0-32.401-26.266-58.667-58.666-58.667-32.401 0-58.667 26.266-58.667 58.667 0 32.4 26.266 58.667 58.667 58.667C-26.266 58.667 0 32.4 0 0Z" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(160 133.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0c0-12.96-10.506-23.467-23.466-23.467-12.961 0-23.467 10.507-23.467 23.467 0 12.96 10.506 23.466 23.467 23.466C-10.506 23.466 0 12.96 0 0Z" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(124.8 133.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0c0-32.401 26.267-58.667 58.667-58.667 32.4 0 58.667 26.266 58.667 58.667 0 32.4-26.267 58.667-58.667 58.667C26.267 58.667 0 32.4 0 0Z" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(352 133.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0c0-12.96 10.507-23.467 23.467-23.467 12.96 0 23.467 10.507 23.467 23.467 0 12.96-10.507 23.466-23.467 23.466C10.507 23.466 0 12.96 0 0Z" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(387.2 133.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-54.664" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(168.998 315.502)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-48.126" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(171.998 283.502)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0h-75.939c-6.278 0-11.367 5.089-11.367 11.367V56.41c0 4.391 2.031 8.536 5.5 11.229l35.123 27.253a14.212 14.212 0 0 0 17.426 0L5.867 67.639a14.214 14.214 0 0 0 5.5-11.229V11.367C11.367 5.089 6.278 0 0 0Z" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(259.303 261.646)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0v31.042" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(221.334 262.976)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path><path d="M0 0v-36.326" style="stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 10; stroke-dasharray: none; stroke-opacity: 1;" transform="translate(492.254 213.333)" fill="none" stroke="#e36e1c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-dasharray="none" stroke-opacity="" data-original="#000000" opacity="1" class=""></path></g></g></svg>`,
+//     business_loan:
+//       "https://utilityhub.com.au/wp-content/uploads/2025/05/interest.svg",
+//     insurance: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:svgjs="http://svgjs.dev/svgjs" id="Layer_1" viewBox="0 0 300 300"><defs><style>      .st0 {        fill: #e36e1c;      }    </style></defs><path class="st0" d="M119.7,114.3c-3.7,0-6.8-3.1-6.8-6.8v-16.6h-16.6c-3.7,0-6.8-3.1-6.8-6.8v-14c0-3.7,3.1-6.8,6.8-6.8h16.6v-17.1c0-3.5,2.8-6.3,6.3-6.3h14.4c3.7,0,6.8,3.1,6.8,6.8v16.6h16.6c3.7,0,6.8,3.1,6.8,6.8v14c0,3.7-3.1,6.8-6.8,6.8h-16.6v16.6c0,3.7-3.1,6.8-6.8,6.8h-13.9ZM96.3,68c-1.3,0-2.2.9-2.2,2.2v14c0,1.3.9,2.2,2.2,2.2h18.9c1.2,0,2.3,1.1,2.3,2.3v18.9c0,1.3.9,2.2,2.2,2.2h13.9c1.3,0,2.2-.9,2.2-2.2v-18.9c0-1.2,1.1-2.3,2.3-2.3h18.9c1.3,0,2.2-.9,2.2-2.2v-14c0-1.3-.9-2.2-2.2-2.2h-18.9c-1.2,0-2.3-1.1-2.3-2.3v-18.9c0-1.3-.9-2.2-2.2-2.2h-16.2v21.1c0,1.2-1.1,2.3-2.3,2.3h-18.8Z"></path><path class="st0" d="M66.3,162.1c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h35.1c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-35.1Z"></path><path class="st0" d="M66.3,134.4c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h114.8c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-114.8Z"></path><path class="st0" d="M78.1,212.9c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h91.2c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-91.2Z"></path><path class="st0" d="M115,162.1c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h66.1c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-66.1Z"></path><path class="st0" d="M146,186.8c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h35.1c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-35.1Z"></path><path class="st0" d="M66.3,186.8c-1.2,0-2.3-1.1-2.3-2.3s1.1-2.3,2.3-2.3h66.1c1.2,0,2.3,1.1,2.3,2.3s-1.1,2.3-2.3,2.3h-66.1Z"></path><path class="st0" d="M242.5,278.9c-2.9,0-5.7-.7-8.4-2.1-10.3-5.6-19-12.8-26-21.5l-2.5-3.1-.9,3.9c-2.6,10.4-11.4,18.4-21.9,19.9h0s-.2,0-.2,0h-.1c0,0-.2,0-.2,0-1.4.2-8.1.2-21.4.2H41.8c-17.3,0-31.4-14.1-31.4-31.4v-11.6c0-1.2,1.1-2.3,2.3-2.3h30.9v-41.8c0-1.2,1.1-2.3,2.3-2.3s2.3,1.1,2.3,2.3v41.8h108.2c4.7,0,8.5,3.8,8.5,8.5v15.7c0,8.8,6.9,16,15.7,16.5h.3c11.2-1,20-10.5,20-21.8v-5.1l-.3-.5c-7.4-13-11.8-28.8-13.2-46.9-.3-4.5,1.8-8.8,5.6-11.1l7.9-5V42.3c0-4.8,1.6-9.4,4.6-13.1l2.6-3.3H70.5c-12.4,0-22.4,10-22.4,22.4v118.9c0,1.2-1.1,2.3-2.3,2.3s-2.3-1.1-2.3-2.3V48.4c0-14.8,12.1-26.9,26.9-26.9h151.4c11.5,0,20.8,9.4,20.8,20.9v10.7c0,5.6-4.6,10.2-10.2,10.2h-27.1v115.2l30.1-18.9c2-1.2,4.2-1.9,6.3-1.9s4.3.6,6.1,1.6l45.6,27c3.9,2.3,6.1,6.5,5.8,10.9-2.3,40.7-19.2,67.7-50,80.4-2.1.8-4.3,1.3-6.6,1.3h0ZM241.7,162.1c-1.4,0-2.7.4-3.9,1.1l-42.5,26.8c-2.3,1.5-3.6,4.1-3.4,6.9,2.8,36.4,17.3,61.1,44.4,75.8,2,1,4.1,1.6,6.3,1.6s3.4-.3,4.9-.9c29.6-12.2,45-37.2,47.2-76.4.2-2.8-1.2-5.4-3.6-6.8l-45.6-27c-1.1-.7-2.4-1.1-3.7-1.1ZM14.9,244.9c0,14.8,12.1,26.9,26.9,26.9h125.9l-2.7-3.3c-3.1-3.8-4.7-8.4-4.7-13.3v-15.7c0-2.2-1.8-4-4-4H14.9v9.4ZM232.5,58.8c3.1,0,5.6-2.5,5.6-5.6v-10.7c0-9-7.4-16.4-16.4-16.4h-1.7c-8.2.9-14.6,7.9-14.6,16.3v16.4h27.1Z"></path><path class="st0" d="M172.5,274.4l-.9-1.1-3.3-1.9h4.4l.3.3c.5.3,1,.5,1.7.7l-.4,1.9h-1.8ZM211.8,24.7l1-1.3h1.6l.4,1.9-1.8.9-1.2-1.5Z"></path><path class="st0" d="M172.1,272.4c.7.4,1.4.7,2.2,1h-1.3l-.8-1h0ZM213.3,24.4h1.1c-.6.3-1.2.6-1.8.9l.7-.9Z"></path><path class="st0" d="M242.8,260.6c-2.2,0-4.4-.6-6.2-1.6-19-10.3-30-28.3-32.4-53.5-.4-4.5,1.7-8.8,5.5-11.2l26.3-16.6c2-1.2,4.2-1.9,6.3-1.9s4.3.6,6.1,1.6l28.3,16.8c3.8,2.3,6.1,6.6,5.8,11-2,27.2-13.7,45.4-34.7,54-1.3.5-2.4,1.2-3.8,1.3h-1.2ZM242.2,180.5c-1.4,0-2.7.4-3.9,1.1l-26.3,16.6c-2.3,1.5-3.7,4.3-3.4,7,2.3,23.9,12.1,40.2,30.1,49.9,1.3.6,2.7,1,4,1s2.3-.2,3.2-.6c19.6-8,30-24.5,32-50.3.2-2.8-1.2-5.5-3.6-6.9l-28.3-16.8c-1.1-.7-2.4-1.1-3.7-1.1Z"></path><path class="st0" d="M236.6,230.2c-.2-.1-.4-.2-.5-.4l-9.6-10c-.9-.9-.9-2.3,0-3.2s1-.7,1.6-.7,1.1,0,1.7.7l8.3,8.6,18.8-18.8c.5-.5,1.2-.7,1.6-.7s1.1,0,1.7.7c.5.5.6,1.1.6,1.6s0,1.1-.7,1.7l-20.5,20.5c0,0-.1.1-.2.2-.6.5-1.5.5-2.2.1l-.5-.3Z"></path></svg>`,
+//     home_loan:
+//       "https://utilityhub.com.au/wp-content/uploads/2025/05/home.svg",
+//     upgrades:
+//       "https://utilityhub.com.au/wp-content/uploads/2025/05/Air-Conditioning.svg",
+//     dodo_nbn: "fa-network-wired",
+//     optus_nbn: "fa-sitemap",
+//     first_energy: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:svgjs="http://svgjs.dev/svgjs" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg285" width="300" height="300" viewBox="0 0 300 300"><defs><style>      .st0, .st1 {        fill: none;      }      .st1 {        stroke: #e36e1c;        stroke-linecap: round;        stroke-linejoin: round;        stroke-width: 7.6px;      }      .st2 {        clip-path: url(#clippath);      }    </style><clipPath id="clippath"><rect class="st0" y="0" width="300" height="300"></rect></clipPath></defs><g id="g291"><g id="g293"><g class="st2"><g id="g295"><g id="g301"><path id="path303" class="st1" d="M172.6,206.1v27.2c0,7.6-6.1,13.7-13.7,13.7H55.7c-5.7,0-10.4-4.6-10.4-10.3s4.6-10.4,10.4-10.4h60.2c5.7,0,10.4-4.6,10.4-10.4s-4.6-10.4-10.4-10.4h-31.8c-4.7,0-8.5-3.8-8.5-8.5v-69.6"></path></g><g id="g305"><path id="path307" class="st1" d="M188.6,153.9h-7.9c-1.1,0-2-.9-2-2v-23.3c0-2-2.6-2.7-3.6-1.1l-20.1,31.9c-.8,1.3.1,3,1.7,3h7.9c1.1,0,2,.9,2,2v23.3c0,2,2.6,2.7,3.6,1.1l20.1-31.9c.8-1.3-.1-3-1.7-3Z"></path></g><g id="g309"><path id="path311" class="st1" d="M150,103c-4.9,6.5-7.4,14.7-3.4,27.5,2,6.4-1.1,12.5-8.2,13.9-6.1,1.2-15.3-1.8-15.9-18.6-.1-3-4.3-3.8-5.5-1-3,6.9-4.6,14.6-4.6,22.6-.1,32.4,26.1,58.8,58.5,58.8s37-9.7,47.6-24.5"></path></g><g id="g313"><path id="path315" class="st1" d="M160.6,92.7c1.3-1.1,2.6-2.1,3.8-3.2,7.7-6.7,14.2-14,11.5-27.2-.9-4.3,3.6-7.8,7.6-5.9,14.4,7.1,30.5,27,28.5,49.6-.5,5.6-2.1,11.4-5.1,17.3-11.6,22.1,1.1,32,11.6,30.5"></path></g><g id="g317"><path id="path319" class="st1" d="M53.4,78.2v-18.3c0-3.8,3.1-6.9,6.9-6.9s6.9,3.1,6.9,6.9v18.3"></path></g><g id="g321"><path id="path323" class="st1" d="M83.8,78.2v-18.3c0-3.8,3.1-6.9,6.9-6.9s6.9,3.1,6.9,6.9v18.3"></path></g><g id="g325"><path id="path327" class="st1" d="M79.1,127.5h-7.1c-15,0-27.2-12.2-27.2-27.2v-18.6c0-1.9,1.6-3.5,3.5-3.5h54.5c1.9,0,3.5,1.6,3.5,3.5v18.6c0,15-12.2,27.2-27.2,27.2Z"></path></g><g id="g329"><path id="path331" class="st1" d="M70.9,102.2h9.4"></path></g><g id="g333"><path id="path335" class="st1" d="M233.5,211.5c-4.2,0-7.6,3.4-7.6,7.6s3.4,7.6,7.6,7.6,7.6-3.4,7.6-7.6-3.4-7.6-7.6-7.6Z"></path></g><g id="g337"><path id="path339" class="st1" d="M248.4,176v-25.1c0-8.2-6.7-14.9-14.9-14.9s-14.9,6.7-14.9,14.9v50.6c0,1.1-.4,2.1-1.1,2.9-3.9,4.3-6.1,10.1-5.6,16.4.8,10.9,9.9,19.6,20.8,20,12.4.5,22.6-9.4,22.6-21.7s-2.2-10.8-5.7-14.7c-.7-.8-1.1-1.8-1.1-2.9v-10.7"></path></g><g id="g341"><path id="path343" class="st1" d="M233.5,211.5v-61.1"></path></g></g></g></g></g></svg>`,
+//     dodo_power: "fa-battery-half",
+//     momentum_energy: "fa-sun",
+//   };
