@@ -28,9 +28,14 @@ class CrmLead(models.Model):
     )
 
     services = fields.Selection([
-        ('credit_card', 'Credit Card AMEX'),
+        ('credit_card', 'Credit Card'),
         ('energy', 'Electricity & Gas'),
-        ('optus_nbn', 'Optus NBN Form'),
+        ('optus_nbn', 'Broadband'),
+        ('home_moving', "Home Moving"),
+        ('business_loan', "Business Loan"),
+        ("home_loan", "Home Loan"),
+        ("insurance", "Health Insurance"),
+        ("veu", "Victorian Energy")
     ],  required=True)
 
     @api.model
@@ -75,7 +80,7 @@ class CrmLead(models.Model):
   
             # Stage 1 → Stage 2
             if current_stage == 1:
-                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name:
+                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address or lead.in_current_provider:
                     new_stage = "2"
                     lead.with_context(skip_stage_assign=True).write({"lead_stage": new_stage})
                     _logger.info("Lead current state after writing is %s", lead.lead_stage)
@@ -420,9 +425,10 @@ class CrmLead(models.Model):
     welcome_call = fields.Boolean("Welcome Call")
     stage_3_dispostion = fields.Selection([
     ("closed", "Sale Closed"),
-    ("on_hold", "Hold"),
-    ("failed", "Failed"),
+    ("on_hold", "Sale QA Hold"),
+    ("failed", "Sale QA Failed"),
     ], string="Disposition by QA Team")
+    lost_reason = fields.Char(string="Remarks")
     qa_notes = fields.Char("Notes by QA")
 
     # DODO POWER AND GAS
@@ -649,13 +655,21 @@ class CrmLead(models.Model):
     cc_job_title = fields.Char("Job Title")
     cc_phone = fields.Char("Phone")
     cc_email = fields.Char("Email")
+    cc_run_business = fields.Selection([
+        ("no", "No"),
+        ("yes", "Yes")
+    ], string="Do you run a business?")
+    cc_active_abn = fields.Selection([
+        ("no", "No"),
+        ("yes", "Yes")
+    ], string="Do you have active ABN?")
     cc_annual_revenue = fields.Selection([
         ('under_2m', 'Under ~ $2M'), ('2m_10m', '$2M ~ $10M'), ('10m_50m', '$10M ~ $50M'), ('50m_100m', '$50M ~ $100M'), ('100m_above', 'Above $100M')
     ], string="Annual Revenue")
     cc_annual_spend = fields.Selection([
         ('under_1m', 'Under ~ $1M'), ('2m_5m', '$2M ~ $5M'), ('6m_10m', '$6M ~ $10M'),
         ('11m_15m', '$11M ~ $15M'), ('16m_20m', '$16M ~ $20M'),('20m_above', 'Above $20M')
-    ], string="Annual Revenue")
+    ], string="Annual Spend")
     cc_existing_products = fields.Char("Existing Competitor Products")
     cc_expense_tools = fields.Char("Expense Management Tools")
     cc_additional_info = fields.Text("Additional information for sales team")
@@ -671,6 +685,336 @@ class CrmLead(models.Model):
         ('me_first', 'Me first'),
         ('referred_first', 'The referred contact first')
     ], string="In order to best process this lead the salesperson should contact")
+    cc_stage2_business = fields.Char("Business Name")
+    cc_stage2_business_address = fields.Char("Business Address")
+    cc_stage2_email = fields.Char("Email")
+    cc_stage2_monthly = fields.Char("Estimated Monthly Spend")
+    cc_stage2_annual = fields.Char("Estimated Annual Turnover")
+    cc_stage2_running = fields.Char("How long does the business running")
+    cc_stage2_existing = fields.Char("Any existing business credit card")
+    cc_stage2_abn = fields.Char("ABN")
+    cc_stage2_tool = fields.Char("Expense Tool")
+    cc_stage2_dnc = fields.Char("DNC")
+    cc_stage2_agent = fields.Char("Agent Name")
+    cc_stage2_closer = fields.Char("Closer Name")
+        # CREDIT CARD - AMEX FIELDS
+    amex_date = fields.Date(string="Date")
+    amex_center = fields.Char(string="Center", default="Utility Hub")
+    amex_company_name = fields.Char(string="Company Name")
+    amex_abn = fields.Char(string="ABN")
+    amex_address_1 = fields.Char(string="Address Line 1")
+    amex_address_2 = fields.Char(string="Address Line 2")
+    amex_suburb = fields.Char(string="Suburb")
+    amex_state = fields.Char(string="State")
+    amex_country = fields.Char(string="Country")
+    amex_business_website = fields.Char(string="Website")
+    amex_saluation = fields.Selection([
+        ('n/a', 'N/A'), 
+        ('mr', 'Mr.'), 
+        ('mrs', 'Mrs.'), 
+        ('ms', 'Ms.'), 
+        ('dr', 'Dr.'), 
+        ('miss', 'Miss')
+    ], string="Prefix", default="mr")
+    amex_first_name = fields.Char(string="First Name")
+    amex_last_name = fields.Char(string="Last Name")
+    amex_position = fields.Char(string="Position in Business")
+    amex_contact = fields.Char(string="Contact Number")
+    amex_email = fields.Char(string="Email")
+    amex_current_turnover = fields.Char(string = "Current turnover less than 2 million or more")
+    amex_estimated_expense = fields.Char(string="Estimated Expenses On Card")
+    amex_existing_product = fields.Char(string="Existing Competitor Product")
+    amex_additional_info = fields.Char(string="Additional Information for Sales Team")
+    amex_tool_used =  fields.Char(string="Expense Management Tool Used")
+
+    # BROADBAND NBN FIELDS
+    in_current_address = fields.Char(string="Current Address")
+    in_important_feature = fields.Selection([
+        ("speed", "Speed"),
+        ("price", "Price"),
+        ("reliability", "Reliability"),      
+    ], string="What is the most important feature to you?", default="speed")
+    in_speed_preference = fields.Selection([
+        ("25Mb", "25 Mbps"),
+        ("50Mb", "50 Mbps"),
+        ("100Mb", "100 Mbps"),
+        ("not_sure", "Not Sure"),   
+    ], string="Do you have a speed preferece?", default="25Mb")
+    in_broadband_reason = fields.Selection([
+        ("moving", "I am Moving"),
+        ("better_plan", "I want a better plan"),
+        ("connection", "I need broadband connected"),
+    ], string="Why are you looking into broadband options?",default="moving")
+    in_when_to_connect_type = fields.Selection([
+        ("asap", "ASAP"),
+        ("dont_mind", "I don't mind"),
+        ("specific_date", "Choose a date"),
+    ], string="When would you like broadband connected?",default="asap")
+    in_when_to_connect_date = fields.Date(string="Select connection date?")
+    in_current_provider = fields.Char("Current Provider Name")
+    in_current_plan = fields.Char("Current Plan Name")
+    in_current_price = fields.Char("Current Plan Price Per Month")
+    in_internet_users_count = fields.Selection([
+        ("1", "1"),
+        ("2", "2"),
+        ("3", "3"),
+        ("4", "4"),
+        ("5+", "5+"),
+    ],string="How many people are using the internet?", default="1")
+    in_internet_usage_type = fields.Selection([
+        ("browsing_email", "Browsing and Email"),
+        ("work", "Work and Study"),
+        ("social_media", "Social Media"),
+        ("gaming", "Online Gaming"),
+        ("streaming", "Streaming video/TV/Movies")       
+    ], string="How will you use the internet?", default="work")
+    in_compare_plans = fields.Boolean(string="Would you also like to comapre your energy plans to see if you could save?")
+    in_name = fields.Char(string="Full Name")
+    in_contact_number = fields.Char(string="Contact Number")
+    in_email = fields.Char(string="Email")
+    in_lead_agent = fields.Char("Lead Agent Name")
+    in_request_callback = fields.Boolean(string="Request Callback :")
+    in_accept_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.")
+    in_stage2_provider = fields.Selection([
+        ("optus", "Optus NBN"),
+        ("dodo", "DODO NBN"),
+        ("iprimus", "IPRIMUS")
+    ], string="Provider Name")
+    in_stage2_plan = fields.Char("Plan name offered")
+    in_stage2_price = fields.Char("Plan price per month offered")
+    in_stage2_dnc = fields.Char("DNC")
+    in_stage2_agent = fields.Char("Lead Agenet Name")
+    in_stage2_closer = fields.Char("Closer Name")
+    in_stage2_date = fields.Date("Date of Sale")
+    in_stage2_ref = fields.Char("Sales Reference No")
+    in_stage2_avc = fields.Char("AVC ID")
+
+    # DODO NBN SALES FORM FILEDS
+
+    do_nbn_receipt = fields.Char("DODO Receipt Number")
+    do_nbn_service = fields.Char("Service Type")
+    do_nbn_service = fields.Char("Service Type")
+    do_nbn_plans = fields.Selection([
+        ("$79.99/250MBPS", "$79.99/250 MBPS"),
+        ("superfast", "HOME SUPERFAST")
+    ], string="Plan with DODO")
+    do_nbn_current = fields.Char("Current Provider")
+    do_nbn_current_no = fields.Char("Current Provider Account No")
+    do_nbn_title = fields.Selection([
+        ('n/a', 'N/A'), 
+        ('mr', 'Mr.'), 
+        ('mrs', 'Mrs.'), 
+        ('ms', 'Ms.'), 
+        ('dr', 'Dr.'), 
+        ('miss', 'Miss')
+    ], string="Title", default="mr")
+    do_first_name = fields.Char(string="First Name")
+    do_last_name = fields.Char(string="Last Name")
+    do_mobile_no = fields.Char(string="Mobile No")
+    do_installation_address = fields.Char(string="Installation address - Unit/Flat Number")
+    do_house_number = fields.Char(string="House No")
+    do_street_name = fields.Char(string="Street Name")
+    do_street_type = fields.Char(string="Street Type")
+    do_suburb = fields.Char(string="Installation address-Suburb")
+    do_state = fields.Char(string="State")
+    do_post_code = fields.Char("Post Code")
+    do_sale_date = fields.Date(string="Sale Date")
+    do_center_name = fields.Char(string="Center Name")
+    do_closer_name = fields.Char(string="Closer Name")
+    do_dnc_ref_no = fields.Char(string="DNC Reference No")
+    do_dnc_exp_date = fields.Date(string="DNC Expiry Date")
+    do_audit_1 = fields.Char(string="Audit 1")
+    do_audit_2 = fields.Char(string="Audit 2") 
+    # OPTUS NBN FORM FIELDS
+    optus_date = fields.Date(string="Sale Date")
+    optus_activation = fields.Date(string="Activation Date")
+    optus_order = fields.Char(string="Order Number")
+    optus_customer = fields.Char(string="Customer Name")
+    optus_address = fields.Char(string="Service Address")
+    optus_service = fields.Char(string="Service")
+    optus_plan = fields.Char(string="Plan")
+    optus_per_month = fields.Char(string="Cost Per Month")
+    optus_center = fields.Char(string="Center", default="Utility Hub")
+    optus_salesperson = fields.Char(string="Sales Person")
+    optus_contact = fields.Char(string="Contact Number")
+    optus_email = fields.Char(string="Email")
+    optus_notes = fields.Char(string="Notes")
+    optus_dcn = fields.Char(string="DCN Reference")
+    optus_audit_1 = fields.Char(string="Audit 1")
+    optus_audit_2 = fields.Char(string="Audit 2") 
+
+    # HOME MOVING FORM FIELDS
+    hm_moving_date = fields.Date("Moving Date")
+    hm_address = fields.Char("Address")
+    hm_property_type = fields.Selection([
+        ('business',"Business"),
+        ('residential',"Residential"),
+    ],string="What type of propery")
+    hm_ownership = fields.Selection([
+        ('own',"Own"),
+        ('rent',"Rent"),
+    ],string="Property Ownership")
+    hm_status = fields.Selection([
+        ('n/a',"N/A"),
+        ('dr',"Dr."),
+        ('mr',"Mr."),
+        ('mrs',"Mrs."),
+        ('ms',"Ms."),
+        ('miss',"Miss."),
+    ],string="Status")
+    hm_first_name = fields.Char("First Name")
+    hm_last_name = fields.Char("Last Name")
+    hm_job_title = fields.Char("Job Title")
+    hm_dob = fields.Date("Date of Birth")
+    hm_friend_code = fields.Char("Refer a Friend Code")
+    hm_mobile = fields.Char("Mobile")
+    hm_work_phone = fields.Char("Work Phone")
+    hm_home_phone = fields.Char("Home Phone")
+
+    hm_email = fields.Char("Email")
+    hm_how_heard = fields.Selection([
+        ('google', 'Google'),
+        ('facebook', 'Facebook'),
+        ('word_of_mouth', 'Word of Mouth'),
+        ('real_estate', "Real Estate"),
+        ('other', 'Other'),
+    ], string="How did you hear about us?")
+    hm_agency_name = fields.Char("Real estate agency name")
+    hm_broker_name = fields.Char("Broker name")
+    hm_agency_contact_number = fields.Char("Real estate contact number")
+    hm_connect_electricity = fields.Boolean("Electricity")
+    hm_connect_gas = fields.Boolean("Gas")
+    hm_connect_internet = fields.Boolean("Internet")
+    hm_connect_water = fields.Boolean("Water")
+    hm_connect_tv = fields.Boolean("Pay TV")
+    hm_connect_removalist = fields.Boolean("Removalist")
+    hm_accept_terms = fields.Boolean("I accept the Terms and Conditions")
+    hm_recaptcha_checked = fields.Boolean("I'm not a robot")
+
+    # BUSINESS LOAN FORM FIELDS
+    bs_amount_to_borrow = fields.Integer(string="How much would you like to borrow?")
+    bs_business_name = fields.Char(string="Name of your business")
+    bs_trading_duration = fields.Selection([
+        ("0-6 months", "0-6 Months"),
+        ("6-12 months", "6-12 Months"),
+        ("12-24 months", "12-24 Months"),
+        ("over 24 months", "Over 24 Months"),
+    ],string="How long have you been trading")
+    bs_monthly_turnover = fields.Integer(string="What is your monthly turnover")
+    bs_first_name = fields.Char(string="First Name")
+    bs_last_name = fields.Char(string="Last Name")
+    bs_email = fields.Char(string="Email")
+    bs_home_owner = fields.Boolean(string="Are you a home owner?")
+    bs_accept_terms = fields.Boolean(string="Accept terms and conditions")
+
+    # HOME LOAN FIELDS
+    hl_user_want_to = fields.Selection([
+        ("refinance", "I want to refinance"),
+        ("buy home", "I want to buy a home"),
+    ],string="What would you like to do?")
+    hl_expected_price = fields.Integer(string="What is your exptected price?")
+    hl_deposit_amount = fields.Integer(string="How much deposit do you have?")
+    hl_buying_reason = fields.Selection([
+        ("just_exploring", "Just exploring options"),
+        ("planning_to_buy", "Planning to buy home in next 6 months"),
+        ("actively_looking", "Actively looking/made an offer"),
+        ("exchanged_contracts", "Exchanged Contracts"),
+    ],string="What best describes your home buying situation?")
+    hl_first_home_buyer = fields.Boolean(string="Are you a first home buyer")
+    hl_property_type = fields.Selection([
+        ("established_home", "Established Home"),
+        ("newly_built", "Newly built/off the plan"),
+        ("vacant_land", "Vacant land to build on"),
+    ],string="What kind of property are you looking for?")   
+    hl_property_usage = fields.Selection([
+        ("to_live", "I will live there"),
+        ("for_investment", "It is for investment purposes"),
+    ],string="How will this property be used?")
+    hl_credit_history = fields.Selection([
+        ("excellent", "Excellent - no issues"),
+        ("average", "Average paid default"),
+        ("fair", "Fair"),
+        ("don't know", "I don't know"),
+    ],string="What do you think your credit history is?")
+    hl_income_source = fields.Selection([
+        ("employee", "I am an employee"),
+        ("business", "I have my own business"),
+        ("other", "Other"),
+    ],string="How do you earn your income?")
+    hl_first_name = fields.Char(string="First Name")
+    hl_last_name = fields.Char(string="Last Name")
+    hl_contact = fields.Char(string="Contact Number")
+    hl_email = fields.Char(string="Email")                  
+    hl_accept_terms = fields.Boolean(string="Agree to accept terms and conditions")
+
+    # HEALTH INSURANCE FIELDS
+    hi_current_address = fields.Char(string="Current address")
+    hi_cover_type = fields.Selection([
+        ("hospital_extras", "Hospital + Extras"),
+        ("hospital", "Hospital only"),
+        ("extras", "Extras only"),
+    ],string="Select type of cover")
+    hi_have_insurance_cover = fields.Selection([
+        ("yes","Yes"),
+        ("no","No")
+    ],string="Do you have health inssurance cover")
+    hi_insurance_considerations = fields.Selection([
+        ("health_concern","I have a specific health concern"),
+        ("save_money","I am looking to save money on my health premium"),
+        ("no_insurance_before","I haven't held health insurance before"),
+        ("better_health_cover","I am looking for better health cover"),
+        ("need_for_tax","I need it for my tax"),
+        ("planning_a_baby","I am planning a baby"),
+        ("changed_circumstances","My circumstances have changed"),
+        ("compare_options","I just want to compare options"),
+    ],string="What are your main considerations when looking for a new health insurance cover?")
+    hi_dob = fields.Date(string="What is your date of birth")
+    hi_annual_taxable_income = fields.Selection([
+        ("$97,000_or_less","$97,000 or less (Base Tier)"),
+        ("$97,001_$113,000","$97,001 - $113,000 (Tier 1)"),
+        ("$113,001_$151,000","$113,001 - $151,000 (Tier 2)"),
+        ("$151,001_or_more","$151,001 or more (Tier 3)")
+    ],string="What is your annual taxable income?")
+    hi_full_name = fields.Char(string="Full Name")
+    hi_contact_number = fields.Char(string="Contact Number")
+    hi_email = fields.Char(string="Email")
+
+    # VEU FIEDLS
+    u_first_name = fields.Char(string="First Name")
+    u_last_name = fields.Char(string="Last Name")
+    u_mobile_no = fields.Char(string="Mobile No")
+    u_email = fields.Char(string="Email")
+    u_post_code = fields.Char("Post Code")
+    u_interested_in = fields.Selection([
+        ('air', 'Air Conitioning Rebate'),
+        ('water_res','Hot Water System (Residential)'),
+        ('water_com','Hot Water System (Commercial)')
+
+    ], string="Rebate Interested In", default="air")
+    u_how = fields.Char(string="How did you hear about us")
+    u_accept_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the terms and conditions and privacy policy",default=False) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -725,7 +1069,10 @@ class CrmLead(models.Model):
             ("Call Back", 11),
             ("Lost", 6),
             ("Sold-Pending Quality", 8),
-            ("Lead Assigned", 5)
+            ("Lead Assigned", 5),
+            ("Sale Closed", 15),
+            ("Sale QA Hold", 16),
+            ("Sale QA Failed", 17)
         ]
         
         for stage_name, sequence in stage_definitions:
@@ -743,13 +1090,13 @@ class CrmLead(models.Model):
             # STAGE 3 DISPOSITIONS
             if lead.lead_stage == "3":
                 if lead.stage_3_dispostion == "closed":
-                    new_stage = stages_cache["Won"]
+                    new_stage = stages_cache["Sale Closed"]
                     _logger.info("Lead %s - Moving to Won stage", lead.id)
                 elif lead.stage_3_dispostion == "on_hold":
-                    new_stage = stages_cache["On Hold"]
+                    new_stage = stages_cache["Sale QA Hold"]
                     _logger.info("Lead %s - Moving to On Hold stage", lead.id)
                 elif lead.stage_3_dispostion == "failed":
-                    new_stage = stages_cache["Failed"]
+                    new_stage = stages_cache["Sale QA Failed"]
                     _logger.info("Lead %s - Moving to Failed stage", lead.id)
             
             # STAGE 2 DISPOSITIONS
@@ -767,7 +1114,7 @@ class CrmLead(models.Model):
             
 
             elif lead.lead_stage == "1":
-                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name:
+                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
                     lead.with_context(skip_stage_assign=True).write({"lead_stage":"2"})
                     new_stage = stages_cache["Lead Assigned"]        
 

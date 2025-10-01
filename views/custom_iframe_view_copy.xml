@@ -43,20 +43,18 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
 
+            <xpath expr="//field[@name='expected_revenue']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide the entire probability section (label + field) -->
+            <xpath expr="//field[@name='probability']/.." position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
 
             <!-- Add content inside notebook -->
-            <xpath expr="//notebook" position="inside">
-
-                <!-- Assigned Partner Page -->
-                <page string="Assigned Partner">
-                    <group>
-                        <field name="partner_id"/>
-                        <field name="user_id"/>
-                        <field name="partner_latitude"/>
-                        <field name="partner_longitude"/>
-                        <field name="assignation_id"/>
-                    </group>
-                </page>
+            <xpath expr="//notebook/page[1]" position="before">
 
                 <page string="Utility Services Forms" name="utility_services" default_active="1">
                     <group>
@@ -65,9 +63,6 @@
                     <group>
                         <field name="services" />
                     </group>
-
-
-
                     <group>
                         <field name="lead_stage"/>
                     </group>
@@ -195,7 +190,7 @@
                                 <field name="callback_date" invisible="disposition != 'callback'" required="disposition == 'callback'"/>
                             </group>
 
-                            <group string="Lead Agent Notes">
+                            <group string="Notes By Expert">
                                 <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
                             </group>
                         </sheet>
@@ -726,7 +721,7 @@
 
 
                     <!-- Credit Card Stage 1 Form -->
-                    <group string="Stage 1: Lead Information Form For Amex" invisible="lead_for != 'credit_card' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card' or lead_stage != '1'" class="o_form_sheet_bg_gray">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -742,6 +737,9 @@
                                     <field name="cc_job_title" />
                                     <field name="cc_phone"/>
                                     <field name="cc_email" widget="email"/>
+                                    <field name="cc_run_business"/>
+                                    <field name="cc_active_abn"/>
+
 
                                 </group>
 
@@ -762,16 +760,577 @@
                                 </group>
                             </group>
 
-                            <group string="Additional Information">
-                                <field name="cc_additional_info" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            <group string="Lead Agent Notes">
+                                <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
                             </group>
                         </sheet>
                     </group>
                     <!-- Credit Card Stage 1 Form END -->
+                    <!-- Credit Card Stage 2 From Start -->
+                    <group string="Stage 2: Business Information Form For Amex" invisible="lead_for != 'credit_card' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 2: Business Information Form For Amex</span>
+                                </h1>
+                            </div>
+
+                            <!-- Main two-column layout -->
+                            <group col="2" colspan="4">
+
+                                <!-- Business Details -->
+                                <group string="Business Details" colspan="1">
+                                    <field name="cc_stage2_business"/>
+                                    <field name="cc_stage2_business_address"/>
+                                    <field name="cc_stage2_email" widget="email"/>
+                                    <field name="cc_stage2_abn"/>
+                                    <field name="cc_stage2_running"/>
+                                </group>
+
+                                <!-- Financial Details -->
+                                <group string="Financial Details" colspan="1">
+                                    <field name="cc_stage2_monthly"/>
+                                    <field name="cc_stage2_annual"/>
+                                    <field name="cc_stage2_existing"/>
+                                    <field name="cc_stage2_tool"/>
+                                </group>
+                            </group>
+
+                            <!-- Agent Information -->
+                            <group string="Agent Information">
+                                <group col="2">
+                                    <field name="cc_stage2_agent"/>
+                                    <field name="cc_stage2_closer"/>
+                                    <field name="cc_stage2_dnc"/>
+                                </group>
+                            </group>
+                            <group string="Disposition">
+                                <field name="disposition"/>
+                                <field name="callback_date" invisible="disposition != 'callback'" required="disposition == 'callback'"/>
+                            </group>
+
+                            <group string="Notes By Expert">
+                                <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- Credt Card Stage 2 Form End -->
+                    <!-- AMEX sales form start -->
+                    <group string="Stage 2: Amex Sales Form" invisible="lead_for != 'credit_card' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 2: Amex Sales Form</span>
+                                </h1>
+                            </div>
+
+                            <!-- Application Info -->
+                            <group string="Application Info" col="2" colspan="4">
+                                <field name="amex_date"/>
+                                <field name="amex_center"/>
+                            </group>
+
+                            <!-- Company Details -->
+                            <group col="2" colspan="4">
+                                <group string="Company Details" colspan="1">
+                                    <field name="amex_company_name"/>
+                                    <field name="amex_abn"/>
+                                    <field name="amex_address_1"/>
+                                    <field name="amex_address_2"/>
+                                    <field name="amex_suburb"/>
+                                    <field name="amex_state"/>
+                                    <field name="amex_country"/>
+                                    <field name="amex_business_website"/>
+                                </group>
+
+                                <!-- Contact Person -->
+                                <group string="Contact Person" colspan="1">
+                                    <field name="amex_saluation"/>
+                                    <field name="amex_first_name"/>
+                                    <field name="amex_last_name"/>
+                                    <field name="amex_position"/>
+                                    <field name="amex_contact"/>
+                                    <field name="amex_email" widget="email"/>
+                                </group>
+                            </group>
+
+                            <!-- Financial Details -->
+                            <group string="Financial Details">
+                                <group col="2">
+                                    <field name="amex_current_turnover"/>
+                                    <field name="amex_estimated_expense"/>
+                                    <field name="amex_existing_product"/>
+                                    <field name="amex_tool_used"/>
+                                </group>
+                            </group>
+
+                            <!-- Additional Notes -->
+                            <group string="Additional Notes">
+                                <field name="amex_additional_info" nolabel="1" placeholder="Add notes or extra details..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- AMEX sales form end -->
+                    <!-- Broadband Stage 1 Form Start -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 1: Broadband Lead Information Form</span>
+                                </h1>
+                            </div>
+
+                            <group col="2" colspan="4">
+                                <group string="Address and Provider Info" colspan="1">
+                                    <field name="in_current_address"/>
+                                    <field name="in_current_provider"/>
+                                    <field name="in_current_plan"/>
+                                    <field name="in_current_price"/>
+                                </group>
+
+                                <group string="Preferences" colspan="1">
+                                    <field name="in_important_feature"/>
+                                    <field name="in_speed_preference"/>
+                                    <field name="in_broadband_reason"/>
+                                    <field name="in_when_to_connect_type"/>
+                                    <field name="in_when_to_connect_date"/>
+
+                                </group>
+                            </group>
+
+                            <group string="Usage Details">
+                                <group col="2">
+                                    <field name="in_internet_users_count"/>
+                                    <field name="in_internet_usage_type"/>
+                                    <field name="in_compare_plans"/>
+                                </group>
+                            </group>
+
+                            <group string="Contact Information">
+                                <group col="2">
+                                    <field name="in_name"/>
+                                    <field name="in_contact_number"/>
+                                    <field name="in_email" widget="email"/>
+                                    <field name="in_lead_agent"/>
+                                    <field name="in_request_callback"/>
+                                </group>
+                            </group>
+
+                            <group string="Agreement">
+                                <field name="in_accept_terms"/>
+                            </group>
+                            <group string="Lead Agent Notes">
+                                <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- Broadband Stage 1 Form End -->
+                    <!-- Broadband Stage 2 Form Start -->
+                    <group string="Stage 2 FORM" invisible="lead_for != 'optus_nbn' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 2: Broadband Information Form</span>
+                                </h1>
+                            </div>
+
+                            <!-- Two-column layout -->
+                            <group col="2" colspan="4">
+
+                                <!-- Provider Details -->
+                                <group string="Provider Details" colspan="1">
+                                    <field name="in_stage2_provider"/>
+                                    <field name="in_stage2_plan"/>
+                                    <field name="in_stage2_price"/>
+                                    <field name="in_stage2_avc"/>
+                                </group>
+
+                                <!-- Sales Information -->
+                                <group string="Sales Information" colspan="1">
+                                    <field name="in_stage2_date"/>
+                                    <field name="in_stage2_ref"/>
+                                    <field name="in_stage2_dnc"/>
+                                </group>
+                            </group>
+
+                            <!-- Agent Information -->
+                            <group string="Agent Information">
+                                <group col="2">
+                                    <field name="in_stage2_agent"/>
+                                    <field name="in_stage2_closer"/>
+                                </group>
+                            </group>
+                            <group string="Disposition">
+                                <field name="disposition"/>
+                                <field name="callback_date" invisible="disposition != 'callback'" required="disposition == 'callback'"/>
+                            </group>
+
+                            <group string="Notes By Expert">
+                                <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- Broadband Stage 2 Form End -->
+
+                    <!-- DODO NBN FORM START -->
+                    <group string="DODO NBN Sale Information" invisible="lead_for != 'optus_nbn' or in_stage2_provider != 'dodo'  or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">DODO NBN Sale Information</span>
+                                </h1>
+                            </div>
+
+                            <!-- Sale & Service Info -->
+                            <group col="2" colspan="4">
+                                <group string="Sale and Service Information" colspan="1">
+                                    <field name="do_nbn_receipt"/>
+                                    <field name="do_nbn_service"/>
+                                    <field name="do_nbn_plans"/>
+                                    <field name="do_nbn_current"/>
+                                    <field name="do_nbn_current_no"/>
+                                    <field name="do_sale_date"/>
+                                    <field name="do_center_name"/>
+                                    <field name="do_closer_name"/>
+                                </group>
+
+                                <!-- Customer Details -->
+                                <group string="Customer Details" colspan="1">
+                                    <field name="do_nbn_title"/>
+                                    <field name="do_first_name"/>
+                                    <field name="do_last_name"/>
+                                    <field name="do_mobile_no"/>
+                                </group>
+                            </group>
+
+                            <!-- Installation Address -->
+                            <group col="2" colspan="4">
+                                <group string="Installation Address" colspan="1">
+                                    <field name="do_installation_address"/>
+                                    <field name="do_house_number"/>
+                                    <field name="do_street_name"/>
+                                    <field name="do_street_type"/>
+                                    <field name="do_suburb"/>
+                                    <field name="do_state"/>
+                                    <field name="do_post_code"/>
+                                </group>
+
+                                <!-- DNC & Audit -->
+                                <group string="DNC andAudit Information" colspan="1">
+                                    <field name="do_dnc_ref_no"/>
+                                    <field name="do_dnc_exp_date"/>
+                                    <field name="do_audit_1"/>
+                                    <field name="do_audit_2"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- DODO NBN FORM END -->
+
+                    <!-- OPTUS NBN START -->
+                    <group string="Optus NBN Sale Information" invisible="lead_for != 'optus_nbn' or in_stage2_provider != 'optus' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Optus NBN Sale Information</span>
+                                </h1>
+                            </div>
+
+                            <!-- Sale & Service Info -->
+                            <group col="2" colspan="4">
+                                <group string="Sale and Service Information" colspan="1">
+                                    <field name="optus_date"/>
+                                    <field name="optus_activation"/>
+                                    <field name="optus_order"/>
+                                    <field name="optus_customer"/>
+                                    <field name="optus_address"/>
+                                    <field name="optus_service"/>
+                                    <field name="optus_plan"/>
+                                    <field name="optus_per_month"/>
+                                </group>
+
+                                <!-- Sales & Contact -->
+                                <group string="Sales and Contact" colspan="1">
+                                    <field name="optus_center"/>
+                                    <field name="optus_salesperson"/>
+                                    <field name="optus_contact"/>
+                                    <field name="optus_email"/>
+                                </group>
+                            </group>
+
+                            <!-- Audit & Notes -->
+                            <group col="2" colspan="4">
+                                <group string="Audit and References" colspan="1">
+                                    <field name="optus_notes"/>
+                                    <field name="optus_dcn"/>
+                                    <field name="optus_audit_1"/>
+                                    <field name="optus_audit_2"/>
+                                </group>
+                            </group>
+
+                        </sheet>
+                    </group>
+                    <!-- OPTUS NBN FORM END -->
+
+                    <!-- HOME MOVING FORM STAGE 1 -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'home_moving' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Home Moving Form</span>
+                                </h1>
+                            </div>
+
+                            <!-- Moving & Property Information -->
+                            <group col="2" colspan="4">
+                                <group string="Moving Information" colspan="1">
+                                    <field name="hm_moving_date"/>
+                                    <field name="hm_address"/>
+                                    <field name="hm_property_type"/>
+                                    <field name="hm_ownership"/>
+                                </group>
+
+                                <group string="Property Contact" colspan="1">
+                                    <field name="hm_agency_name"/>
+                                    <field name="hm_broker_name"/>
+                                    <field name="hm_agency_contact_number"/>
+                                </group>
+                            </group>
+
+                            <!-- Personal Details -->
+                            <group col="2" colspan="4">
+                                <group string="Personal Information" colspan="1">
+                                    <field name="hm_status"/>
+                                    <field name="hm_first_name"/>
+                                    <field name="hm_last_name"/>
+                                    <field name="hm_job_title"/>
+                                    <field name="hm_dob"/>
+                                </group>
+
+                                <group string="Contact Information" colspan="1">
+                                    <field name="hm_mobile"/>
+                                    <field name="hm_work_phone"/>
+                                    <field name="hm_home_phone"/>
+                                    <field name="hm_email"/>
+                                </group>
+                            </group>
+
+                            <!-- Referral & Marketing -->
+                            <group col="2" colspan="4">
+                                <group string="Referral and Marketing Info" colspan="1">
+                                    <field name="hm_friend_code"/>
+                                    <field name="hm_how_heard"/>
+                                </group>
+                            </group>
+
+                            <!-- Services to Connect -->
+                            <group col="3" colspan="4">
+                                <group string="Services to Connect" colspan="1">
+                                    <field name="hm_connect_electricity"/>
+                                    <field name="hm_connect_gas"/>
+                                    <field name="hm_connect_internet"/>
+                                    <field name="hm_connect_water"/>
+                                    <field name="hm_connect_tv"/>
+                                    <field name="hm_connect_removalist"/>
+                                </group>
+                            </group>
+
+                            <!-- Consent -->
+                            <!-- <group col="2" colspan="4">
+                                <group string="Consent" colspan="1">
+                                    <field name="hm_accept_terms"/>
+                                    <field name="hm_recaptcha_checked"/>
+                                </group>
+                            </group> -->
+                        </sheet>
+                    </group>
+                    <!-- HOME MOVING SSTAGE 1 END -->
+
+                    <!-- BUSINESS LOAN FORM START -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'business_loan' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Business Loan Application</span>
+                                </h1>
+                            </div>
+
+                            <!-- Loan Information -->
+                            <group col="2" colspan="4">
+                                <group string="Loan Information" colspan="1">
+                                    <field name="bs_amount_to_borrow"/>
+                                    <field name="bs_monthly_turnover"/>
+                                    <field name="bs_trading_duration"/>
+                                </group>
+                            </group>
+
+                            <!-- Business Details -->
+                            <group col="2" colspan="4">
+                                <group string="Business Details" colspan="1">
+                                    <field name="bs_business_name"/>
+                                </group>
+                            </group>
+
+                            <!-- Applicant Information -->
+                            <group col="2" colspan="4">
+                                <group string="Applicant Information" colspan="1">
+                                    <field name="bs_first_name"/>
+                                    <field name="bs_last_name"/>
+                                    <field name="bs_email"/>
+                                    <field name="bs_home_owner"/>
+                                </group>
+                            </group>
+
+                            <!-- Consent -->
+                            <group col="2" colspan="4">
+                                <group string="Consent" colspan="1">
+                                    <field name="bs_accept_terms"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- BUSINESS LOAN FORM END -->
+                    <!-- HOME LOAN STAGE 1 START -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'home_loan' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Home Loan Application</span>
+                                </h1>
+                            </div>
+
+                            <!-- Loan Intent -->
+                            <group col="2" colspan="4">
+                                <group string="Loan Intent" colspan="1">
+                                    <field name="hl_user_want_to"/>
+                                    <field name="hl_buying_reason"/>
+                                    <field name="hl_first_home_buyer"/>
+                                </group>
+                                <!-- Property Details -->
+                                <group string="Property Details" colspan="1">
+                                    <field name="hl_property_type"/>
+                                    <field name="hl_property_usage"/>
+                                    <field name="hl_expected_price"/>
+                                    <field name="hl_deposit_amount"/>
+                                </group>
+                            </group>
+
+
+
+                            <!-- Financial Background -->
+                            <group col="2" colspan="4">
+                                <group string="Financial Background" colspan="1">
+                                    <field name="hl_credit_history"/>
+                                    <field name="hl_income_source"/>
+                                </group>
+                                <!-- Applicant Information -->
+                                <group string="Applicant Information" colspan="1">
+                                    <field name="hl_first_name"/>
+                                    <field name="hl_last_name"/>
+                                    <field name="hl_contact"/>
+                                    <field name="hl_email"/>
+                                </group>
+                            </group>
+
+
+
+                            <!-- Consent -->
+                            <group col="2" colspan="4">
+                                <group string="Consent" colspan="1">
+                                    <field name="hl_accept_terms"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- HOME LOAN STAGE 1 END -->
+
+                    <!-- HEALTH INSURNACE STAGE 1 START -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'insurance' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Health Insurance Application</span>
+                                </h1>
+                            </div>
+
+                            <!-- Insurance Details -->
+                            <group col="2" colspan="4">
+                                <group string="Insurance Details" colspan="1">
+                                    <field name="hi_cover_type"/>
+                                    <field name="hi_have_insurance_cover"/>
+                                    <field name="hi_insurance_considerations"/>
+                                </group>
+                                <!-- Personal Information -->
+                                <group string="Personal Information" colspan="1">
+                                    <field name="hi_full_name"/>
+                                    <field name="hi_dob"/>
+                                    <field name="hi_contact_number"/>
+                                    <field name="hi_email"/>
+                                </group>
+                            </group>
+
+
+
+                            <!-- Address -->
+                            <group col="2" colspan="4">
+                                <group string="Address" colspan="1">
+                                    <field name="hi_current_address" widget="text"/>
+                                </group>
+                            </group>
+
+                            <!-- Financial Information -->
+                            <group col="2" colspan="4">
+                                <group string="Financial Information" colspan="1">
+                                    <field name="hi_annual_taxable_income"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- HEALTH INSURNACE STAGE 1 END -->
+
+                    <!-- VICTORIA UPGARE STAGE 1 START -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'veu' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Utility Rebate Application</span>
+                                </h1>
+                            </div>
+
+                            <!-- Applicant Information -->
+                            <group col="2" colspan="4">
+                                <group string="Applicant Information" colspan="1">
+                                    <field name="u_first_name"/>
+                                    <field name="u_last_name"/>
+                                    <field name="u_mobile_no"/>
+                                    <field name="u_email"/>
+                                    <field name="u_post_code"/>
+                                </group>
+                                <group string="Rebate Information" colspan="1">
+                                    <field name="u_interested_in"/>
+                                    <field name="u_how"/>
+                                </group>
+                            </group>
+
+
+                            <!-- Consent -->
+                            <group col="2" colspan="4">
+                                <group string="Consent" colspan="1">
+                                    <field name="u_accept_terms"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- VICTORIA UPGARE STAGE 1 END -->
 
 
                     <!-- QA Stage FORM - Stage 3 -->
-                    <group string="Stage 3: Quality Audit" invisible="lead_for != 'energy' or lead_stage != '3'">
+                    <group string="Stage 3: Quality Audit" invisible="not (lead_for in ('energy','credit_card', 'optus_nbn') and lead_stage == '3')">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -781,10 +1340,12 @@
 
                             <group string="Disposition">
                                 <field name="stage_3_dispostion"/>
+                                <field name="lost_reason" invisible="stage_3_dispostion != 'failed'" required="stage_3_dispostion == 'failed'"/>
                             </group>
 
                             <group string="Quality Audit Notes">
                                 <field name="qa_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+
                             </group>
                         </sheet>
                     </group>
@@ -798,3 +1359,14 @@
 
 
 </odoo>
+
+                <!-- Assigned Partner Page -->
+                <!-- <page string="Assigned Partner">
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="user_id"/>
+                        <field name="partner_latitude"/>
+                        <field name="partner_longitude"/>
+                        <field name="assignation_id"/>
+                    </group>
+                </page> -->

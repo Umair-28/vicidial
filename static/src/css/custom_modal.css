@@ -117,7 +117,7 @@
 }
 
 .o_service_btn.selected .icon-container {
-    background: linear-gradient(135deg, #e36e1c 0%, #dc2626 100%);
+    /* background: linear-gradient(135deg, #e36e1c 0%, #dc2626 100%); */
     box-shadow: 0 10px 15px -3px rgba(227, 110, 28, 0.4), 0 4px 6px -2px rgba(227, 110, 28, 0.3);
     transform: scale(1.08);
 }
