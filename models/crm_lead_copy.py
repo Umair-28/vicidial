@@ -994,30 +994,6 @@ class CrmLead(models.Model):
     u_how = fields.Char(string="How did you hear about us")
     u_accept_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the terms and conditions and privacy policy",default=False) 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # def read(self, fields=None, load='_classic_read'):
     #     """Override read to check and update lead stage when record is accessed"""
     #     result = super().read(fields, load)

@@ -1220,8 +1220,6 @@
                                 </group>
                             </group>
 
-
-
                             <!-- Financial Background -->
                             <group col="2" colspan="4">
                                 <group string="Financial Background" colspan="1">
@@ -1236,8 +1234,6 @@
                                     <field name="hl_email"/>
                                 </group>
                             </group>
-
-
 
                             <!-- Consent -->
                             <group col="2" colspan="4">
