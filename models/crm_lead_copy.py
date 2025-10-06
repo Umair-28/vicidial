@@ -1,6 +1,7 @@
 from odoo import models, fields, api
 import logging
 import json
+import requests
 
 _logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class CrmLead(models.Model):
         ("home_loan", "Home Loan"),
         ("insurance", "Health Insurance"),
         ("veu", "Victorian Energy")
-    ],  required=True)
+    ],  required=True, default="energy")
 
     @api.model
     def _get_stage_sequence(self):
@@ -543,21 +544,32 @@ class CrmLead(models.Model):
 
     # MOMENTUM ENERGY FORM
     momentum_energy_transaction_reference = fields.Char("Transaction Reference")
-    momentum_energy_transaction_channel = fields.Char("Transaction Channel")
+    momentum_energy_transaction_channel = fields.Char("Transaction Channel", default="Residential COnnections")
     momentum_energy_transaction_date = fields.Datetime("Transaction Date")
     momentum_energy_transaction_verification_code = fields.Char("Transaction Verification Code")
-    momentum_energy_transaction_source = fields.Char("Transaction Source")
+    momentum_energy_transaction_source = fields.Char("Transaction Source", default="EXTERNAL")
 
     momentum_energy_customer_type = fields.Selection([
-        ('resident', 'Resident'),
-        ('company', 'Company')
-    ], string="Customer Type", required=True)
+        ('RESIDENT', 'Resident'),
+        ('COMPANY', 'Company')
+    ], string="Customer Type", required=True, default="RESIDENT")
 
-    momentum_energy_customer_sub_type = fields.Char("Customer Sub Type")
+    momentum_energy_customer_sub_type = fields.Selection([
+        ("RESIDENT","Resident"),
+        ("Incorporation","Incorporation"),
+        ("Limited Company","Limited Company"),
+        ("N/A","NA"),
+        ("Partnership","Partnership"),
+        ("Private","Private"),
+        ("Sole Trader","Sole Trader"),
+        ("Trust","Trust"),
+        ("C&I","C&I"),
+        ("SME","SME"),
+    ],string="Customer Sub Type")
     momentum_energy_communication_preference = fields.Selection([
-        ('email', 'Email'),
-        ('phone', 'Phone'),
-        ('sms', 'SMS')
+        ('EMAIL', 'Email'),
+        ('PHONE', 'Phone'),
+        ('SMS', 'SMS')
     ], string="Communication Preference")
     momentum_energy_promotion_allowed = fields.Boolean("Promotion Allowed")
     momentum_energy_passport_id = fields.Char("Passport Number")
@@ -565,30 +577,89 @@ class CrmLead(models.Model):
     momentum_energy_passport_country = fields.Char("Passport Issuing Country")
     momentum_energy_driving_license_id = fields.Char("Driving License Number")
     momentum_energy_driving_license_expiry = fields.Date("Driving License Expiry Date")
-    momentum_energy_driving_license_state = fields.Char("Issuing State")
+    momentum_energy_driving_license_state = fields.Selection([
+        ("NSW","NSW"),
+        ("VIC","VIC"),
+        ("QLD","QLD"),
+        ("WA","WA"),
+        ("SA","SA"),
+        ("TAS","TAS"),
+        ("ACT","ACT"),
+        ("NT","NT"),
+    ],string="Issuing State")
     momentum_energy_medicare_id = fields.Char("Medicare Number")
     momentum_energy_medicare_number = fields.Char("Medicare Document Number")
     momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date")
-    momentum_energy_industry = fields.Char("Industry")
+    momentum_energy_industry = fields.Selection([
+        ("Agriculture", "Agriculture"),
+        ("Apparel", "Apparel"),
+        ("Banking", "Banking"),
+        ("Biotechnology", "Biotechnology"),
+        ("Chemicals", "Chemicals"),
+        ("Communications", "Communications"),
+        ("Construction", "Construction"),
+        ("Consulting", "Consulting"),
+        ("Education", "Education"),
+        ("Electronics", "Electronics"),
+        ("Energy", "Energy"),
+        ("Engineering", "Engineering"),
+        ("Entertainment", "Entertainment"),
+        ("Environmental", "Environmental"),
+        ("Finance", "Finance"),
+        ("Food & Beverage", "Food & Beverage"),
+        ("Government", "Government"),
+        ("Healthcare", "Healthcare"),
+        ("Hospitality", "Hospitality"),
+        ("Insurance", "Insurance"),
+        ("Machinery", "Machinery"),
+        ("Manufacturing", "Manufacturing"),
+        ("Media", "Media"),
+        ("Not For Profit", "Not For Profit"),
+        ("Other", "Other"),
+        ("Recreation", "Recreation"),
+        ("Retail", "Retail"),
+        ("Shipping", "Shipping"),
+        ("Technology", "Technology"),
+        ("Telecommunications", "Telecommunications"),
+        ("Transportation", "Transportation"),
+        ("Utilities", "Utilities"),
+    ], string="Industry")
+
     momentum_energy_entity_name = fields.Char("Entity Name")
     momentum_energy_trading_name = fields.Char("Trading Name")
     momentum_energy_trustee_name = fields.Char("Trustee Name")
     momentum_energy_abn_document_id = fields.Char("ABN Document ID")
     momentum_energy_acn_document_id = fields.Char("ACN Document ID")
-    momentum_energy_primary_contact_type = fields.Char("Primary Contact Type")
-    momentum_energy_primary_salutation = fields.Char("Primary Salutation")
+    momentum_energy_primary_contact_type = fields.Char("Contact Type", default="Primary")
+    momentum_energy_primary_salutation = fields.Selection([
+        ("Mr.","Mr."),
+        ("Mrs.","Mrs."),
+        ("Ms.","Ms."),
+        ("Dr.","Dr."),
+        ("Prof.","Prof."),
+
+    ],string="Salutation")
     momentum_energy_primary_first_name = fields.Char("Primary First Name")
     momentum_energy_primary_middle_name = fields.Char("Primary Middle Name")
     momentum_energy_primary_last_name = fields.Char("Primary Last Name")
     momentum_energy_primary_country_of_birth = fields.Char("Primary Country of Birth")
     momentum_energy_primary_date_of_birth = fields.Date("Primary Date of Birth")
     momentum_energy_primary_email = fields.Char("Primary Email")
-    momentum_energy_primary_address_type = fields.Char("Primary Address Type")
+    momentum_energy_primary_address_type = fields.Char("Address Type")
     momentum_energy_primary_street_number = fields.Char("Primary Street Number")
     momentum_energy_primary_street_name = fields.Char("Primary Street Name")
     momentum_energy_primary_unit_number = fields.Char("Primary Unit Number")
     momentum_energy_primary_suburb = fields.Char("Primary Suburb")
-    momentum_energy_primary_state = fields.Char("Primary State")
+    momentum_energy_primary_state = fields.Selection([
+        ("NSW","NSW"),
+        ("VIC","VIC"),
+        ("QLD","QLD"),
+        ("WA","WA"),
+        ("SA","SA"),
+        ("TAS","TAS"),
+        ("ACT","ACT"),
+        ("NT","NT"),
+    ],string="State")
     momentum_energy_primary_post_code = fields.Char("Primary Post Code")
     momentum_energy_primary_phone_work = fields.Char("Primary Work Phone")
     momentum_energy_primary_phone_home = fields.Char("Primary Home Phone")
@@ -612,39 +683,232 @@ class CrmLead(models.Model):
     momentum_energy_secondary_phone_home = fields.Char("Secondary Home Phone")
     momentum_energy_secondary_phone_mobile = fields.Char("Secondary Mobile Phone")
     momentum_energy_service_type = fields.Selection([
-        ('power', 'Power'),
-        ('gas', 'Gas'),
-        ('other', 'Other')
-    ], string="Service Type")
-    momentum_energy_service_sub_type = fields.Char("Service Sub Type")
+        ('POWER', 'Power'),
+        ('GAS', 'Gas'),
+    ], string="Service Type", default="POWER")
+    momentum_energy_service_sub_type = fields.Selection([
+        ("TRANSFER", "Transfer"),
+        ("MOVE IN", "Move In"),
+        ("NEW INSTALLATION", "New Installation")
+    ],string="Service Sub Type")
     momentum_energy_service_connection_id = fields.Char("Service Connection ID")
     momentum_energy_service_meter_id = fields.Char("Service Meter ID")
     momentum_energy_service_start_date = fields.Date("Service Start Date")
     momentum_energy_estimated_annual_kwhs = fields.Integer("Estimated Annual kWhs")
     momentum_energy_lot_number = fields.Char("Lot Number")
+    momentum_energy_service_name = fields.Char("Service Name")
+    momentum_energy_unit_type = fields.Selection([
+    ("APT", "APT"),
+    ("CTGE", "CTGE"),
+    ("DUP", "DUP"),
+    ("F", "F"),
+    ("FY", "FY"),
+    ("HSE", "HSE"),
+    ("KSK", "KSK"),
+    ("MB", "MB"),
+    ("MSNT", "MSNT"),
+    ("OFF", "OFF"),
+    ("PTHS", "PTHS"),
+    ("RM", "RM"),
+    ("SE", "SE"),
+    ("SHED", "SHED"),
+    ("SHOP", "SHOP"),
+    ("SITE", "SITE"),
+    ("SL", "SL"),
+    ("STU", "STU"),
+    ("TNCY", "TNCY"),
+    ("TNHS", "TNHS"),
+    ("U", "U"),
+    ("VLLA", "VLLA"),
+    ("WARD", "WARD"),
+    ("WE", "WE"),
+    ], string="Unit Type")
+    momentum_energy_unit_number = fields.Char(string="Unit Number")
+    momentum_energy_floor_type = fields.Selection([
+        ("FLOOR","Floor"),
+        ("LEVEL","Level"),
+        ("GROUND","Ground"),
+    ],string="Floor Type")
+    momentum_energy_floor_number = fields.Char(string="Floor Number")  
+    momentum_energy_street_number_suffix = fields.Char("Street Number Suffix")
+    momentum_energy_street_name_suffix = fields.Selection([
+        ("CN", "CN"),
+        ("E", "E"),
+        ("EX", "EX"),
+        ("LR", "LR"),
+        ("N", "N"),
+        ("NE", "NE"),
+        ("NW", "NW"),
+        ("S", "S"),
+        ("SE", "SE"),
+        ("SW", "SW"),
+        ("UP", "UP"),
+        ("W", "W"),
+    ], string="Street Name Suffix")
     momentum_energy_service_street_number = fields.Char("Service Street Number")
     momentum_energy_service_street_name = fields.Char("Service Street Name")
-    momentum_energy_service_street_type_code = fields.Char("Service Street Type Code")
+    momentum_energy_service_street_type_code = fields.Selection([
+        ("ACCS", "ACCS"),
+        ("ACRE", "ACRE"),
+        ("ALLY", "ALLY"),
+        ("ALWY", "ALWY"),
+        ("AMBL", "AMBL"),
+        ("ANCG", "ANCG"),
+        ("APP", "APP"),
+        ("ARC", "ARC"),
+        ("ART", "ART"),
+        ("ARTL", "ARTL"),
+        ("AVE", "AVE"),
+        ("BA", "BA"),
+        ("BASN", "BASN"),
+        ("BAY", "BAY"),
+        ("BCH", "BCH"),
+        ("BDGE", "BDGE"),
+        ("BDWY", "BDWY"),
+        ("BEND", "BEND"),
+        ("BLK", "BLK"),
+        ("BOWL", "BOWL"),
+        ("BRAE", "BRAE"),
+        ("BRAN", "BRAN"),
+        ("BRCE", "BRCE"),
+        ("BRET", "BRET"),
+        ("BRK", "BRK"),
+        ("BROW", "BROW"),
+        ("BVD", "BVD"),
+        ("BVDE", "BVDE"),
+        ("BWLK", "BWLK"),
+        ("BYPA", "BYPA"),
+        ("CAUS", "CAUS"),
+        ("CCT", "CCT"),
+        ("CDS", "CDS"),
+        ("CH", "CH"),
+        ("CIR", "CIR"),
+        ("CL", "CL"),
+        ("CLDE", "CLDE"),
+        ("CLR", "CLR"),
+        ("CMMN", "CMMN"),
+        ("CNN", "CNN"),
+        ("CNWY", "CNWY"),
+        ("CON", "CON"),
+        ("COVE", "COVE"),
+        ("COWY", "COWY"),
+        ("CPS", "CPS"),
+        ("CRCS", "CRCS"),
+        ("CRD", "CRD"),
+        ("CRES", "CRES"),
+        ("CRF", "CRF"),
+        ("CRK", "CRK"),
+        ("CRSE", "CRSE"),
+        ("CRSS", "CRSS"),
+        ("CRST", "CRST"),
+        ("CSO", "CSO"),
+        ("CT", "CT"),
+        ("CTR", "CTR"),
+        ("CTTG", "CTTG"),
+        ("CTYD", "CTYD"),
+        ("CUT", "CUT"),
+        ("DALE", "DALE"),
+        ("DASH", "DASH"),
+        ("DELL", "DELL"),
+        ("DEVN", "DEVN"),
+        ("DIP", "DIP"),
+        ("DIV", "DIV"),
+        ("DOCK", "DOCK"),
+        ("DR", "DR"),
+        ("DRWY", "DRWY"),
+        ("DWNS", "DWNS"),
+        ("EDGE", "EDGE"),
+        ("ELB", "ELB"),
+    ], string="Service Street Type Code")
+
     momentum_energy_service_suburb = fields.Char("Service Suburb")
-    momentum_energy_service_state = fields.Char("Service State")
+    momentum_energy_service_state = fields.Selection([
+        ("NSW","NSW"),
+        ("VIC","VIC"),
+        ("QLD","QLD"),
+        ("WA","WA"),
+        ("SA","SA"),
+        ("TAS","TAS"),
+        ("ACT","ACT"),
+        ("NT","NT"),
+    ],string="State")
     momentum_energy_service_post_code = fields.Char("Service Post Code")
     momentum_energy_service_access_instructions = fields.Text("Service Access Instructions")
-    momentum_energy_service_safety_instructions = fields.Text("Service Safety Instructions")
+    momentum_energy_service_safety_instructions = fields.Selection([
+        ("NONE", "None"),
+        ("CAUTION", "Caution"),
+        ("DOG", "Dog"),
+        ("ELECFENCE", "Electric Fence"),
+        ("NOTKNOWN", "Not Known"),
+        ("WORKSONSITE", "Works On Site"),
+    ], string="Service Safety Instructions")
+
     momentum_energy_offer_quote_date = fields.Datetime("Offer Quote Date")
     momentum_energy_service_offer_code = fields.Char("Service Offer Code")
-    momentum_energy_service_plan_code = fields.Char("Service Plan Code")
-    momentum_energy_contract_term_code = fields.Char("Contract Term Code")
+    momentum_energy_service_plan_code = fields.Selection([
+        ("Bill Boss Electricity", "Bill Boss Electricity"),
+        ("Suit Yourself Electricity", "Suit Yourself Electricity"),
+        ("Suit Yourself Gas", "Suit Yourself Gas"),
+        ("Strictly Business", "Strictly Business"),
+        ("Warm Welcome", "Warm Welcome"),
+        ("Warm Welcome Gas", "Warm Welcome Gas"),
+        ("EV Does It", "EV Does It"),
+    ], string="Service Plan Code")
+
+    momentum_energy_contract_term_code = fields.Selection([
+        ("OPEN", "OPEN"),
+        ("12MTH", "12 Months"),
+        ("24MTH", "24 Months"),
+        ("36MTH", "36 Months"),
+    ], string="Contract Term Code")
+
     momentum_energy_contract_date = fields.Datetime("Contract Date")
     momentum_energy_payment_method = fields.Selection([
-        ('cheque', 'Cheque'),
-        ('card', 'Card'),
-        ('bank_transfer', 'Bank Transfer')
+        ('Cheque', 'Cheque'),
+        ('Direct Debit Via Bank Account', 'Direct Debit Via Bank Account'),
+        # ('bank_transfer', 'Bank Transfer')
     ], string="Payment Method")
-    momentum_energy_bill_cycle_code = fields.Char("Bill Cycle Code")
+    momentum_energy_bill_cycle_code = fields.Selection([
+        ("Monthly", "Monthly"),
+        ("Bi-Monthly", "Bi-Monthly"),
+        ("Quarterly", "Quarterly"),
+
+    ],string="Bill Cycle Code")
     momentum_energy_bill_delivery_method = fields.Selection([
-        ('email', 'Email'),
-        ('post', 'Post')
+        ('EMAIL', 'Email'),
+        ('POST', 'Post')
     ], string="Bill Delivery Method")
+    momentum_energy_concession_obtained = fields.Boolean(string="Concession Consent Obtained", default=True)
+    momentum_energy_conc_has_ms = fields.Boolean(string="Whether the concession is for someone with MS(Multiple sclerosis)", default=False)
+    momentum_energy_conc_in_grp_home = fields.Boolean(string="Whether the concession is for group home")
+    momentum_energy_conc_start_date = fields.Date(string="Concession start date. (Must not be in future).")
+    momentum_energy_conc_end_date = fields.Date(string="Concession end date.(Must not be in Past).")
+    momentum_energy_conc_card_type_code = fields.Selection([
+        ("DVAGV", "DVAGV"),
+        ("HCC", "HCC"),
+        ("PCC", "PCC"),
+        ("Pensioner Concession Card (PCC)", "Pensioner Concession Card (PCC)"),
+        ("DVA Gold Card", "DVA Gold Card"),
+        ("DVA Pension Concession Card", "DVA Pension Concession Card"),
+        ("Health Care Card (HCC)", "Health Care Card (HCC)"),
+        ("DVA TPI", "DVA TPI"),
+        ("Disability Pension (EDA)", "Disability Pension (EDA)"),
+        ("DVA War Widow/Widower", "DVA War Widow/Widower"),
+        ("ImmiCard", "ImmiCard"),
+        ("Tasmanian Concession Card", "Tasmanian Concession Card"),
+        ("DVA PCC Only", "DVA PCC Only"),
+        ("QLD Seniors Card", "QLD Seniors Card"),
+        ("Low Income Health Care Card (LIHCC)", "Low Income Health Care Card (LIHCC)"),
+        ("LIHCC", "LIHCC"),
+    ], string="Type of Concession Card")
+
+    momentum_energy_conc_card_code = fields.Char(string="Concession card code.")
+    momentum_energy_conc_card_number = fields.Char(string="Concession card number")
+    momentum_energy_conc_card_exp_date = fields.Date(string="Concession card expiry date.")
+    momentum_energy_card_first_name = fields.Char(string="First name of the contact person.")
+    momentum_energy_card_last_name = fields.Char(string="Last name of the contact person.")
+
+
 
     #AMEX CREDIT CARD FIELDS
     cc_prefix = fields.Selection([
@@ -1065,6 +1329,9 @@ class CrmLead(models.Model):
 
             # STAGE 3 DISPOSITIONS
             if lead.lead_stage == "3":
+                if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
+                    lead._send_momentum_energy() 
+
                 if lead.stage_3_dispostion == "closed":
                     new_stage = stages_cache["Sale Closed"]
                     _logger.info("Lead %s - Moving to Won stage", lead.id)
@@ -1144,6 +1411,183 @@ class CrmLead(models.Model):
                     if default_stage:
                         _logger.info("Assigning lead %s to default stage: %s", lead.id, default_stage.name)
                         lead.with_context(skip_stage_assign=True).write({"stage_id": default_stage.id})
+    
+
+    def _send_momentum_energy(self):
+        """Prepare payload and POST to Momentum endpoint, then log response."""
+        self.ensure_one()
+
+        # First, build payload using real fields (as you did before)
+        transaction = {
+            "transactionReference": self.momentum_energy_transaction_reference,
+            "transactionChannel": self.momentum_energy_transaction_channel,
+            "transactionDate": self.momentum_energy_transaction_date.isoformat() if self.momentum_energy_transaction_date else None,
+            "transactionVerificationCode": self.momentum_energy_transaction_verification_code,
+            "transactionSource": self.momentum_energy_transaction_source,
+        }
+
+        # Build contacts
+        contacts = {
+            "primaryContact": {
+                "contactType": self.momentum_energy_primary_contact_type,
+                "salutation": self.momentum_energy_primary_salutation,
+                "firstName": self.momentum_energy_primary_first_name,
+                "middleName": self.momentum_energy_primary_middle_name,
+                "lastName": self.momentum_energy_primary_last_name,
+                "countryOfBirth": self.momentum_energy_primary_country_of_birth,
+                "dateOfBirth": self.momentum_energy_primary_date_of_birth.isoformat() if self.momentum_energy_primary_date_of_birth else None,
+                "email": self.momentum_energy_primary_email,
+                "addresses": [{
+                    "addressType": self.momentum_energy_primary_address_type,
+                    "streetNumber": self.momentum_energy_primary_street_number,
+                    "streetName": self.momentum_energy_primary_street_name,
+                    "unitNumber": self.momentum_energy_primary_unit_number,
+                    "suburb": self.momentum_energy_primary_suburb,
+                    "state": self.momentum_energy_primary_state,
+                    "postCode": self.momentum_energy_primary_post_code,
+                }],
+                "contactPhones": [
+                    {"contactPhoneType": "WORK", "phone": self.momentum_energy_primary_phone_work},
+                    {"contactPhoneType": "HOME", "phone": self.momentum_energy_primary_phone_home},
+                    {"contactPhoneType": "MOBILE", "phone": self.momentum_energy_primary_phone_mobile},
+                ],
+            },
+            "secondaryContact": {
+                "contactType": self.momentum_energy_secondary_contact_type,
+                "salutation": self.momentum_energy_secondary_salutation,
+                "firstName": self.momentum_energy_secondary_first_name,
+                "middleName": self.momentum_energy_secondary_middle_name,
+                "lastName": self.momentum_energy_secondary_last_name,
+                "countryOfBirth": self.momentum_energy_secondary_country_of_birth,
+                "dateOfBirth": self.momentum_energy_secondary_date_of_birth.isoformat() if self.momentum_energy_secondary_date_of_birth else None,
+                "email": self.momentum_energy_secondary_email,
+                "addresses": [{
+                    "addressType": self.momentum_energy_secondary_address_type,
+                    "streetNumber": self.momentum_energy_secondary_street_number,
+                    "streetName": self.momentum_energy_secondary_street_name,
+                    "unitNumber": self.momentum_energy_secondary_unit_number,
+                    "suburb": self.momentum_energy_secondary_suburb,
+                    "state": self.momentum_energy_secondary_state,
+                    "postCode": self.momentum_energy_secondary_post_code,
+                }],
+                "contactPhones": [
+                    {"contactPhoneType": "WORK", "phone": self.momentum_energy_secondary_phone_work},
+                    {"contactPhoneType": "HOME", "phone": self.momentum_energy_secondary_phone_home},
+                    {"contactPhoneType": "MOBILE", "phone": self.momentum_energy_secondary_phone_mobile},
+                ],
+            },
+        }
+
+        # Customer block
+        if self.momentum_energy_customer_type == "resident":
+            customer = {
+                "customerType": "RESIDENT",
+                "customerSubType": self.momentum_energy_customer_sub_type,
+                "communicationPreference": (self.momentum_energy_communication_preference or "").upper(),
+                "promotionAllowed": self.momentum_energy_promotion_allowed,
+                "residentIdentity": {
+                    "passport": {
+                        "documentId": self.momentum_energy_passport_id,
+                        "documentExpiryDate": self.momentum_energy_passport_expiry.isoformat() if self.momentum_energy_passport_expiry else None,
+                        "issuingCountry": self.momentum_energy_passport_country,
+                    },
+                    "drivingLicense": {
+                        "documentId": self.momentum_energy_driving_license_id,
+                        "documentExpiryDate": self.momentum_energy_driving_license_expiry.isoformat() if self.momentum_energy_driving_license_expiry else None,
+                        "issuingState": self.momentum_energy_driving_license_state,
+                    },
+                    "medicare": {
+                        "documentId": self.momentum_energy_medicare_id,
+                        "documentNumber": self.momentum_energy_medicare_number,
+                        "documentExpiryDate": self.momentum_energy_medicare_expiry.isoformat() if self.momentum_energy_medicare_expiry else None,
+                    },
+                },
+                "contacts": contacts,
+            }
+        else:  # company
+            customer = {
+                "customerType": "COMPANY",
+                "customerSubType": self.momentum_energy_customer_sub_type,
+                "communicationPreference": (self.momentum_energy_communication_preference or "").upper(),
+                "promotionAllowed": self.momentum_energy_promotion_allowed,
+                "companyIdentity": {
+                    "industry": self.momentum_energy_industry,
+                    "entityName": self.momentum_energy_entity_name,
+                    "tradingName": self.momentum_energy_trading_name,
+                    "trusteeName": self.momentum_energy_trustee_name,
+                    "abn": {"documentId": self.momentum_energy_abn_document_id},
+                    "acn": {"documentId": self.momentum_energy_acn_document_id},
+                },
+                "contacts": contacts,
+            }
+
+        # Service block
+        service = {
+            "serviceType": (self.momentum_energy_service_type or "").upper(),
+            "serviceSubType": self.momentum_energy_service_sub_type,
+            "serviceConnectionId": self.momentum_energy_service_connection_id,
+            "serviceMeterId": self.momentum_energy_service_meter_id,
+            "serviceStartDate": self.momentum_energy_service_start_date.isoformat() if self.momentum_energy_service_start_date else None,
+            "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
+            "lotNumber": self.momentum_energy_lot_number,
+            "servicedAddress": {
+                "streetNumber": self.momentum_energy_service_street_number,
+                "streetName": self.momentum_energy_service_street_name,
+                "streetTypeCode": self.momentum_energy_service_street_type_code,
+                "suburb": self.momentum_energy_service_suburb,
+                "state": self.momentum_energy_service_state,
+                "postCode": self.momentum_energy_service_post_code,
+                "accessInstructions": self.momentum_energy_service_access_instructions,
+                "safetyInstructions": self.momentum_energy_service_safety_instructions,
+            },
+            "serviceBilling": {
+                "offerQuoteDate": self.momentum_energy_offer_quote_date.isoformat() if self.momentum_energy_offer_quote_date else None,
+                "serviceOfferCode": self.momentum_energy_service_offer_code,
+                "servicePlanCode": self.momentum_energy_service_plan_code,
+                "contractTermCode": self.momentum_energy_contract_term_code,
+                "contractDate": self.momentum_energy_contract_date.isoformat() if self.momentum_energy_contract_date else None,
+                "paymentMethod": (self.momentum_energy_payment_method or "").upper(),
+                "billCycleCode": self.momentum_energy_bill_cycle_code,
+                "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
+            },
+        }
+
+        
+
+        # Fetch bearer token
+        token = self.env["ir.config_parameter"].sudo().get_param("momentum.jwt_token")
+        _logger.info("Token is %s",token)
+        if not token:
+            _logger.error("Bearer token missing for Momentum API for lead %s", self.id)
+            return None
+
+        payload = {
+            "transaction": transaction,
+            "customer": customer,
+            "service": service,
+            "token":token
+        }
+
+        _logger.info("Payload to send is %s ", payload)    
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        url = "http://15.188.138.149/momentum/lead"
+
+        # Log the payload before sending
+        _logger.info("Sending Momentum API request for Lead %s, payload:\n%s", self.id, json.dumps(payload, indent=2, default=str))
+
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=30)
+            _logger.info("Momentum API response status: %s, response: %s", response.status_code, response.text)
+        except Exception as e:
+            _logger.error("Error calling Momentum API for Lead %s : %s", self.id, e, exc_info=True)
+
+        return payload
+
 
 
     #CREDIT CARD - AMEX FIELDS

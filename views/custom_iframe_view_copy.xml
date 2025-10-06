@@ -562,6 +562,196 @@
 
                     <!-- Energy State 2 - Momentum Energy Form -->
                     <group string="Momentum Energy Form" invisible="lead_for != 'energy' or stage_2_campign_name != 'momentum' or lead_stage != '2'">
+                        <sheet>
+
+                            <!-- Transaction Info -->
+                            <group string="Transaction Information" col="2" colspan="4">
+                                <field name="momentum_energy_transaction_reference"/>
+                                <field name="momentum_energy_transaction_channel"/>
+                                <field name="momentum_energy_transaction_date"/>
+                                <field name="momentum_energy_transaction_verification_code"/>
+                                <field name="momentum_energy_transaction_source"/>
+                            </group>
+
+                            <!-- Customer + Business -->
+                            <group col="2" colspan="4">
+                                <group string="Customer Information" colspan="1">
+                                    <field name="momentum_energy_customer_type" required="services == 'energy' and stage_2_campign_name == 'momentum'"/>
+                                    <field name="momentum_energy_customer_sub_type"/>
+                                    <field name="momentum_energy_communication_preference"/>
+                                    <field name="momentum_energy_promotion_allowed"/>
+                                </group>
+
+                                <group string="Business Details" colspan="1" invisible="momentum_energy_customer_type != 'company'">
+                                    <field name="momentum_energy_industry"/>
+                                    <field name="momentum_energy_entity_name"/>
+                                    <field name="momentum_energy_trading_name"/>
+                                    <field name="momentum_energy_trustee_name"/>
+                                    <field name="momentum_energy_abn_document_id"/>
+                                    <field name="momentum_energy_acn_document_id"/>
+                                </group>
+                            </group>
+
+                            <!-- Identity -->
+                            <group col="2" colspan="4">
+                                <group string="Passport Details" colspan="1">
+                                    <field name="momentum_energy_passport_id"/>
+                                    <field name="momentum_energy_passport_expiry"/>
+                                    <field name="momentum_energy_passport_country"/>
+                                </group>
+
+                                <group string="Driving License" colspan="1">
+                                    <field name="momentum_energy_driving_license_id"/>
+                                    <field name="momentum_energy_driving_license_expiry"/>
+                                    <field name="momentum_energy_driving_license_state"/>
+                                </group>
+                            </group>
+
+                            <!-- Medicare -->
+                            <group string="Medicare Details">
+                                <field name="momentum_energy_medicare_id"/>
+                                <field name="momentum_energy_medicare_number"/>
+                                <field name="momentum_energy_medicare_expiry"/>
+                            </group>
+
+                            <!-- Primary Contact -->
+                            <group col="2" colspan="4">
+                                <group string="Primary Contact Details" colspan="1">
+                                    <field name="momentum_energy_primary_contact_type"/>
+                                    <field name="momentum_energy_primary_salutation"/>
+                                    <field name="momentum_energy_primary_first_name"/>
+                                    <field name="momentum_energy_primary_middle_name"/>
+                                    <field name="momentum_energy_primary_last_name"/>
+                                    <field name="momentum_energy_primary_country_of_birth"/>
+                                    <field name="momentum_energy_primary_date_of_birth"/>
+                                    <field name="momentum_energy_primary_email" widget="email"/>
+                                </group>
+
+                                <group string="Primary Contact Phone" colspan="1">
+                                    <field name="momentum_energy_primary_phone_work"/>
+                                    <field name="momentum_energy_primary_phone_home"/>
+                                    <field name="momentum_energy_primary_phone_mobile"/>
+                                </group>
+                            </group>
+
+                            <!-- Primary Address -->
+                            <group string="Primary Contact Address" col="2" colspan="4">
+                                <field name="momentum_energy_primary_address_type"/>
+                                <field name="momentum_energy_primary_unit_number"/>
+                                <field name="momentum_energy_primary_street_number"/>
+                                <field name="momentum_energy_primary_street_name"/>
+                                <field name="momentum_energy_primary_suburb"/>
+                                <field name="momentum_energy_primary_state"/>
+                                <field name="momentum_energy_primary_post_code"/>
+                            </group>
+
+                            <!-- Secondary Contact -->
+                            <group col="2" colspan="4">
+                                <group string="Secondary Contact Details" colspan="1">
+                                    <field name="momentum_energy_secondary_contact_type"/>
+                                    <field name="momentum_energy_secondary_salutation"/>
+                                    <field name="momentum_energy_secondary_first_name"/>
+                                    <field name="momentum_energy_secondary_middle_name"/>
+                                    <field name="momentum_energy_secondary_last_name"/>
+                                    <field name="momentum_energy_secondary_country_of_birth"/>
+                                    <field name="momentum_energy_secondary_date_of_birth"/>
+                                    <field name="momentum_energy_secondary_email" widget="email"/>
+                                </group>
+
+                                <group string="Secondary Contact Phone" colspan="1">
+                                    <field name="momentum_energy_secondary_phone_work"/>
+                                    <field name="momentum_energy_secondary_phone_home"/>
+                                    <field name="momentum_energy_secondary_phone_mobile"/>
+                                </group>
+                            </group>
+
+                            <!-- Secondary Address -->
+                            <group string="Secondary Contact Address" col="2" colspan="4">
+                                <field name="momentum_energy_secondary_address_type"/>
+                                <field name="momentum_energy_secondary_unit_number"/>
+                                <field name="momentum_energy_secondary_street_number"/>
+                                <field name="momentum_energy_secondary_street_name"/>
+                                <field name="momentum_energy_secondary_suburb"/>
+                                <field name="momentum_energy_secondary_state"/>
+                                <field name="momentum_energy_secondary_post_code"/>
+                            </group>
+
+                            <!-- Service Information -->
+                            <group col="2" colspan="4">
+                                <group string="Service Information" colspan="1">
+                                    <field name="momentum_energy_service_type"/>
+                                    <field name="momentum_energy_service_sub_type"/>
+                                    <field name="momentum_energy_service_connection_id"/>
+                                    <field name="momentum_energy_service_meter_id"/>
+                                    <field name="momentum_energy_service_start_date"/>
+                                    <field name="momentum_energy_estimated_annual_kwhs"/>
+                                </group>
+
+                                <group string="Service Address" colspan="1">
+                                    <field name="momentum_energy_lot_number"/>
+                                    <field name="momentum_energy_service_street_number"/>
+                                    <field name="momentum_energy_service_street_name"/>
+                                    <field name="momentum_energy_service_street_type_code"/>
+                                    <field name="momentum_energy_service_suburb"/>
+                                    <field name="momentum_energy_service_state"/>
+                                    <field name="momentum_energy_service_post_code"/>
+                                </group>
+                            </group>
+
+                            <!-- Unit / Floor -->
+                            <group col="2" colspan="4">
+                                <group string="Unit and Floor" colspan="1">
+                                    <field name="momentum_energy_unit_type"/>
+                                    <field name="momentum_energy_unit_number"/>
+                                </group>
+
+                                <group string="Floor" colspan="1">
+                                    
+                                    <field name="momentum_energy_floor_number"/>
+                                </group>
+                            </group>
+
+                            <!-- Service Instructions -->
+                            <group string="Service Instructions" col="1" colspan="4">
+                                <field name="momentum_energy_service_access_instructions"/>
+                                <field name="momentum_energy_service_safety_instructions"/>
+                            </group>
+
+                            <!-- Offer & Billing -->
+                            <group col="2" colspan="4">
+                                <group string="Offer Details" colspan="1">
+                                    <field name="momentum_energy_offer_quote_date"/>
+                                    <field name="momentum_energy_service_offer_code"/>
+                                    <field name="momentum_energy_service_plan_code"/>
+                                    <field name="momentum_energy_contract_term_code"/>
+                                    <field name="momentum_energy_contract_date"/>
+                                </group>
+
+                                <group string="Billing Details" colspan="1">
+                                    <field name="momentum_energy_payment_method"/>
+                                    <field name="momentum_energy_bill_cycle_code"/>
+                                    <field name="momentum_energy_bill_delivery_method"/>
+                                </group>
+                            </group>
+
+                            <!-- Concession / Card info -->
+                            <group string="Concession Card Information" col="2" colspan="4">
+                                <field name="momentum_energy_conc_card_type_code"/>
+                                <field name="momentum_energy_conc_card_code"/>
+                                <field name="momentum_energy_conc_card_number"/>
+                                <field name="momentum_energy_conc_card_exp_date"/>
+                                <field name="momentum_energy_card_first_name"/>
+                                <field name="momentum_energy_card_last_name"/>
+                                <field name="momentum_energy_conc_start_date"/>
+                                <field name="momentum_energy_conc_end_date"/>
+                                <field name="momentum_energy_concession_obtained"/>
+                                <field name="momentum_energy_conc_has_ms"/>
+                                <field name="momentum_energy_conc_in_grp_home"/>
+                            </group>
+
+                        </sheet>
+                    </group>
+                    <!-- <group string="Momentum Energy Form" invisible="lead_for != 'energy' or stage_2_campign_name != 'momentum' or lead_stage != '2'">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -716,7 +906,7 @@
                             </group>
 
                         </sheet>
-                    </group>
+                    </group> -->
                     <!-- MOMENTUM ENERGY FORM END -->
 
 
@@ -1356,8 +1546,8 @@
 
 </odoo>
 
-                <!-- Assigned Partner Page -->
-                <!-- <page string="Assigned Partner">
+<!-- Assigned Partner Page -->
+<!-- <page string="Assigned Partner">
                     <group>
                         <field name="partner_id"/>
                         <field name="user_id"/>
