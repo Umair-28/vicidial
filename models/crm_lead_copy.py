@@ -1,7 +1,9 @@
 from odoo import models, fields, api
+from datetime import timezone
 import logging
 import json
 import requests
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -544,7 +546,7 @@ class CrmLead(models.Model):
 
     # MOMENTUM ENERGY FORM
     momentum_energy_transaction_reference = fields.Char("Transaction Reference")
-    momentum_energy_transaction_channel = fields.Char("Transaction Channel", default="Residential COnnections")
+    momentum_energy_transaction_channel = fields.Char("Transaction Channel", default="Residential Connections")
     momentum_energy_transaction_date = fields.Datetime("Transaction Date")
     momentum_energy_transaction_verification_code = fields.Char("Transaction Verification Code")
     momentum_energy_transaction_source = fields.Char("Transaction Source", default="EXTERNAL")
@@ -1417,16 +1419,23 @@ class CrmLead(models.Model):
         """Prepare payload and POST to Momentum endpoint, then log response."""
         self.ensure_one()
 
-        # First, build payload using real fields (as you did before)
+        # -------------------------------
+        # Transaction block
+        # -------------------------------
         transaction = {
             "transactionReference": self.momentum_energy_transaction_reference,
             "transactionChannel": self.momentum_energy_transaction_channel,
-            "transactionDate": self.momentum_energy_transaction_date.isoformat() if self.momentum_energy_transaction_date else None,
+            "transactionDate": (
+                self.momentum_energy_transaction_date.replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
+                if self.momentum_energy_transaction_date else None
+            ),
             "transactionVerificationCode": self.momentum_energy_transaction_verification_code,
             "transactionSource": self.momentum_energy_transaction_source,
         }
 
-        # Build contacts
+        # -------------------------------
+        # Contacts block
+        # -------------------------------
         contacts = {
             "primaryContact": {
                 "contactType": self.momentum_energy_primary_contact_type,
@@ -1435,7 +1444,10 @@ class CrmLead(models.Model):
                 "middleName": self.momentum_energy_primary_middle_name,
                 "lastName": self.momentum_energy_primary_last_name,
                 "countryOfBirth": self.momentum_energy_primary_country_of_birth,
-                "dateOfBirth": self.momentum_energy_primary_date_of_birth.isoformat() if self.momentum_energy_primary_date_of_birth else None,
+                "dateOfBirth": (
+                    self.momentum_energy_primary_date_of_birth.isoformat()
+                    if self.momentum_energy_primary_date_of_birth else None
+                ),
                 "email": self.momentum_energy_primary_email,
                 "addresses": [{
                     "addressType": self.momentum_energy_primary_address_type,
@@ -1459,7 +1471,10 @@ class CrmLead(models.Model):
                 "middleName": self.momentum_energy_secondary_middle_name,
                 "lastName": self.momentum_energy_secondary_last_name,
                 "countryOfBirth": self.momentum_energy_secondary_country_of_birth,
-                "dateOfBirth": self.momentum_energy_secondary_date_of_birth.isoformat() if self.momentum_energy_secondary_date_of_birth else None,
+                "dateOfBirth": (
+                    self.momentum_energy_secondary_date_of_birth.isoformat()
+                    if self.momentum_energy_secondary_date_of_birth else None
+                ),
                 "email": self.momentum_energy_secondary_email,
                 "addresses": [{
                     "addressType": self.momentum_energy_secondary_address_type,
@@ -1478,7 +1493,9 @@ class CrmLead(models.Model):
             },
         }
 
+        # -------------------------------
         # Customer block
+        # -------------------------------
         if self.momentum_energy_customer_type == "resident":
             customer = {
                 "customerType": "RESIDENT",
@@ -1488,23 +1505,32 @@ class CrmLead(models.Model):
                 "residentIdentity": {
                     "passport": {
                         "documentId": self.momentum_energy_passport_id,
-                        "documentExpiryDate": self.momentum_energy_passport_expiry.isoformat() if self.momentum_energy_passport_expiry else None,
+                        "documentExpiryDate": (
+                            self.momentum_energy_passport_expiry.isoformat()
+                            if self.momentum_energy_passport_expiry else None
+                        ),
                         "issuingCountry": self.momentum_energy_passport_country,
                     },
                     "drivingLicense": {
                         "documentId": self.momentum_energy_driving_license_id,
-                        "documentExpiryDate": self.momentum_energy_driving_license_expiry.isoformat() if self.momentum_energy_driving_license_expiry else None,
+                        "documentExpiryDate": (
+                            self.momentum_energy_driving_license_expiry.isoformat()
+                            if self.momentum_energy_driving_license_expiry else None
+                        ),
                         "issuingState": self.momentum_energy_driving_license_state,
                     },
                     "medicare": {
                         "documentId": self.momentum_energy_medicare_id,
                         "documentNumber": self.momentum_energy_medicare_number,
-                        "documentExpiryDate": self.momentum_energy_medicare_expiry.isoformat() if self.momentum_energy_medicare_expiry else None,
+                        "documentExpiryDate": (
+                            self.momentum_energy_medicare_expiry.isoformat()
+                            if self.momentum_energy_medicare_expiry else None
+                        ),
                     },
                 },
                 "contacts": contacts,
             }
-        else:  # company
+        else:
             customer = {
                 "customerType": "COMPANY",
                 "customerSubType": self.momentum_energy_customer_sub_type,
@@ -1521,13 +1547,18 @@ class CrmLead(models.Model):
                 "contacts": contacts,
             }
 
+        # -------------------------------
         # Service block
+        # -------------------------------
         service = {
             "serviceType": (self.momentum_energy_service_type or "").upper(),
             "serviceSubType": self.momentum_energy_service_sub_type,
             "serviceConnectionId": self.momentum_energy_service_connection_id,
             "serviceMeterId": self.momentum_energy_service_meter_id,
-            "serviceStartDate": self.momentum_energy_service_start_date.isoformat() if self.momentum_energy_service_start_date else None,
+            "serviceStartDate": (
+                self.momentum_energy_service_start_date.isoformat().replace("+00:00", "Z")
+                if self.momentum_energy_service_start_date else None
+            ),
             "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
             "lotNumber": self.momentum_energy_lot_number,
             "servicedAddress": {
@@ -1541,52 +1572,84 @@ class CrmLead(models.Model):
                 "safetyInstructions": self.momentum_energy_service_safety_instructions,
             },
             "serviceBilling": {
-                "offerQuoteDate": self.momentum_energy_offer_quote_date.isoformat() if self.momentum_energy_offer_quote_date else None,
+                "offerQuoteDate": (
+                    self.momentum_energy_offer_quote_date.replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
+                    if self.momentum_energy_offer_quote_date else None
+                ),
                 "serviceOfferCode": self.momentum_energy_service_offer_code,
                 "servicePlanCode": self.momentum_energy_service_plan_code,
                 "contractTermCode": self.momentum_energy_contract_term_code,
-                "contractDate": self.momentum_energy_contract_date.isoformat() if self.momentum_energy_contract_date else None,
-                "paymentMethod": (self.momentum_energy_payment_method or "").upper(),
+                "contractDate": (
+                    self.momentum_energy_contract_date.replace(tzinfo=timezone.utc).isoformat().replace("+00:00", "Z")
+                    if self.momentum_energy_contract_date else None
+                ),
+                "paymentMethod": (self.momentum_energy_payment_method or ""),
                 "billCycleCode": self.momentum_energy_bill_cycle_code,
                 "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
             },
         }
 
-        
-
-        # Fetch bearer token
+        # -------------------------------
+        # Final payload
+        # -------------------------------
         token = self.env["ir.config_parameter"].sudo().get_param("momentum.jwt_token")
-        _logger.info("Token is %s",token)
         if not token:
             _logger.error("Bearer token missing for Momentum API for lead %s", self.id)
-            return None
+            raise UserError("Momentum API bearer token missing. Please configure it in System Parameters.")
 
         payload = {
             "transaction": transaction,
             "customer": customer,
             "service": service,
-            "token":token
+            "token": token,
         }
 
-        _logger.info("Payload to send is %s ", payload)    
+        _logger.info("Sending Momentum API request for Lead %s, payload:\n%s", self.id, json.dumps(payload, indent=2, default=str))
 
         headers = {
             "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         url = "http://15.188.138.149/momentum/lead"
 
-        # Log the payload before sending
-        _logger.info("Sending Momentum API request for Lead %s, payload:\n%s", self.id, json.dumps(payload, indent=2, default=str))
-
+        # -------------------------------
+        # Request & Error Handling
+        # -------------------------------
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             _logger.info("Momentum API response status: %s, response: %s", response.status_code, response.text)
-        except Exception as e:
-            _logger.error("Error calling Momentum API for Lead %s : %s", self.id, e, exc_info=True)
 
-        return payload
+            if not response.ok:
+                try:
+                    data = response.json()
+                    details_str = data.get("details")
+                    details = json.loads(details_str) if details_str else {}
+                    errors = details.get("errors", [])
+                    error_messages = [
+                        f"[{err.get('errorCode')}] {err.get('errorMessage')}" for err in errors
+                    ]
+                    full_error = "\n".join(error_messages) or data.get("error", "Unknown Momentum API error")
+                    _logger.error("Momentum API error for Lead %s: %s", self.id, full_error)
+                    raise UserError(f"Momentum API Error:\n{full_error}")
+
+                except (ValueError, json.JSONDecodeError):
+                    raise UserError(f"Momentum API returned invalid response:\n{response.text}")
+
+            # ✅ Successful response
+            try:
+                return response.json()
+            except Exception:
+                return response.text
+
+        except requests.exceptions.Timeout:
+            _logger.error("Momentum API timeout for Lead %s", self.id)
+            raise UserError("Momentum API request timed out. Please try again later.")
+        except requests.exceptions.RequestException as e:
+            _logger.exception("Error calling Momentum API for Lead %s", self.id)
+            raise UserError(f"Failed to reach Momentum API: {str(e)}")
+
+        return None
 
 
 

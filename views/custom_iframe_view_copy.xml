@@ -160,7 +160,6 @@
                                     <field name="stage_2_card_type"/>
                                     <field name="stage_2_card_start_date"/>
                                     <field name="stage_2_card_expiry_date"/>
-                                    <field name="stage_2_card_expiry_date"/>
 
                                 </group>
                             </group>
@@ -582,7 +581,7 @@
                                     <field name="momentum_energy_promotion_allowed"/>
                                 </group>
 
-                                <group string="Business Details" colspan="1" invisible="momentum_energy_customer_type != 'company'">
+                                <group string="Business Details" colspan="1">
                                     <field name="momentum_energy_industry"/>
                                     <field name="momentum_energy_entity_name"/>
                                     <field name="momentum_energy_trading_name"/>
@@ -706,15 +705,18 @@
                                 </group>
 
                                 <group string="Floor" colspan="1">
-                                    
+
                                     <field name="momentum_energy_floor_number"/>
                                 </group>
                             </group>
 
                             <!-- Service Instructions -->
-                            <group string="Service Instructions" col="1" colspan="4">
-                                <field name="momentum_energy_service_access_instructions"/>
-                                <field name="momentum_energy_service_safety_instructions"/>
+                            <group col="2" colspan="4">
+
+                                <group string="Service Instructions" colspan="1">
+                                    <field name="momentum_energy_service_access_instructions"/>
+                                    <field name="momentum_energy_service_safety_instructions"/>
+                                </group>
                             </group>
 
                             <!-- Offer & Billing -->
