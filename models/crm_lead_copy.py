@@ -632,7 +632,7 @@ class CrmLead(models.Model):
     momentum_energy_trustee_name = fields.Char("Trustee Name")
     momentum_energy_abn_document_id = fields.Char("ABN Document ID")
     momentum_energy_acn_document_id = fields.Char("ACN Document ID")
-    momentum_energy_primary_contact_type = fields.Char("Contact Type", default="Primary")
+    momentum_energy_primary_contact_type = fields.Char("Contact Type", default="PRIMARY")
     momentum_energy_primary_salutation = fields.Selection([
         ("Mr.","Mr."),
         ("Mrs.","Mrs."),
@@ -666,7 +666,7 @@ class CrmLead(models.Model):
     momentum_energy_primary_phone_work = fields.Char("Primary Work Phone")
     momentum_energy_primary_phone_home = fields.Char("Primary Home Phone")
     momentum_energy_primary_phone_mobile = fields.Char("Primary Mobile Phone")
-    momentum_energy_secondary_contact_type = fields.Char("Secondary Contact Type")
+    momentum_energy_secondary_contact_type = fields.Char("Secondary Contact Type", default="SECONDARY")
     momentum_energy_secondary_salutation = fields.Char("Secondary Salutation")
     momentum_energy_secondary_first_name = fields.Char("Secondary First Name")
     momentum_energy_secondary_middle_name = fields.Char("Secondary Middle Name")
