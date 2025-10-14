@@ -215,10 +215,10 @@ class CrmLead(models.Model):
         ('other', 'Other/Unknown'),
 
     ],"Who is your current gas provider")
-    en_name = fields.Char("Name")
-    en_contact_number = fields.Char("Contact Number")
+    en_name = fields.Char("Name", default=lambda self: self.name or '')
+    en_contact_number = fields.Char("Contact Number", default=lambda self: self.phone or self.phone_sanitized or '')
     en_customer_alt_phone = fields.Char(string="Customer Alt. Number")
-    en_email = fields.Char("Email")
+    en_email = fields.Char("Email", default=lambda self: self.email_from or '')
     en_request_callback = fields.Boolean(string="Request a call back")
     en_accpeting_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.")
     nmi = fields.Char(string="NMI")
@@ -1496,7 +1496,7 @@ class CrmLead(models.Model):
         # -------------------------------
         # Customer block
         # -------------------------------
-        if self.momentum_energy_customer_type == "resident":
+        if self.momentum_energy_customer_type == "RESIDENT":
             customer = {
                 "customerType": "RESIDENT",
                 "customerSubType": self.momentum_energy_customer_sub_type,
@@ -1651,37 +1651,6 @@ class CrmLead(models.Model):
 
         return None
 
-
-
-    #CREDIT CARD - AMEX FIELDS
-    # amex_date = fields.Date(string="Date")
-    # amex_center = fields.Char(string="Center")
-    # amex_company_name = fields.Char(string="Company Name")
-    # amex_abn = fields.Char(string="ABN")
-    # amex_address_1 = fields.Char(string="Address Line 1")
-    # amex_address_2 = fields.Char(string="Address Line 2")
-    # amex_suburb = fields.Char(string="Suburb")
-    # amex_state = fields.Char(string="State")
-    # amex_country = fields.Char(string="Country")
-    # amex_business_website = fields.Char(string="Website")
-    # amex_saluation = fields.Selection([
-    #     ('n/a', 'N/A'), 
-    #     ('mr', 'Mr.'), 
-    #     ('mrs', 'Mrs.'), 
-    #     ('ms', 'Ms.'), 
-    #     ('dr', 'Dr.'), 
-    #     ('miss', 'Miss')
-    # ], string="Prefix", default="mr")
-    # amex_first_name = fields.Char(string="First Name")
-    # amex_last_name = fields.Char(string="Last Name")
-    # amex_position = fields.Char(string="Position in Business")
-    # amex_contact = fields.Char(string="Contact Number")
-    # amex_email = fields.Char(string="Email")
-    # amex_current_turnover = fields.Char(string = "Current turnover less than 2 million or more")
-    # amex_estimated_expense = fields.Char(string="Estimated Expenses On Card")
-    # amex_existing_product = fields.Char(string="Existing Competitor Product")
-    # amex_additional_info = fields.Char(string="Additional Information for Sales Team")
-    # amex_tool_used =  fields.Char(string="Expense Management Tool Used")
 
 
 
