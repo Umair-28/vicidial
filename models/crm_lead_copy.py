@@ -1,9 +1,11 @@
-from odoo import models, fields, api
+import re
+from odoo import models, fields, api, _
 from datetime import timezone
 import logging
 import json
 import requests
 from odoo.exceptions import UserError
+from odoo.exceptions import ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -40,6 +42,106 @@ class CrmLead(models.Model):
         ("insurance", "Health Insurance"),
         ("veu", "Victorian Energy")
     ],  required=True, default="energy")
+
+    @api.constrains(
+        "momentum_energy_transaction_reference",
+        "momentum_energy_transaction_channel",
+        "momentum_energy_transaction_verification_code",
+        "momentum_energy_passport_id",
+        "momentum_energy_driving_license_id",
+        "momentum_energy_medicare_id",
+        "momentum_energy_medicare_number",
+        "momentum_energy_entity_name",
+        "momentum_energy_trading_name",
+        "momentum_energy_trustee_name",
+        "momentum_energy_abn_document_id",
+        "momentum_energy_acn_document_id",
+        "momentum_energy_primary_first_name",
+        "momentum_energy_primary_last_name",
+        "momentum_energy_primary_email",
+        "momentum_energy_primary_street_number",
+        "momentum_energy_primary_street_name",
+        "momentum_energy_primary_unit_number",
+        "momentum_energy_primary_suburb",
+        "momentum_energy_primary_post_code",
+        "momentum_energy_primary_phone_work",
+        "momentum_energy_primary_phone_home",
+        "momentum_energy_primary_phone_mobile",
+        "momentum_energy_secondary_first_name",
+        "momentum_energy_secondary_last_name",
+        "momentum_energy_secondary_phone_work",
+        "momentum_energy_secondary_phone_home",
+        "momentum_energy_secondary_phone_mobile",
+        "momentum_energy_service_connection_id",
+        "momentum_energy_service_street_number",
+        "momentum_energy_service_street_name",
+        "momentum_energy_service_suburb",
+        "momentum_energy_service_post_code",
+        "momentum_energy_service_offer_code",
+        "momentum_energy_conc_card_code",
+        "momentum_energy_conc_card_number",
+        "momentum_energy_card_first_name",
+        "momentum_energy_card_last_name",
+        "momentum_energy_secondary_email"
+
+
+    )
+    def _check_field_validations(self):
+        """
+        Unified field validation for all Momentum Energy fields.
+        """
+        # Predefined regex patterns for different field types
+        patterns = {
+            "momentum_energy_transaction_reference": (r"^[A-Za-z0-9\-]{1,30}$","Invalid Transaction Reference. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_transaction_channel": (r"^[A-Za-z0-9\s]+$","Invalid Transaction Channel. Only letters, numbers, and spaces are allowed.",),
+            "momentum_energy_transaction_verification_code": (r"^[A-Za-z0-9\-]{1,30}$", "Invalid Transaction Verification Code. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_passport_id":(r"^[A-Za-z0-9\-]{1,30}$", "Invalid Passport Number. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_driving_license_id":(r"^[A-Za-z0-9\-]{1,30}$", "Invalid Driving Liscense Number. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_medicare_id":(r"^[A-Za-z0-9\-]{1,30}$", "Invalid Medicare Number. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_medicare_number":(r"^[0-9]{1,30}$", "Invalid Medicare Document Number. Only digits (0–9) are allowed, with a maximum length of 30 characters"),
+            "momentum_energy_entity_name":(r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$", "Invalid Entity Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters."),
+            "momentum_energy_trading_name":(r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$", "Invalid Trading Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters."),
+            "momentum_energy_trustee_name":(r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$", "Invalid Trustee Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters."),
+            "momentum_energy_abn_document_id":(r"^\d{11}$", "Invalid ABN Number. It must contain exactly 11 digits with no spaces or special characters."),
+            "momentum_energy_acn_document_id":(r"^\d{9}$", "Invalid ACN Number. It must contain exactly 9 digits with no spaces or special characters."),
+            "momentum_energy_primary_first_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Customer First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_primary_last_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Customer Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_primary_email":(r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$","Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'."),
+            "momentum_energy_primary_street_number":(r"^[A-Za-z0-9-]*$", "Invalid Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."),
+            "momentum_energy_primary_street_name":(r"^[a-zA-Z0-9'.,/()\-\s]+$","Invalid Street Name. Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed."),
+            "momentum_energy_primary_unit_number":(r"^[a-zA-Z0-9'.,/()\-\s]+$","Invalid Primary Unit Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."),
+            "momentum_energy_primary_suburb":(r"^[A-Za-z0-9-]*$", "Invalid Suburb. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."),
+            "momentum_energy_primary_post_code":(r"^[0-9]{4}$","Invalid Primary PIN Code format. It must contain exactly 4 digits (0–9)."),
+            "momentum_energy_primary_phone_work":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Primary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_primary_phone_home":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Primary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_primary_phone_mobile":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Primary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_secondary_first_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Customer Secondary First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_secondary_last_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Customer Secondary Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_secondary_phone_work":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Secondary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_secondary_phone_home":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Secondary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_secondary_phone_mobile":(r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$","Invalid Secondary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."),
+            "momentum_energy_service_connection_id":(r"^[0-9A-Za-z]+$","Invalid Service Connection ID input. Only letters (A–Z, a–z) and numbers (0–9) are allowed, with no spaces or special characters."),
+            "momentum_energy_service_street_number":(r"^[A-Za-z0-9-]*$", "Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."),
+            "momentum_energy_service_street_name":(r"^[a-zA-Z0-9'.,/()\-\s]+$","Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."),
+            "momentum_energy_service_suburb":(r"^[A-Za-z0-9 ]*$", "Invalid Service Suburb input. Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted."),
+            "momentum_energy_service_post_code":(r"^[0-9]{4}$","Invalid Service PIN Code format. It must contain exactly 4 digits (0–9)."),
+            "momentum_energy_service_offer_code":(r"^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$", "Invalid Service Offer Code input. Must be 15 or 18 alphanumeric characters (letters and numbers only, no spaces or symbols)."),
+            "momentum_energy_conc_card_code":(r"^[A-Za-z0-9\-]+$", "Invalid Concession Card Code input. Only letters, numbers, and hyphens (-) are allowed. No spaces or special characters."),
+            "momentum_energy_conc_card_number":(r"^[A-Za-z0-9\-]{1,30}$","Invalid Concession Card Number. Use only letters, digits, and hyphens (-), max 30 chars."),
+            "momentum_energy_card_first_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Concession Card Holder First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_card_last_name":(r"^[A-Z][a-zA-Z'-. ]{1,100}$","Invalid Concession Card Holder Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."),
+            "momentum_energy_secondary_email":(r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$","Invalid Secondary Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'."),
+
+        }
+
+        for rec in self:
+            for field, (pattern, msg) in patterns.items():
+                if hasattr(rec, field):
+                    value = getattr(rec, field)
+                    if value:
+                        value = value.strip()
+                        if not re.fullmatch(pattern, value):
+                            raise ValidationError(_(msg))
 
     @api.model
     def _get_stage_sequence(self):
@@ -567,13 +669,13 @@ class CrmLead(models.Model):
         ("Trust","Trust"),
         ("C&I","C&I"),
         ("SME","SME"),
-    ],string="Customer Sub Type")
+    ],string="Customer Sub Type", default="RESIDENT")
     momentum_energy_communication_preference = fields.Selection([
         ('EMAIL', 'Email'),
         ('PHONE', 'Phone'),
         ('SMS', 'SMS')
-    ], string="Communication Preference")
-    momentum_energy_promotion_allowed = fields.Boolean("Promotion Allowed")
+    ], string="Communication Preference", default="EMAIL")
+    momentum_energy_promotion_allowed = fields.Boolean("Promotion Allowed", default=True)
     momentum_energy_passport_id = fields.Char("Passport Number")
     momentum_energy_passport_expiry = fields.Date("Passport Expiry Date")
     momentum_energy_passport_country = fields.Char("Passport Issuing Country")
@@ -588,7 +690,7 @@ class CrmLead(models.Model):
         ("TAS","TAS"),
         ("ACT","ACT"),
         ("NT","NT"),
-    ],string="Issuing State")
+    ],string="Issuing State", default="NSW")
     momentum_energy_medicare_id = fields.Char("Medicare Number")
     momentum_energy_medicare_number = fields.Char("Medicare Document Number")
     momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date")
@@ -640,14 +742,14 @@ class CrmLead(models.Model):
         ("Dr.","Dr."),
         ("Prof.","Prof."),
 
-    ],string="Salutation")
+    ],string="Salutation", default="Mr.")
     momentum_energy_primary_first_name = fields.Char("Primary First Name")
     momentum_energy_primary_middle_name = fields.Char("Primary Middle Name")
     momentum_energy_primary_last_name = fields.Char("Primary Last Name")
     momentum_energy_primary_country_of_birth = fields.Char("Primary Country of Birth")
     momentum_energy_primary_date_of_birth = fields.Date("Primary Date of Birth")
     momentum_energy_primary_email = fields.Char("Primary Email")
-    momentum_energy_primary_address_type = fields.Char("Address Type")
+    momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL")
     momentum_energy_primary_street_number = fields.Char("Primary Street Number")
     momentum_energy_primary_street_name = fields.Char("Primary Street Name")
     momentum_energy_primary_unit_number = fields.Char("Primary Unit Number")
@@ -661,25 +763,38 @@ class CrmLead(models.Model):
         ("TAS","TAS"),
         ("ACT","ACT"),
         ("NT","NT"),
-    ],string="State")
+    ],string="State", default="NSW")
     momentum_energy_primary_post_code = fields.Char("Primary Post Code")
     momentum_energy_primary_phone_work = fields.Char("Primary Work Phone")
     momentum_energy_primary_phone_home = fields.Char("Primary Home Phone")
     momentum_energy_primary_phone_mobile = fields.Char("Primary Mobile Phone")
     momentum_energy_secondary_contact_type = fields.Char("Secondary Contact Type", default="SECONDARY")
-    momentum_energy_secondary_salutation = fields.Char("Secondary Salutation")
+    momentum_energy_secondary_salutation = fields.Selection([
+        ("Mr.","Mr."),
+        ("Mrs.","Mrs."),
+        ("Ms.","Ms."),
+        ("Dr.","Dr."),
+        ("Prof.","Prof."),
+    ],string="Salutation", default="Mr.")
     momentum_energy_secondary_first_name = fields.Char("Secondary First Name")
     momentum_energy_secondary_middle_name = fields.Char("Secondary Middle Name")
     momentum_energy_secondary_last_name = fields.Char("Secondary Last Name")
     momentum_energy_secondary_country_of_birth = fields.Char("Secondary Country of Birth")
     momentum_energy_secondary_date_of_birth = fields.Date("Secondary Date of Birth")
     momentum_energy_secondary_email = fields.Char("Secondary Email")
-    momentum_energy_secondary_address_type = fields.Char("Secondary Address Type")
+    momentum_energy_secondary_address_type = fields.Char("Secondary Address Type", default="POSTAL")
     momentum_energy_secondary_street_number = fields.Char("Secondary Street Number")
     momentum_energy_secondary_street_name = fields.Char("Secondary Street Name")
     momentum_energy_secondary_unit_number = fields.Char("Secondary Unit Number")
     momentum_energy_secondary_suburb = fields.Char("Secondary Suburb")
-    momentum_energy_secondary_state = fields.Char("Secondary State")
+    momentum_energy_secondary_state = fields.Selection([
+        ("NSW","NSW"),
+        ("VIC","VIC"),
+        ("WA","WA"),
+        ("SA","SA"),
+        ("ACT","ACT"),
+        ("NT","NT"),
+    ],string="State", default="NSW")
     momentum_energy_secondary_post_code = fields.Char("Secondary Post Code")
     momentum_energy_secondary_phone_work = fields.Char("Secondary Work Phone")
     momentum_energy_secondary_phone_home = fields.Char("Secondary Home Phone")
@@ -691,7 +806,6 @@ class CrmLead(models.Model):
     momentum_energy_service_sub_type = fields.Selection([
         ("TRANSFER", "Transfer"),
         ("MOVE IN", "Move In"),
-        ("NEW INSTALLATION", "New Installation")
     ],string="Service Sub Type")
     momentum_energy_service_connection_id = fields.Char("Service Connection ID")
     momentum_energy_service_meter_id = fields.Char("Service Meter ID")
@@ -724,7 +838,7 @@ class CrmLead(models.Model):
     ("VLLA", "VLLA"),
     ("WARD", "WARD"),
     ("WE", "WE"),
-    ], string="Unit Type")
+    ], string="Unit Type", default="APT")
     momentum_energy_unit_number = fields.Char(string="Unit Number")
     momentum_energy_floor_type = fields.Selection([
         ("FLOOR","Floor"),
@@ -821,7 +935,7 @@ class CrmLead(models.Model):
         ("DWNS", "DWNS"),
         ("EDGE", "EDGE"),
         ("ELB", "ELB"),
-    ], string="Service Street Type Code")
+    ], string="Service Street Type Code", default="ACCS")
 
     momentum_energy_service_suburb = fields.Char("Service Suburb")
     momentum_energy_service_state = fields.Selection([
@@ -833,7 +947,7 @@ class CrmLead(models.Model):
         ("TAS","TAS"),
         ("ACT","ACT"),
         ("NT","NT"),
-    ],string="State")
+    ],string="State", default="NSW")
     momentum_energy_service_post_code = fields.Char("Service Post Code")
     momentum_energy_service_access_instructions = fields.Text("Service Access Instructions")
     momentum_energy_service_safety_instructions = fields.Selection([
@@ -855,31 +969,31 @@ class CrmLead(models.Model):
         ("Warm Welcome", "Warm Welcome"),
         ("Warm Welcome Gas", "Warm Welcome Gas"),
         ("EV Does It", "EV Does It"),
-    ], string="Service Plan Code")
+    ], string="Service Plan Code", default="Bill Boss Electricity")
 
     momentum_energy_contract_term_code = fields.Selection([
-        ("OPEN", "OPEN"),
+        ("OPEN", "Open"),
         ("12MTH", "12 Months"),
         ("24MTH", "24 Months"),
         ("36MTH", "36 Months"),
-    ], string="Contract Term Code")
+    ], string="Contract Term Code", default="OPEN")
 
     momentum_energy_contract_date = fields.Datetime("Contract Date")
     momentum_energy_payment_method = fields.Selection([
         ('Cheque', 'Cheque'),
         ('Direct Debit Via Bank Account', 'Direct Debit Via Bank Account'),
         # ('bank_transfer', 'Bank Transfer')
-    ], string="Payment Method")
+    ], string="Payment Method", default="Cheque")
     momentum_energy_bill_cycle_code = fields.Selection([
         ("Monthly", "Monthly"),
         ("Bi-Monthly", "Bi-Monthly"),
         ("Quarterly", "Quarterly"),
 
-    ],string="Bill Cycle Code")
+    ],string="Bill Cycle Code", default="Monthly")
     momentum_energy_bill_delivery_method = fields.Selection([
         ('EMAIL', 'Email'),
         ('POST', 'Post')
-    ], string="Bill Delivery Method")
+    ], string="Bill Delivery Method", default="EMAIL")
     momentum_energy_concession_obtained = fields.Boolean(string="Concession Consent Obtained", default=True)
     momentum_energy_conc_has_ms = fields.Boolean(string="Whether the concession is for someone with MS(Multiple sclerosis)", default=False)
     momentum_energy_conc_in_grp_home = fields.Boolean(string="Whether the concession is for group home")
@@ -1619,6 +1733,17 @@ class CrmLead(models.Model):
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             _logger.info("Momentum API response status: %s, response: %s", response.status_code, response.text)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success"):
+                    tx_id = data["data"]["data"].get("salesTransactionId")
+                    msg = f"Momentum Success ✅\nTransaction ID: {tx_id}"
+                    # Show success notification to user
+                    raise UserError(msg)
+            #     else:
+            #         raise UserError(_("Momentum API returned an error: %s") % response.text)
+            # else:
+            #     raise UserError(_("Failed to connect to Momentum API. Status: %s") % response.status_code)
 
             if not response.ok:
                 try:

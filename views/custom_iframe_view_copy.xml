@@ -565,7 +565,7 @@
 
                             <!-- Transaction Info -->
                             <group string="Transaction Information" col="2" colspan="4">
-                                <field name="momentum_energy_transaction_reference"/>
+                                <field name="momentum_energy_transaction_reference" help="Letters, numbers, and hyphens only (max 30 characters)."/>
                                 <field name="momentum_energy_transaction_channel"/>
                                 <field name="momentum_energy_transaction_date"/>
                                 <field name="momentum_energy_transaction_verification_code"/>
@@ -627,9 +627,9 @@
                                 </group>
 
                                 <group string="Primary Contact Phone" colspan="1">
-                                    <field name="momentum_energy_primary_phone_work"/>
-                                    <field name="momentum_energy_primary_phone_home"/>
-                                    <field name="momentum_energy_primary_phone_mobile"/>
+                                    <field name="momentum_energy_primary_phone_work" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_home" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_mobile" placeholder="0412345678"/>
                                 </group>
                             </group>
 
