@@ -1409,25 +1409,25 @@ class CrmLead(models.Model):
         self.ensure_one()
         _logger.info("Save & Close called for lead ID: %s", self.id)
 
-        # Execute your stage logic
-        self._handle_stage_logic()
+        # Execute stage logic and get optional message
+        qa_message = self._handle_stage_logic()
 
         # Notify the UI and close the form
+        messages = []
+        if qa_message:
+            messages.append(qa_message)
+        messages.append("Lead saved successfully.")
+
         return {
             "type": "ir.actions.client",
             "tag": "close_lead_form",
             "params": {
-                "title": "Lead Saved ✅",
-                "message": "Lead saved successfully. Closing form...",
-                
+                "title": "Lead Update",
+                "messages": messages,
             },
         }
 
     def _handle_stage_logic(self):
-        """
-        Extracted from your write() to avoid recursion and handle
-        all stage transitions in one place.
-        """
         Stage = self.env["crm.stage"]
 
         # Pre-cache stages
@@ -1442,21 +1442,24 @@ class CrmLead(models.Model):
             ("Lead Assigned", 5),
             ("Sale Closed", 15),
             ("Sale QA Hold", 16),
-            ("Sale QA Failed", 17)
+            ("Sale QA Failed", 17),
         ]
-
         for name, sequence in stage_definitions:
             stage = Stage.search([("name", "=", name)], limit=1)
             if not stage:
                 stage = Stage.create({"name": name, "sequence": sequence})
             stages_cache[name] = stage
 
-        # Process the logic for this lead
         lead = self
         vals_to_write = {}
+        qa_message = None
 
         if lead.lead_stage == "3":
-            if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
+            if (
+                lead.stage_3_dispostion == "closed"
+                and lead.lead_for == "energy"
+                and lead.stage_2_campign_name == "momentum"
+            ):
                 lead._send_momentum_energy()
 
             if lead.stage_3_dispostion == "closed":
@@ -1474,14 +1477,106 @@ class CrmLead(models.Model):
             elif lead.disposition == "sold_pending_quality":
                 vals_to_write["stage_id"] = stages_cache["Sold-Pending Quality"].id
                 vals_to_write["lead_stage"] = "3"
+                qa_message = "✅ Lead has been transferred for QA Audit."
 
         elif lead.lead_stage == "1":
-            if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
+            if (
+                lead.en_name
+                or lead.en_contact_number
+                or lead.cc_prefix
+                or lead.cc_first_name
+                or lead.in_current_address
+            ):
                 vals_to_write["lead_stage"] = "2"
                 vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
 
         if vals_to_write:
-            lead.with_context(skip_stage_assign=True).write(vals_to_write)    
+            lead.with_context(skip_stage_assign=True).write(vals_to_write)
+
+        return qa_message
+    
+    
+
+    # OLD WORKING CODE   
+
+    # def action_save_and_close(self):
+    #     """Save record and close the form view"""
+    #     self.ensure_one()
+    #     _logger.info("Save & Close called for lead ID: %s", self.id)
+
+    #     # Execute your stage logic
+    #     self._handle_stage_logic()
+
+    #     # Notify the UI and close the form
+    #     return {
+    #         "type": "ir.actions.client",
+    #         "tag": "close_lead_form",
+    #         "params": {
+    #             "title": "Lead Saved ✅",
+    #             "message": "Lead saved successfully. Closing form...",
+                
+    #         },
+    #     }
+
+    # def _handle_stage_logic(self):
+    #     """
+    #     Extracted from your write() to avoid recursion and handle
+    #     all stage transitions in one place.
+    #     """
+    #     Stage = self.env["crm.stage"]
+
+    #     # Pre-cache stages
+    #     stages_cache = {}
+    #     stage_definitions = [
+    #         ("Won", 12),
+    #         ("On Hold", 13),
+    #         ("Failed", 14),
+    #         ("Call Back", 11),
+    #         ("Lost", 6),
+    #         ("Sold-Pending Quality", 8),
+    #         ("Lead Assigned", 5),
+    #         ("Sale Closed", 15),
+    #         ("Sale QA Hold", 16),
+    #         ("Sale QA Failed", 17)
+    #     ]
+
+    #     for name, sequence in stage_definitions:
+    #         stage = Stage.search([("name", "=", name)], limit=1)
+    #         if not stage:
+    #             stage = Stage.create({"name": name, "sequence": sequence})
+    #         stages_cache[name] = stage
+
+    #     # Process the logic for this lead
+    #     lead = self
+    #     vals_to_write = {}
+
+    #     if lead.lead_stage == "3":
+    #         if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
+    #             lead._send_momentum_energy()
+
+    #         if lead.stage_3_dispostion == "closed":
+    #             vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
+    #         elif lead.stage_3_dispostion == "on_hold":
+    #             vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
+    #         elif lead.stage_3_dispostion == "failed":
+    #             vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
+
+    #     elif lead.lead_stage == "2":
+    #         if lead.disposition == "callback":
+    #             vals_to_write["stage_id"] = stages_cache["Call Back"].id
+    #         elif lead.disposition == "lost":
+    #             vals_to_write["stage_id"] = stages_cache["Lost"].id
+    #         elif lead.disposition == "sold_pending_quality":
+    #             vals_to_write["stage_id"] = stages_cache["Sold-Pending Quality"].id
+    #             vals_to_write["lead_stage"] = "3"
+
+    #     elif lead.lead_stage == "1":
+    #         if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
+    #             vals_to_write["lead_stage"] = "2"
+    #             vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
+
+    #     if vals_to_write:
+    #         lead.with_context(skip_stage_assign=True).write(vals_to_write)    
 
     # def write(self, vals):
     #     """Override write to handle stage assignment after field updates"""
