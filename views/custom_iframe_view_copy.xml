@@ -52,6 +52,10 @@
                 <attribute name="invisible">1</attribute>
             </xpath>
 
+            <xpath expr="//header" position="inside">
+                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
+            </xpath>
+
 
             <!-- Add content inside notebook -->
             <xpath expr="//notebook/page[1]" position="before">

@@ -16,6 +16,7 @@
         "vicidial/static/src/css/custom_modal.css",
         'vicidial/static/src/js/custom_iframe_autoload.js',
         "vicidial/static/src/js/services_icon_widget_copy.js",
+        "vicidial/static/src/js/lead_form_close.js",
         # "vicidial/static/src/js/custom_footer.js",
 
 

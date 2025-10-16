@@ -1404,19 +1404,33 @@ class CrmLead(models.Model):
         
         return leads
 
-    def write(self, vals):
-        """Override write to handle stage assignment after field updates"""
-        _logger.info("Updating lead %s with values: %s", self.ids, vals)
+    def action_save_and_close(self):
+        """Save record and close the form view"""
+        self.ensure_one()
+        _logger.info("Save & Close called for lead ID: %s", self.id)
 
-        res = super().write(vals)
+        # Execute your stage logic
+        self._handle_stage_logic()
 
-        # Skip stage assignment if context flag is set
-        if self.env.context.get("skip_stage_assign"):
-            return res
+        # Notify the UI and close the form
+        return {
+            "type": "ir.actions.client",
+            "tag": "close_lead_form",
+            "params": {
+                "title": "Lead Saved ✅",
+                "message": "Lead saved successfully. Closing form...",
+                
+            },
+        }
 
+    def _handle_stage_logic(self):
+        """
+        Extracted from your write() to avoid recursion and handle
+        all stage transitions in one place.
+        """
         Stage = self.env["crm.stage"]
-        
-        # Pre-fetch or create all possible stages ONCE before the loop
+
+        # Pre-cache stages
         stages_cache = {}
         stage_definitions = [
             ("Won", 12),
@@ -1430,71 +1444,136 @@ class CrmLead(models.Model):
             ("Sale QA Hold", 16),
             ("Sale QA Failed", 17)
         ]
-        
-        for stage_name, sequence in stage_definitions:
-            stage = Stage.search([("name", "=", stage_name)], limit=1)
+
+        for name, sequence in stage_definitions:
+            stage = Stage.search([("name", "=", name)], limit=1)
             if not stage:
-                stage = Stage.create({"name": stage_name, "sequence": sequence})
-            stages_cache[stage_name] = stage
+                stage = Stage.create({"name": name, "sequence": sequence})
+            stages_cache[name] = stage
 
-        # Process each lead
-        for lead in self:
-            _logger.info("Processing lead: %s, lead_for: %s", lead.id, lead.lead_for)
+        # Process the logic for this lead
+        lead = self
+        vals_to_write = {}
+
+        if lead.lead_stage == "3":
+            if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
+                lead._send_momentum_energy()
+
+            if lead.stage_3_dispostion == "closed":
+                vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
+            elif lead.stage_3_dispostion == "on_hold":
+                vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
+            elif lead.stage_3_dispostion == "failed":
+                vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
+
+        elif lead.lead_stage == "2":
+            if lead.disposition == "callback":
+                vals_to_write["stage_id"] = stages_cache["Call Back"].id
+            elif lead.disposition == "lost":
+                vals_to_write["stage_id"] = stages_cache["Lost"].id
+            elif lead.disposition == "sold_pending_quality":
+                vals_to_write["stage_id"] = stages_cache["Sold-Pending Quality"].id
+                vals_to_write["lead_stage"] = "3"
+
+        elif lead.lead_stage == "1":
+            if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
+                vals_to_write["lead_stage"] = "2"
+                vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
+
+        if vals_to_write:
+            lead.with_context(skip_stage_assign=True).write(vals_to_write)    
+
+    # def write(self, vals):
+    #     """Override write to handle stage assignment after field updates"""
+    #     _logger.info("Updating lead %s with values: %s", self.ids, vals)
+
+    #     res = super().write(vals)
+
+    #     # Skip stage assignment if context flag is set
+    #     if self.env.context.get("skip_stage_assign"):
+    #         return res
+
+    #     Stage = self.env["crm.stage"]
+        
+    #     # Pre-fetch or create all possible stages ONCE before the loop
+    #     stages_cache = {}
+    #     stage_definitions = [
+    #         ("Won", 12),
+    #         ("On Hold", 13),
+    #         ("Failed", 14),
+    #         ("Call Back", 11),
+    #         ("Lost", 6),
+    #         ("Sold-Pending Quality", 8),
+    #         ("Lead Assigned", 5),
+    #         ("Sale Closed", 15),
+    #         ("Sale QA Hold", 16),
+    #         ("Sale QA Failed", 17)
+    #     ]
+        
+    #     for stage_name, sequence in stage_definitions:
+    #         stage = Stage.search([("name", "=", stage_name)], limit=1)
+    #         if not stage:
+    #             stage = Stage.create({"name": stage_name, "sequence": sequence})
+    #         stages_cache[stage_name] = stage
+
+    #     # Process each lead
+    #     for lead in self:
+    #         _logger.info("Processing lead: %s, lead_for: %s", lead.id, lead.lead_for)
             
-            new_stage = None
+    #         new_stage = None
 
-            # STAGE 3 DISPOSITIONS
-            if lead.lead_stage == "3":
-                if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
-                    lead._send_momentum_energy() 
+    #         # STAGE 3 DISPOSITIONS
+    #         if lead.lead_stage == "3":
+    #             if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
+    #                 lead._send_momentum_energy() 
 
-                if lead.stage_3_dispostion == "closed":
-                    new_stage = stages_cache["Sale Closed"]
-                    _logger.info("Lead %s - Moving to Won stage", lead.id)
-                elif lead.stage_3_dispostion == "on_hold":
-                    new_stage = stages_cache["Sale QA Hold"]
-                    _logger.info("Lead %s - Moving to On Hold stage", lead.id)
-                elif lead.stage_3_dispostion == "failed":
-                    new_stage = stages_cache["Sale QA Failed"]
-                    _logger.info("Lead %s - Moving to Failed stage", lead.id)
+    #             if lead.stage_3_dispostion == "closed":
+    #                 new_stage = stages_cache["Sale Closed"]
+    #                 _logger.info("Lead %s - Moving to Won stage", lead.id)
+    #             elif lead.stage_3_dispostion == "on_hold":
+    #                 new_stage = stages_cache["Sale QA Hold"]
+    #                 _logger.info("Lead %s - Moving to On Hold stage", lead.id)
+    #             elif lead.stage_3_dispostion == "failed":
+    #                 new_stage = stages_cache["Sale QA Failed"]
+    #                 _logger.info("Lead %s - Moving to Failed stage", lead.id)
             
-            # STAGE 2 DISPOSITIONS
-            elif lead.lead_stage == "2":
-                if lead.disposition == "callback":
-                    new_stage = stages_cache["Call Back"]
-                    _logger.info("Lead %s - Moving to Call Back stage", lead.id)
-                elif lead.disposition == "lost":
-                    new_stage = stages_cache["Lost"]
-                    _logger.info("Lead %s - Moving to Lost stage", lead.id)
-                elif lead.disposition == "sold_pending_quality":
-                    new_stage = stages_cache["Sold-Pending Quality"]
-                    lead.with_context(skip_stage_assign=True).write({"lead_stage":"3"})
-                    _logger.info("Lead %s - Moving to Sold-Pending Quality stage", lead.id)
+    #         # STAGE 2 DISPOSITIONS
+    #         elif lead.lead_stage == "2":
+    #             if lead.disposition == "callback":
+    #                 new_stage = stages_cache["Call Back"]
+    #                 _logger.info("Lead %s - Moving to Call Back stage", lead.id)
+    #             elif lead.disposition == "lost":
+    #                 new_stage = stages_cache["Lost"]
+    #                 _logger.info("Lead %s - Moving to Lost stage", lead.id)
+    #             elif lead.disposition == "sold_pending_quality":
+    #                 new_stage = stages_cache["Sold-Pending Quality"]
+    #                 lead.with_context(skip_stage_assign=True).write({"lead_stage":"3"})
+    #                 _logger.info("Lead %s - Moving to Sold-Pending Quality stage", lead.id)
             
 
-            elif lead.lead_stage == "1":
-                if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
-                    lead.with_context(skip_stage_assign=True).write({"lead_stage":"2"})
-                    new_stage = stages_cache["Lead Assigned"]        
+    #         elif lead.lead_stage == "1":
+    #             if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
+    #                 lead.with_context(skip_stage_assign=True).write({"lead_stage":"2"})
+    #                 new_stage = stages_cache["Lead Assigned"]        
 
-            # Apply stage update if needed
-            if new_stage:
-                if lead.stage_id.id != new_stage.id:
-                    _logger.info("Applying stage update for lead %s: %s -> %s", 
-                            lead.id, lead.stage_id.name, new_stage.name)
-                    # Use SQL update to avoid recursion
-                    self.env.cr.execute(
-                        "UPDATE crm_lead SET stage_id = %s WHERE id = %s",
-                        (new_stage.id, lead.id)
-                    )
-                    # Invalidate cache to ensure fresh data
-                    lead.invalidate_recordset(['stage_id'])
-            else:
-                # Run normal stage assignment for other cases
-                _logger.info("Running normal stage assignment for lead %s", lead.id)
-                lead._assign_lead_assigned_stage()
+    #         # Apply stage update if needed
+    #         if new_stage:
+    #             if lead.stage_id.id != new_stage.id:
+    #                 _logger.info("Applying stage update for lead %s: %s -> %s", 
+    #                         lead.id, lead.stage_id.name, new_stage.name)
+    #                 # Use SQL update to avoid recursion
+    #                 self.env.cr.execute(
+    #                     "UPDATE crm_lead SET stage_id = %s WHERE id = %s",
+    #                     (new_stage.id, lead.id)
+    #                 )
+    #                 # Invalidate cache to ensure fresh data
+    #                 lead.invalidate_recordset(['stage_id'])
+    #         else:
+    #             # Run normal stage assignment for other cases
+    #             _logger.info("Running normal stage assignment for lead %s", lead.id)
+    #             lead._assign_lead_assigned_stage()
 
-        return res
+    #     return res
 
 
 
@@ -1733,6 +1812,22 @@ class CrmLead(models.Model):
         try:
             response = requests.post(url, json=payload, headers=headers, timeout=30)
             _logger.info("Momentum API response status: %s, response: %s", response.status_code, response.text)
+            # if response.status_code == 200:
+            #     data = response.json()
+            #     if data.get("success"):
+            #         tx_id = data["data"]["data"].get("salesTransactionId")
+                    
+            #         # Show success notification
+            #         return self.env["ir.actions.client"].sudo().create({
+            #             "type": "ir.actions.client",
+            #             "tag": "display_notification",
+            #             "params": {
+            #                 "title": "Momentum Success ✅",
+            #                 "message": f"Transaction ID: {tx_id}\nLead synced successfully!",
+            #                 "type": "success",
+            #                 "sticky": True,
+            #             }
+            #         })
             if response.status_code == 200:
                 data = response.json()
                 if data.get("success"):
@@ -1740,10 +1835,7 @@ class CrmLead(models.Model):
                     msg = f"Momentum Success ✅\nTransaction ID: {tx_id}"
                     # Show success notification to user
                     raise UserError(msg)
-            #     else:
-            #         raise UserError(_("Momentum API returned an error: %s") % response.text)
-            # else:
-            #     raise UserError(_("Failed to connect to Momentum API. Status: %s") % response.status_code)
+
 
             if not response.ok:
                 try:
