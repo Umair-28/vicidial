@@ -37,6 +37,39 @@
         </field>
     </record>
 
+<record id="action_export_custom_leads" model="ir.actions.server">
+    <field name="name">Export Leads</field>
+    <field name="model_id" ref="crm.model_crm_lead"/>
+    <field name="binding_model_id" ref="crm.model_crm_lead"/>
+    <field name="state">code</field>
+    <field name="code"><![CDATA[
+action = {
+    'type': 'ir.actions.act_window',
+    'res_model': 'export.lead.wizard',
+    'view_mode': 'form',
+    'target': 'new',
+}
+    ]]></field>
+</record>
+
+
+
+    <record id="view_crm_lead_form_inherit_export" model="ir.ui.view">
+        <field name="name">crm.lead.form.export.dropdown</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(action_export_custom_leads)d" type="action" string="Export Leads" class="oe_highlight"/>
+            </xpath>
+        </field>
+    </record>
+
+
+
+
+
+
     <record id="vicidial.crm_lead_form_view_custom" model="ir.ui.view">
         <field name="name">crm.lead.form.custom</field>
         <field name="model">crm.lead</field>
@@ -54,6 +87,7 @@
 
             <xpath expr="//header" position="inside">
                 <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
+                <!-- <button name="action_export_energy_leads" type="object" string="Export First Energy Leads" class="btn-primary" icon="fa-download"/> -->
             </xpath>
 
 

@@ -6,6 +6,12 @@ import json
 import requests
 from odoo.exceptions import UserError
 from odoo.exceptions import ValidationError
+from lxml import etree
+import base64
+import io
+import xlsxwriter
+from datetime import datetime
+from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
@@ -166,6 +172,276 @@ class CrmLead(models.Model):
                 result = {"success": True, "new_stage": new_stage}
 
         return result
+
+    # EXPORT LEAD DATA
+    # def action_export_lead_excel(self):
+    #     """Export only fields visible in the current active form view (including inherited views)"""
+    #     self.ensure_one()
+    #     output = io.BytesIO()
+    #     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    #     worksheet = workbook.add_worksheet('Lead Details')
+
+    #     # Formats
+    #     header_fmt = workbook.add_format({'bold': True, 'bg_color': '#DCE6F1', 'border': 1})
+    #     text_fmt = workbook.add_format({'text_wrap': True, 'border': 1})
+    #     title_fmt = workbook.add_format({'bold': True, 'font_size': 14, 'align': 'center'})
+
+    #     # Set column widths
+    #     worksheet.set_column(0, 0, 35)
+    #     worksheet.set_column(1, 1, 60)
+
+    #     # Title
+    #     worksheet.merge_range('A1:B1', f"CRM Lead Export - {self.name}", title_fmt)
+    #     worksheet.write(2, 0, "Field", header_fmt)
+    #     worksheet.write(2, 1, "Value", header_fmt)
+
+    #     # Get the current view context to determine which view is active
+    #     view_id = self.env.context.get('params', {}).get('view_id')
+        
+    #     if not view_id:
+    #         # Fallback: get the default form view for crm.lead
+    #         view_id = self.env['ir.ui.view'].default_view(self._name, 'form')
+        
+    #     # Get the view record
+    #     view = self.env['ir.ui.view'].browse(view_id) if view_id else self.env['ir.ui.view']
+        
+    #     # If no specific view, get the default crm.lead form view
+    #     if not view.exists():
+    #         view = self.env.ref('crm.crm_lead_view_form', raise_if_not_found=False)
+    #         if not view:
+    #             # Last resort: search for any form view
+    #             view = self.env['ir.ui.view'].search([
+    #                 ('model', '=', self._name),
+    #                 ('type', '=', 'form')
+    #             ], limit=1)
+
+    #     # Get the COMBINED view (base + all inheritance)
+    #     # This is crucial - it gets the final rendered view with all inherited fields
+    #     # In Odoo 18, use get_combined_arch() instead of _apply_view_inheritance()
+    #     combined_arch = view.get_combined_arch()
+        
+    #     # Parse the combined architecture
+    #     arch = etree.fromstring(combined_arch)
+        
+    #     # Extract visible field names from the view
+    #     visible_fields = []
+    #     processed_fields = set()
+        
+    #     # Get all field tags from the final combined view
+    #     for field_tag in arch.xpath("//field[@name]"):
+    #         field_name = field_tag.get("name")
+            
+    #         # Skip if already processed
+    #         if field_name in processed_fields:
+    #             continue
+                
+    #         # Check if field exists in the model
+    #         if field_name not in self._fields:
+    #             continue
+            
+    #         # Check if field is invisible
+    #         invisible_attr = field_tag.get("invisible")
+    #         column_invisible = field_tag.get("column_invisible")
+    #         modifiers = field_tag.get("modifiers")
+            
+    #         # Parse modifiers if they exist
+    #         is_invisible = False
+    #         if modifiers:
+    #             try:
+    #                 import json
+    #                 mod_dict = json.loads(modifiers)
+    #                 invisible_mod = mod_dict.get('invisible', False)
+    #                 column_invisible_mod = mod_dict.get('column_invisible', False)
+                    
+    #                 # Check if it's a simple boolean or needs evaluation
+    #                 if isinstance(invisible_mod, bool):
+    #                     is_invisible = invisible_mod
+    #                 elif isinstance(invisible_mod, (list, tuple)):
+    #                     # Domain expression - try to evaluate against current record
+    #                     try:
+    #                         is_invisible = not self.filtered_domain(invisible_mod)
+    #                     except:
+    #                         is_invisible = False
+                            
+    #                 if isinstance(column_invisible_mod, bool) and column_invisible_mod:
+    #                     is_invisible = True
+    #             except:
+    #                 pass
+            
+    #         # Check invisible attribute (can be '1', 'True', or domain expression)
+    #         if invisible_attr and not is_invisible:
+    #             if invisible_attr in ('1', 'True', 'true'):
+    #                 is_invisible = True
+    #             elif invisible_attr.startswith('[') or invisible_attr.startswith('('):
+    #                 # Domain expression - try to evaluate against current record
+    #                 try:
+    #                     from odoo.tools.safe_eval import safe_eval
+    #                     domain = safe_eval(invisible_attr, {'context': self.env.context, 'uid': self.env.uid, 'parent': {}})
+    #                     is_invisible = not self.filtered_domain(domain)
+    #                 except:
+    #                     is_invisible = False
+            
+    #         # Check column_invisible for tree view fields that might appear in forms
+    #         if column_invisible and not is_invisible:
+    #             if column_invisible in ('1', 'True', 'true'):
+    #                 is_invisible = True
+            
+    #         # Add field if it's visible
+    #         if not is_invisible:
+    #             visible_fields.append(field_name)
+    #             processed_fields.add(field_name)
+
+    #     # Write field values to Excel
+    #     row = 3
+    #     for field_name in visible_fields:
+    #         field = self._fields[field_name]
+    #         display_name = field.string or field_name
+            
+    #         try:
+    #             value = getattr(self, field_name, None)
+    #         except:
+    #             # Skip fields that can't be read
+    #             continue
+
+    #         # Handle different field types
+    #         if field.type == 'many2one':
+    #             value = value.display_name if value else ''
+    #         elif field.type in ('many2many', 'one2many'):
+    #             value = ', '.join(rec.display_name for rec in value) if value else ''
+    #         elif field.type == 'selection':
+    #             if value:
+    #                 try:
+    #                     selection_dict = dict(field.selection) if not callable(field.selection) else dict(field._description_selection(self.env))
+    #                     value = selection_dict.get(value, value or '')
+    #                 except:
+    #                     value = str(value) if value else ''
+    #             else:
+    #                 value = ''
+    #         elif field.type == 'boolean':
+    #             value = "Yes" if value else "No"
+    #         elif field.type in ('date', 'datetime'):
+    #             if value:
+    #                 if isinstance(value, datetime):
+    #                     value = value.strftime("%Y-%m-%d %H:%M:%S")
+    #                 else:
+    #                     value = str(value)
+    #             else:
+    #                 value = ''
+    #         elif field.type == 'monetary':
+    #             value = f"{value:.2f}" if value else '0.00'
+    #         elif field.type == 'float':
+    #             value = f"{value:.2f}" if value else '0.00'
+
+    #         if value is None:
+    #             value = ''
+
+    #         worksheet.write(row, 0, display_name, text_fmt)
+    #         worksheet.write(row, 1, str(value), text_fmt)
+    #         row += 1
+
+    #     # Footer
+    #     footer_text = f"Exported by {self.env.user.name} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    #     worksheet.merge_range(row + 1, 0, row + 1, 1, footer_text, 
+    #                         workbook.add_format({'italic': True, 'align': 'right'}))
+
+    #     workbook.close()
+    #     output.seek(0)
+    #     file_data = output.read()
+
+    #     file_name = f"Lead_{self.id}_{self.name or 'Unknown'}.xlsx"
+
+    #     attachment = self.env['ir.attachment'].create({
+    #         'name': file_name,
+    #         'type': 'binary',
+    #         'datas': base64.b64encode(file_data),
+    #         'res_model': self._name,
+    #         'res_id': self.id,
+    #         'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    #     })
+
+    #     return {
+    #         'type': 'ir.actions.act_url',
+    #         'url': f"/web/content/{attachment.id}?download=true",
+    #         'target': 'self',
+    #     }
+    # EXPORTS FULL MODEL
+    def action_export_lead_excel(self):
+        self.ensure_one()
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        worksheet = workbook.add_worksheet('Lead Details')
+
+        # Formats
+        header_fmt = workbook.add_format({'bold': True, 'bg_color': '#DCE6F1', 'border': 1})
+        text_fmt = workbook.add_format({'text_wrap': True, 'border': 1})
+        title_fmt = workbook.add_format({'bold': True, 'font_size': 14, 'align': 'center'})
+
+        # Set column widths
+        worksheet.set_column(0, 0, 35)
+        worksheet.set_column(1, 1, 60)
+
+        # Title
+        worksheet.merge_range('A1:B1', f"CRM Lead Export - {self.name}", title_fmt)
+
+        # Write headers
+        worksheet.write(2, 0, "Field", header_fmt)
+        worksheet.write(2, 1, "Value", header_fmt)
+
+        row = 3
+
+        # Dynamically iterate through all fields
+        for field_name, field in self._fields.items():
+            # Skip technical/internal fields
+            if field_name in ['__last_update', 'write_uid', 'write_date', 'create_uid', 'create_date', 'message_ids', 'activity_ids']:
+                continue
+
+            display_name = field.string or field_name
+            value = getattr(self, field_name)
+
+            # Handle many2one, many2many, one2many
+            if field.type == 'many2one':
+                value = value.display_name if value else ''
+            elif field.type in ('many2many', 'one2many'):
+                value = ', '.join(rec.display_name for rec in value) if value else ''
+            elif field.type == 'selection':
+                selection_dict = dict(field.selection)
+                value = selection_dict.get(value, value or '')
+            elif isinstance(value, bool):
+                value = "Yes" if value else "No"
+            elif isinstance(value, datetime):
+                value = value.strftime("%Y-%m-%d %H:%M:%S")
+
+            if value is None:
+                value = ''
+
+            worksheet.write(row, 0, display_name, text_fmt)
+            worksheet.write(row, 1, str(value), text_fmt)
+            row += 1
+
+        # Footer
+        footer_text = f"Exported by {self.env.user.name} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        worksheet.merge_range(row + 1, 0, row + 1, 1, footer_text, workbook.add_format({'italic': True, 'align': 'right'}))
+
+        workbook.close()
+        output.seek(0)
+        file_data = output.read()
+
+        file_name = f"Lead_{self.id}_{self.name or 'Unknown'}.xlsx"
+
+        attachment = self.env['ir.attachment'].create({
+            'name': file_name,
+            'type': 'binary',
+            'datas': base64.b64encode(file_data),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f"/web/content/{attachment.id}?download=true",
+            'target': 'self',
+        }    
 
 
     def action_next_stage(self):
@@ -1962,6 +2238,7 @@ class CrmLead(models.Model):
             raise UserError(f"Failed to reach Momentum API: {str(e)}")
 
         return None
+
 
 
 

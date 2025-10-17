@@ -9,6 +9,7 @@
         'security/ir.model.access.csv',
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
+        "views/export_lead_wizard_view.xml",
         'data/crm_stage_data.xml',
     ],
 'assets': {
