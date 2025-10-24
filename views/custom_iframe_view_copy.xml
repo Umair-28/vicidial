@@ -37,20 +37,20 @@
         </field>
     </record>
 
-<record id="action_export_custom_leads" model="ir.actions.server">
-    <field name="name">Export Leads</field>
-    <field name="model_id" ref="crm.model_crm_lead"/>
-    <field name="binding_model_id" ref="crm.model_crm_lead"/>
-    <field name="state">code</field>
-    <field name="code"><![CDATA[
+    <record id="action_export_custom_leads" model="ir.actions.server">
+        <field name="name">Export Leads</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
 action = {
     'type': 'ir.actions.act_window',
     'res_model': 'export.lead.wizard',
     'view_mode': 'form',
     'target': 'new',
 }
-    ]]></field>
-</record>
+    ]]>        </field>
+    </record>
 
 
 
@@ -104,39 +104,75 @@ action = {
                     <group>
                         <field name="lead_stage"/>
                     </group>
-                    <!-- Electricty and GAS Stage 1 Form -->
+                    <!-- Electricty and GAS CALL CENTER Stage 1 Form -->
 
-                    <group string="Stage 1 Form" invisible="lead_for != 'energy' or lead_stage != '1'">
+                    <group string="Stage 1 Form" invisible="lead_for != 'energy_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Lead Initial Information Form</span>
+                                    <span class="o_form_label">Lead Initial Information Form (Call Center)</span>
                                 </h1>
                             </div>
 
                             <group col="2" colspan="4">
-                                <group string="Customer Details" colspan="1">
-                                    <field name="en_name" required="services == 'energy'" invisible="lead_for != 'energy'"/>
+                                <group string="Customer Details">
+                                    <field name="en_name"/>
                                     <field name="en_contact_number"/>
                                     <field name="en_customer_alt_phone"/>
                                     <field name="en_email" widget="email"/>
                                     <field name="en_current_address" widget="text"/>
                                 </group>
-
-                                <group string="Property Information" colspan="1">
-                                    <field name="en_date"/>
-                                    <field name="en_property_type"/>
-                                    <field name="en_property_ownership"/>
-                                    <field name="en_moving_in"/>
-                                    <field name="en_what_to_compare"/>
-                                </group>
-                            </group>
-
-                            <group string="Utility Identifiers">
-                                <group col="3">
+                                <group string="Utility Identifiers">
                                     <field name="nmi"/>
                                     <field name="mirn"/>
                                     <field name="frmp"/>
+                                </group>
+                            </group>
+
+
+
+                            <group col="2" colspan="4">
+
+                                <group string="Service Requirements" colspan="1">
+                                    <field name="en_rooftop_solar" widget="radio"/>
+                                    <field name="en_require_life_support" widget="radio"/>
+                                    <field name="en_concesion_card_holder" widget="radio"/>
+                                    <field name="type_of_concession" invisible="en_concesion_card_holder != 'yes'"/>
+                                </group>
+                            </group>
+
+                            <group string="Lead Agent Notes">
+                                <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- ELECRTRICY AND GAS CALL CENTER STAGE 1 FORM END -->
+
+
+                    <!-- Electricty and GAS Stage WEBSITE 1 Form -->
+
+                    <group string="Stage 1 Form" invisible="lead_for != 'energy_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
+                        <sheet class="o_form_sheet_bg_gray">
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Lead Initial Information Form (Website)</span>
+                                </h1>
+                            </div>
+
+                            <group col="2" colspan="4">
+                                <group string="Customer Details" colspan="1">
+                                    <field name="en_name" />
+                                    <field name="en_contact_number"/>
+                                    <field name="en_email" widget="email"/>
+                                    <field name="en_current_address" widget="text"/>
+                                </group>
+
+                                <group string="Property Information" colspan="1">
+                                    <field name="en_property_type"/>
+                                    <field name="en_property_ownership"/>
+                                    <field name="en_what_to_compare"/>
+                                    <field name="en_moving_in"/>
+                                    <field name="en_date" invisible="en_moving_in != 'yes'"/>
                                 </group>
                             </group>
 
@@ -147,10 +183,10 @@ action = {
                                 </group>
 
                                 <group string="Service Requirements" colspan="1">
-                                    <field name="en_rooftop_solar"/>
-                                    <field name="en_require_life_support"/>
-                                    <field name="en_concesion_card_holder"/>
-                                    <field name="type_of_concession"/>
+                                    <field name="en_rooftop_solar" widget="radio"/>
+                                    <field name="en_require_life_support" widget="radio"/>
+                                    <field name="en_concesion_card_holder" widget="radio"/>
+                                    <field name="type_of_concession" invisible="en_concesion_card_holder != 'yes'"/>
                                 </group>
                             </group>
 
@@ -160,7 +196,7 @@ action = {
 
                             <group string="Preferences and Consents">
                                 <group col="2">
-                                    <field name="en_request_callback"/>
+                                    <field name="en_request_callback" widget="radio"/>
                                     <field name="en_accpeting_terms"/>
                                 </group>
                             </group>
@@ -170,10 +206,11 @@ action = {
                             </group>
                         </sheet>
                     </group>
+                    <!-- Electricty and GAS Stage WEBSITE 1 Form END -->
 
 
                     <!-- ENERGY STAGE 2 SHEET -->
-                    <group string="Stage 2: Verification by Expert" invisible="lead_for != 'energy' or lead_stage != '2'">
+                    <group string="Stage 2: Verification by Expert" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage != '1')">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -191,11 +228,11 @@ action = {
                                     <field name="stage_2_lead_source"/>
 
                                 </group>
-                                <group string="Concession Details" colspan="1">
+                                <group string="Concession Details" colspan="1" invisible="en_concesion_card_holder != 'yes'">
                                     <field name="stage_2_concession_type"/>
                                     <field name="stage_2_card_number"/>
                                     <field name="stage_2_card_holder_name"/>
-                                    <field name="stage_2_card_type"/>
+                                    <!-- <field name="stage_2_card_type"/> -->
                                     <field name="stage_2_card_start_date"/>
                                     <field name="stage_2_card_expiry_date"/>
 
@@ -233,199 +270,7 @@ action = {
                         </sheet>
                     </group>
 
-                    <!-- Energy State 2 1st Energy Form -->
-                    <group string="1st Energy Form" invisible="lead_for != 'energy' or stage_2_campign_name != 'first_energy' or lead_stage != '2'">
 
-                        <sheet >
-
-                            <div class="oe_title">
-                                <h1>
-                                    <span class="o_form_label">1st Energy Form </span>
-                                </h1>
-                            </div>
-                            <group colspan="2">
-                                <group string="Sale Info" colspan="1">
-                                    <field name="internal_dnc_checked"/>
-                                    <field name="existing_sale"/>
-                                    <field name="online_enquiry_form"/>
-                                    <field name="vendor_id"/>
-                                    <field name="agent"/>
-                                    <field name="channel_ref"/>
-                                    <field name="sale_ref"/>
-                                    <field name="lead_ref"/>
-                                    <field name="incentive"/>
-                                    <field name="sale_date"/>
-                                    <field name="campaign_ref"/>
-                                    <field name="promo_code"/>
-                                </group>
-
-                                <group string="Customer Info" colspan="1">
-                                    <field name="current_elec_retailer"/>
-                                    <field name="current_gas_retailer"/>
-                                    <field name="multisite"/>
-                                    <field name="existing_customer"/>
-                                    <field name="customer_account_no"/>
-                                    <field name="customer_type"/>
-                                    <field name="account_name"/>
-                                    <field name="abn"/>
-                                    <field name="acn"/>
-                                    <field name="business_name"/>
-                                    <field name="trustee_name"/>
-                                    <field name="trading_name"/>
-                                    <field name="position"/>
-                                    <field name="sale_type"/>
-                                </group>
-                            </group>
-
-                            <group colspan="2">
-                                <group string="Primary Contact" colspan="1">
-                                    <field name="customer_title"/>
-                                    <field name="first_name"/>
-                                    <field name="last_name"/>
-                                    <field name="phone_landline"/>
-                                    <field name="phone_mobile"/>
-                                    <field name="auth_date_of_birth"/>
-                                    <field name="auth_expiry"/>
-                                    <field name="auth_no"/>
-                                    <field name="auth_type"/>
-                                    <field name="email"/>
-                                </group>
-
-                                <group string="Concessions" colspan="1">
-                                    <field name="life_support"/>
-                                    <field name="concessioner_number"/>
-                                    <field name="concession_expiry"/>
-                                    <field name="concession_flag"/>
-                                    <field name="concession_start_date"/>
-                                    <field name="concession_type"/>
-                                    <field name="conc_first_name"/>
-                                    <field name="conc_last_name"/>
-                                </group>
-                            </group>
-
-                            <group colspan="2">
-
-                                <group string="Secondary Contact" colspan="1">
-                                    <field name="secondary_title"/>
-                                    <field name="sec_first_name"/>
-                                    <field name="sec_last_name"/>
-                                    <field name="sec_auth_date_of_birth"/>
-                                    <field name="sec_auth_no"/>
-                                    <field name="sec_auth_type"/>
-                                    <field name="sec_auth_expiry"/>
-                                    <field name="sec_email"/>
-                                    <field name="sec_phone_home"/>
-                                    <field name="sec_mobile_number"/>
-                                </group>
-
-                                <group string="Site Address" colspan="1">
-                                    <field name="site_apartment_no"/>
-                                    <field name="site_apartment_type"/>
-                                    <field name="site_building_name"/>
-                                    <field name="site_floor_no"/>
-                                    <field name="site_floor_type"/>
-                                    <field name="site_location_description"/>
-                                    <field name="site_lot_number"/>
-                                    <field name="site_street_number"/>
-                                    <field name="site_street_number_suffix"/>
-                                    <field name="site_street_name"/>
-                                    <field name="site_street_type"/>
-                                    <field name="site_street_suffix"/>
-                                    <field name="site_suburb"/>
-                                    <field name="site_state"/>
-                                    <field name="site_post_code"/>
-                                </group>
-                            </group>
-
-                            <group colspan="2">
-                                <group string="Gas Site Address" colspan="1">
-                                    <field name="gas_site_apartment_number"/>
-                                    <field name="gas_site_apartment_type"/>
-                                    <field name="gas_site_building_name"/>
-                                    <field name="gas_site_floor_number"/>
-                                    <field name="gas_site_floor_type"/>
-                                    <field name="gas_site_location_description"/>
-                                    <field name="gas_site_lot_number"/>
-                                    <field name="gas_site_street_number"/>
-                                    <field name="gas_site_street_number_suffix"/>
-                                    <field name="gas_site_street_name"/>
-                                    <field name="gas_site_street_type"/>
-                                    <field name="gas_site_street_suffix"/>
-                                    <field name="gas_site_suburb"/>
-                                    <field name="gas_site_state"/>
-                                    <field name="gas_site_post_code"/>
-                                </group>
-
-                                <group string="Meter And Product Info" colspan="1">
-                                    <field name="network_tariff_code"/>
-                                    <field name="nmi"/>
-                                    <field name="mirn"/>
-                                    <field name="fuel"/>
-                                    <field name="feed_in"/>
-                                    <field name="annual_usage"/>
-                                    <field name="gas_annual_usage"/>
-                                    <field name="product_code"/>
-                                    <field name="gas_product_code"/>
-                                    <field name="offer_description"/>
-                                    <field name="gas_offer_description"/>
-                                    <field name="green_percent"/>
-                                    <field name="proposed_transfer_date"/>
-                                    <field name="gas_proposed_transfer_date"/>
-                                    <field name="bill_cycle_code"/>
-                                    <field name="gas_bill_cycle_code"/>
-                                    <field name="average_monthly_spend"/>
-                                </group>
-                            </group>
-
-                            <group colspan="2">
-                                <group string="Billing And Postal" colspan="1">
-                                    <field name="is_owner"/>
-                                    <field name="has_accepted_marketing"/>
-                                    <field name="email_account_notice"/>
-                                    <field name="email_invoice"/>
-                                    <field name="billing_email"/>
-                                    <field name="postal_building_name"/>
-                                    <field name="postal_apartment_number"/>
-                                    <field name="postal_apartment_type"/>
-                                    <field name="postal_floor_number"/>
-                                    <field name="postal_floor_type"/>
-                                    <field name="postal_lot_no"/>
-                                    <field name="postal_street_number"/>
-                                    <field name="postal_street_number_suffix"/>
-                                    <field name="postal_street_name"/>
-                                    <field name="postal_street_type"/>
-                                    <field name="postal_street_suffix"/>
-                                    <field name="postal_suburb"/>
-                                    <field name="postal_post_code"/>
-                                    <field name="postal_state"/>
-                                </group>
-
-                                <group string="Additional Info" colspan="1">
-                                    <field name="comments"/>
-                                    <field name="transfer_special_instructions"/>
-                                    <field name="medical_cooling"/>
-                                    <field name="medical_cooling_energy_rebate"/>
-                                    <field name="benefit_end_date"/>
-                                    <field name="sales_class"/>
-                                    <field name="bill_group_code"/>
-                                    <field name="gas_meter_number"/>
-                                </group>
-                            </group>
-
-                            <group string="QC / Admin Info" colspan="2">
-                                <field name="centre_name"/>
-                                <field name="qc_name"/>
-                                <field name="verifiers_name"/>
-                                <field name="tl_name"/>
-                                <field name="dnc_ref_no"/>
-                                <field name="audit_2"/>
-                                <field name="welcome_call"/>
-                            </group>
-
-                        </sheet >
-                    </group>
-
-                    <!-- Energy State 2 1st Energy Form END-->
 
                     <!-- Energy State 2 DODO Power and Gas Form -->
                     <group string="DODO Power and Gas Form" invisible="lead_for != 'energy' or lead_stage != '2' or stage_2_campign_name != 'dodo_power_gas'">
@@ -950,25 +795,52 @@ action = {
                     <!-- MOMENTUM ENERGY FORM END -->
 
 
-                    <!-- Credit Card Stage 1 Form -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                    <!-- Credit Card Call Center Stage 1 Form -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Stage 1: Lead Information Form For Amex</span>
+                                    <span class="o_form_label">Stage 1: Lead Information Form For Amex(Call Center)</span>
                                 </h1>
                             </div>
 
                             <group col="2" colspan="4">
                                 <group string="Customer Details" colspan="1">
-                                    <field name="cc_prefix" required="services == 'credit_card'"/>
+                                    <field name="cc_customer_name"/>
+                                    <field name="cc_phone"/>
+                                    <field name="cc_run_business" widget="radio"/>
+                                    <field name="cc_active_abn" widget="radio"/>
+
+
+                                </group>
+
+                            </group>
+
+                            <group string="Lead Agent Notes">
+                                <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- Credit Card Call Center Stage 1 Form END -->
+                    <!-- Credit Card Website Stage 1 Form -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                        <sheet >
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 1: Lead Information Form For Amex(Website)</span>
+                                </h1>
+                            </div>
+
+                            <group col="2" colspan="4">
+                                <group string="Customer Details" colspan="1">
+                                    <field name="cc_prefix"/>
                                     <field name="cc_first_name"/>
                                     <field name="cc_last_name"/>
-                                    <field name="cc_job_title" />
+                                    <field name="cc_job_title"/>
                                     <field name="cc_phone"/>
                                     <field name="cc_email" widget="email"/>
-                                    <field name="cc_run_business"/>
-                                    <field name="cc_active_abn"/>
+                                    <field name="cc_address"/>
+
 
 
                                 </group>
@@ -984,8 +856,8 @@ action = {
                             <group string="Preferences and Consents">
                                 <group col="2">
                                     <field name="cc_consent_personal_info"/>
-                                    <field name="cc_consent_contact_method"/>
-                                    <field name="cc_contact_preference"/>
+                                    <field name="cc_consent_contact_method" widget="radio"/>
+                                    <field name="cc_contact_preference" widget="radio"/>
 
                                 </group>
                             </group>
@@ -995,13 +867,13 @@ action = {
                             </group>
                         </sheet>
                     </group>
-                    <!-- Credit Card Stage 1 Form END -->
+                    <!-- Credit Card Website Stage 1 Form END -->
                     <!-- Credit Card Stage 2 From Start -->
-                    <group string="Stage 2: Business Information Form For Amex" invisible="lead_for != 'credit_card' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 2 FORM" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage != '1')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Stage 2: Business Information Form For Amex</span>
+                                    <span class="o_form_label">Stage 2: Business Information Form For Amex(Call Center)</span>
                                 </h1>
                             </div>
 
@@ -1046,78 +918,63 @@ action = {
                     </group>
 
                     <!-- Credt Card Stage 2 Form End -->
-                    <!-- AMEX sales form start -->
-                    <group string="Stage 2: Amex Sales Form" invisible="lead_for != 'credit_card' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+
+                    <!-- Broadband Stage 1 CAll center Form Start -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Stage 2: Amex Sales Form</span>
-                                </h1>
-                            </div>
-
-                            <!-- Application Info -->
-                            <group string="Application Info" col="2" colspan="4">
-                                <field name="amex_date"/>
-                                <field name="amex_center"/>
-                            </group>
-
-                            <!-- Company Details -->
-                            <group col="2" colspan="4">
-                                <group string="Company Details" colspan="1">
-                                    <field name="amex_company_name"/>
-                                    <field name="amex_abn"/>
-                                    <field name="amex_address_1"/>
-                                    <field name="amex_address_2"/>
-                                    <field name="amex_suburb"/>
-                                    <field name="amex_state"/>
-                                    <field name="amex_country"/>
-                                    <field name="amex_business_website"/>
-                                </group>
-
-                                <!-- Contact Person -->
-                                <group string="Contact Person" colspan="1">
-                                    <field name="amex_saluation"/>
-                                    <field name="amex_first_name"/>
-                                    <field name="amex_last_name"/>
-                                    <field name="amex_position"/>
-                                    <field name="amex_contact"/>
-                                    <field name="amex_email" widget="email"/>
-                                </group>
-                            </group>
-
-                            <!-- Financial Details -->
-                            <group string="Financial Details">
-                                <group col="2">
-                                    <field name="amex_current_turnover"/>
-                                    <field name="amex_estimated_expense"/>
-                                    <field name="amex_existing_product"/>
-                                    <field name="amex_tool_used"/>
-                                </group>
-                            </group>
-
-                            <!-- Additional Notes -->
-                            <group string="Additional Notes">
-                                <field name="amex_additional_info" nolabel="1" placeholder="Add notes or extra details..." widget="text"/>
-                            </group>
-                        </sheet>
-                    </group>
-
-                    <!-- AMEX sales form end -->
-                    <!-- Broadband Stage 1 Form Start -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn' or lead_stage != '1'" class="o_form_sheet_bg_gray">
-                        <sheet>
-                            <div class="oe_title">
-                                <h1>
-                                    <span class="o_form_label">Stage 1: Broadband Lead Information Form</span>
+                                    <span class="o_form_label">Stage 1: Broadband Lead Information Form (Call Center)</span>
                                 </h1>
                             </div>
 
                             <group col="2" colspan="4">
-                                <group string="Address and Provider Info" colspan="1">
-                                    <field name="in_current_address"/>
+                                <group string="Provider Info" colspan="1">
                                     <field name="in_current_provider"/>
                                     <field name="in_current_plan"/>
                                     <field name="in_current_price"/>
+                                </group>
+                                <group string="Usage Details">
+                                    <field name="in_internet_users_count"/>
+                                    <field name="in_internet_usage_type"/>
+                                    <field name="in_compare_plans" widget="radio"/>
+                                </group>
+                            </group>
+
+
+
+                            <group string="Contact Information" colspan="4">
+                                <field name="in_name"/>
+                                <field name="in_contact_number"/>
+                                <field name="in_contact_number_alt"/>
+                                <field name="in_email" widget="email"/>
+                                <field name="in_customer_dob"/>
+                                <field name="in_supply_address"/>
+                                <field name="in_lead_agent"/>
+                            </group>
+
+                            <group string="Agreement" colspan="4">
+                                <field name="in_request_callback" widget="radio"/>
+                                <field name="in_accept_terms" col="2"/>
+                            </group>
+                            <group string="Lead Agent Notes">
+                                <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            </group>
+                        </sheet>
+                    </group>
+                    <!-- Broadband Stage 1 CAll center Form End -->
+                    <!-- Broadband Stage 1 Website Form Start -->
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 1: Broadband Lead Information Form(Website)</span>
+                                </h1>
+                            </div>
+
+                            <group col="2" colspan="4">
+                                <group string="Address Info" colspan="1">
+                                    <field name="in_current_address" widget="text"/>
                                 </group>
 
                                 <group string="Preferences" colspan="1">
@@ -1125,16 +982,16 @@ action = {
                                     <field name="in_speed_preference"/>
                                     <field name="in_broadband_reason"/>
                                     <field name="in_when_to_connect_type"/>
-                                    <field name="in_when_to_connect_date"/>
+                                    <field name="in_when_to_connect_date" invisible="in_when_to_connect_type != 'specific_date'"/>
 
                                 </group>
                             </group>
 
-                            <group string="Usage Details">
+                            <group string="Usage Details" colspan="4">
                                 <group col="2">
                                     <field name="in_internet_users_count"/>
                                     <field name="in_internet_usage_type"/>
-                                    <field name="in_compare_plans"/>
+                                    <field name="in_compare_plans" widget="radio"/>
                                 </group>
                             </group>
 
@@ -1143,8 +1000,6 @@ action = {
                                     <field name="in_name"/>
                                     <field name="in_contact_number"/>
                                     <field name="in_email" widget="email"/>
-                                    <field name="in_lead_agent"/>
-                                    <field name="in_request_callback"/>
                                 </group>
                             </group>
 
@@ -1156,9 +1011,9 @@ action = {
                             </group>
                         </sheet>
                     </group>
-                    <!-- Broadband Stage 1 Form End -->
+                    <!-- Broadband Stage 1 Website Form End -->
                     <!-- Broadband Stage 2 Form Start -->
-                    <group string="Stage 2 FORM" invisible="lead_for != 'optus_nbn' or lead_stage != '2'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 2 FORM" invisible="not ((lead_for in ('optus_nbn_call_center','optus_nbn_website')) and lead_stage != '1')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -1204,107 +1059,28 @@ action = {
                     </group>
                     <!-- Broadband Stage 2 Form End -->
 
-                    <!-- DODO NBN FORM START -->
-                    <group string="DODO NBN Sale Information" invisible="lead_for != 'optus_nbn' or in_stage2_provider != 'dodo'  or lead_stage != '2'" class="o_form_sheet_bg_gray">
-                        <sheet>
+                    <!-- QA Stage FORM - Stage 3 -->
+                    <group string="Stage 3: Quality Audit" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('3', '4')))">
+                        <sheet >
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">DODO NBN Sale Information</span>
+                                    <span class="o_form_label">Stage 3: Quality Audit</span>
                                 </h1>
                             </div>
 
-                            <!-- Sale & Service Info -->
-                            <group col="2" colspan="4">
-                                <group string="Sale and Service Information" colspan="1">
-                                    <field name="do_nbn_receipt"/>
-                                    <field name="do_nbn_service"/>
-                                    <field name="do_nbn_plans"/>
-                                    <field name="do_nbn_current"/>
-                                    <field name="do_nbn_current_no"/>
-                                    <field name="do_sale_date"/>
-                                    <field name="do_center_name"/>
-                                    <field name="do_closer_name"/>
-                                </group>
-
-                                <!-- Customer Details -->
-                                <group string="Customer Details" colspan="1">
-                                    <field name="do_nbn_title"/>
-                                    <field name="do_first_name"/>
-                                    <field name="do_last_name"/>
-                                    <field name="do_mobile_no"/>
-                                </group>
+                            <group string="Disposition">
+                                <field name="stage_3_dispostion"/>
+                                <field name="lost_reason" invisible="stage_3_dispostion != 'failed'" required="stage_3_dispostion == 'failed'"/>
                             </group>
 
-                            <!-- Installation Address -->
-                            <group col="2" colspan="4">
-                                <group string="Installation Address" colspan="1">
-                                    <field name="do_installation_address"/>
-                                    <field name="do_house_number"/>
-                                    <field name="do_street_name"/>
-                                    <field name="do_street_type"/>
-                                    <field name="do_suburb"/>
-                                    <field name="do_state"/>
-                                    <field name="do_post_code"/>
-                                </group>
+                            <group string="Quality Audit Notes">
+                                <field name="qa_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
 
-                                <!-- DNC & Audit -->
-                                <group string="DNC andAudit Information" colspan="1">
-                                    <field name="do_dnc_ref_no"/>
-                                    <field name="do_dnc_exp_date"/>
-                                    <field name="do_audit_1"/>
-                                    <field name="do_audit_2"/>
-                                </group>
                             </group>
                         </sheet>
                     </group>
 
-                    <!-- DODO NBN FORM END -->
 
-                    <!-- OPTUS NBN START -->
-                    <group string="Optus NBN Sale Information" invisible="lead_for != 'optus_nbn' or in_stage2_provider != 'optus' or lead_stage != '2'" class="o_form_sheet_bg_gray">
-
-                        <sheet>
-                            <div class="oe_title">
-                                <h1>
-                                    <span class="o_form_label">Optus NBN Sale Information</span>
-                                </h1>
-                            </div>
-
-                            <!-- Sale & Service Info -->
-                            <group col="2" colspan="4">
-                                <group string="Sale and Service Information" colspan="1">
-                                    <field name="optus_date"/>
-                                    <field name="optus_activation"/>
-                                    <field name="optus_order"/>
-                                    <field name="optus_customer"/>
-                                    <field name="optus_address"/>
-                                    <field name="optus_service"/>
-                                    <field name="optus_plan"/>
-                                    <field name="optus_per_month"/>
-                                </group>
-
-                                <!-- Sales & Contact -->
-                                <group string="Sales and Contact" colspan="1">
-                                    <field name="optus_center"/>
-                                    <field name="optus_salesperson"/>
-                                    <field name="optus_contact"/>
-                                    <field name="optus_email"/>
-                                </group>
-                            </group>
-
-                            <!-- Audit & Notes -->
-                            <group col="2" colspan="4">
-                                <group string="Audit and References" colspan="1">
-                                    <field name="optus_notes"/>
-                                    <field name="optus_dcn"/>
-                                    <field name="optus_audit_1"/>
-                                    <field name="optus_audit_2"/>
-                                </group>
-                            </group>
-
-                        </sheet>
-                    </group>
-                    <!-- OPTUS NBN FORM END -->
 
                     <!-- HOME MOVING FORM STAGE 1 -->
                     <group string="Stage 1 FORM" invisible="lead_for != 'home_moving' or lead_stage != '1'" class="o_form_sheet_bg_gray">
@@ -1555,26 +1331,361 @@ action = {
                     <!-- VICTORIA UPGARE STAGE 1 END -->
 
 
-                    <!-- QA Stage FORM - Stage 3 -->
-                    <group string="Stage 3: Quality Audit" invisible="not (lead_for in ('energy','credit_card', 'optus_nbn') and lead_stage == '3')">
-                        <sheet >
+
+
+                    <!-- AMEX sales form start -->
+                    <group string="Stage 4: Amex Sales Form" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage == '4')" class="o_form_sheet_bg_gray">
+                        <sheet>
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Stage 3: Quality Audit</span>
+                                    <span class="o_form_label">Stage 4: Amex Sales Form</span>
                                 </h1>
                             </div>
 
-                            <group string="Disposition">
-                                <field name="stage_3_dispostion"/>
-                                <field name="lost_reason" invisible="stage_3_dispostion != 'failed'" required="stage_3_dispostion == 'failed'"/>
+                            <!-- Application Info -->
+                            <group string="Application Info" col="2" colspan="4">
+                                <field name="amex_date"/>
+                                <field name="amex_center"/>
                             </group>
 
-                            <group string="Quality Audit Notes">
-                                <field name="qa_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text"/>
+                            <!-- Company Details -->
+                            <group col="2" colspan="4">
+                                <group string="Company Details" colspan="1">
+                                    <field name="amex_company_name"/>
+                                    <field name="amex_abn"/>
+                                    <field name="amex_address_1"/>
+                                    <field name="amex_address_2"/>
+                                    <field name="amex_suburb"/>
+                                    <field name="amex_state"/>
+                                    <field name="amex_country"/>
+                                    <field name="amex_business_website"/>
+                                </group>
 
+                                <!-- Contact Person -->
+                                <group string="Contact Person" colspan="1">
+                                    <field name="amex_saluation"/>
+                                    <field name="amex_first_name"/>
+                                    <field name="amex_last_name"/>
+                                    <field name="amex_position"/>
+                                    <field name="amex_contact"/>
+                                    <field name="amex_email" widget="email"/>
+                                </group>
+                            </group>
+
+                            <!-- Financial Details -->
+                            <group string="Financial Details">
+                                <group col="2">
+                                    <field name="amex_current_turnover"/>
+                                    <field name="amex_estimated_expense"/>
+                                    <field name="amex_existing_product"/>
+                                    <field name="amex_tool_used"/>
+                                </group>
+                            </group>
+
+                            <!-- Additional Notes -->
+                            <group string="Additional Notes">
+                                <field name="amex_additional_info" nolabel="1" placeholder="Add notes or extra details..." widget="text"/>
                             </group>
                         </sheet>
                     </group>
+
+                    <!-- AMEX sales form end -->
+
+                    <!-- DODO NBN FORM START -->
+                    <group string="DODO NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '4' and in_stage2_provider == 'dodo')" class="o_form_sheet_bg_gray">
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">DODO NBN Sale Information</span>
+                                </h1>
+                            </div>
+
+                            <!-- Sale & Service Info -->
+                            <group col="2" colspan="4">
+                                <group string="Sale and Service Information" colspan="1">
+                                    <field name="do_nbn_receipt"/>
+                                    <field name="do_nbn_service"/>
+                                    <field name="do_nbn_plans"/>
+                                    <field name="do_nbn_current"/>
+                                    <field name="do_nbn_current_no"/>
+                                    <field name="do_sale_date"/>
+                                    <field name="do_center_name"/>
+                                    <field name="do_closer_name"/>
+                                </group>
+
+                                <!-- Customer Details -->
+                                <group string="Customer Details" colspan="1">
+                                    <field name="do_nbn_title"/>
+                                    <field name="do_first_name"/>
+                                    <field name="do_last_name"/>
+                                    <field name="do_mobile_no"/>
+                                </group>
+                            </group>
+
+                            <!-- Installation Address -->
+                            <group col="2" colspan="4">
+                                <group string="Installation Address" colspan="1">
+                                    <field name="do_installation_address"/>
+                                    <field name="do_house_number"/>
+                                    <field name="do_street_name"/>
+                                    <field name="do_street_type"/>
+                                    <field name="do_suburb"/>
+                                    <field name="do_state"/>
+                                    <field name="do_post_code"/>
+                                </group>
+
+                                <!-- DNC & Audit -->
+                                <group string="DNC andAudit Information" colspan="1">
+                                    <field name="do_dnc_ref_no"/>
+                                    <field name="do_dnc_exp_date"/>
+                                    <field name="do_audit_1"/>
+                                    <field name="do_audit_2"/>
+                                </group>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- DODO NBN FORM END -->
+
+                    <!-- OPTUS NBN START -->
+                    <group string="Optus NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '4' and in_stage2_provider == 'optus')" class="o_form_sheet_bg_gray">
+
+                        <sheet>
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Optus NBN Sale Information</span>
+                                </h1>
+                            </div>
+
+                            <!-- Sale & Service Info -->
+                            <group col="2" colspan="4">
+                                <group string="Sale and Service Information" colspan="1">
+                                    <field name="optus_date"/>
+                                    <field name="optus_activation"/>
+                                    <field name="optus_order"/>
+                                    <field name="optus_customer"/>
+                                    <field name="optus_address"/>
+                                    <field name="optus_service"/>
+                                    <field name="optus_plan"/>
+                                    <field name="optus_per_month"/>
+                                </group>
+
+                                <!-- Sales & Contact -->
+                                <group string="Sales and Contact" colspan="1">
+                                    <field name="optus_center"/>
+                                    <field name="optus_salesperson"/>
+                                    <field name="optus_contact"/>
+                                    <field name="optus_email"/>
+                                </group>
+                            </group>
+
+                            <!-- Audit & Notes -->
+                            <group col="2" colspan="4">
+                                <group string="Audit and References" colspan="1">
+                                    <field name="optus_notes"/>
+                                    <field name="optus_dcn"/>
+                                    <field name="optus_audit_1"/>
+                                    <field name="optus_audit_2"/>
+                                </group>
+                            </group>
+
+                        </sheet>
+                    </group>
+                    <!-- OPTUS NBN FORM END -->
+
+                    <!-- Energy State 2 1st Energy Form -->
+                    <group string="1st Energy Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '4' and stage_2_campign_name == 'first_energy')">
+
+                        <sheet >
+
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">1st Energy Form </span>
+                                </h1>
+                            </div>
+                            <group colspan="2">
+                                <group string="Sale Info" colspan="1">
+                                    <field name="internal_dnc_checked"/>
+                                    <field name="existing_sale"/>
+                                    <field name="online_enquiry_form"/>
+                                    <field name="vendor_id"/>
+                                    <field name="agent"/>
+                                    <field name="channel_ref"/>
+                                    <field name="sale_ref"/>
+                                    <field name="lead_ref"/>
+                                    <field name="incentive"/>
+                                    <field name="sale_date"/>
+                                    <field name="campaign_ref"/>
+                                    <field name="promo_code"/>
+                                </group>
+
+                                <group string="Customer Info" colspan="1">
+                                    <field name="current_elec_retailer"/>
+                                    <field name="current_gas_retailer"/>
+                                    <field name="multisite"/>
+                                    <field name="existing_customer"/>
+                                    <field name="customer_account_no"/>
+                                    <field name="customer_type"/>
+                                    <field name="account_name"/>
+                                    <field name="abn"/>
+                                    <field name="acn"/>
+                                    <field name="business_name"/>
+                                    <field name="trustee_name"/>
+                                    <field name="trading_name"/>
+                                    <field name="position"/>
+                                    <field name="sale_type"/>
+                                </group>
+                            </group>
+
+                            <group colspan="2">
+                                <group string="Primary Contact" colspan="1">
+                                    <field name="customer_title"/>
+                                    <field name="first_name"/>
+                                    <field name="last_name"/>
+                                    <field name="phone_landline"/>
+                                    <field name="phone_mobile"/>
+                                    <field name="auth_date_of_birth"/>
+                                    <field name="auth_expiry"/>
+                                    <field name="auth_no"/>
+                                    <field name="auth_type"/>
+                                    <field name="email"/>
+                                </group>
+
+                                <group string="Concessions" colspan="1">
+                                    <field name="life_support"/>
+                                    <field name="concessioner_number"/>
+                                    <field name="concession_expiry"/>
+                                    <field name="concession_flag"/>
+                                    <field name="concession_start_date"/>
+                                    <field name="concession_type"/>
+                                    <field name="conc_first_name"/>
+                                    <field name="conc_last_name"/>
+                                </group>
+                            </group>
+
+                            <group colspan="2">
+
+                                <group string="Secondary Contact" colspan="1">
+                                    <field name="secondary_title"/>
+                                    <field name="sec_first_name"/>
+                                    <field name="sec_last_name"/>
+                                    <field name="sec_auth_date_of_birth"/>
+                                    <field name="sec_auth_no"/>
+                                    <field name="sec_auth_type"/>
+                                    <field name="sec_auth_expiry"/>
+                                    <field name="sec_email"/>
+                                    <field name="sec_phone_home"/>
+                                    <field name="sec_mobile_number"/>
+                                </group>
+
+                                <group string="Site Address" colspan="1">
+                                    <field name="site_apartment_no"/>
+                                    <field name="site_apartment_type"/>
+                                    <field name="site_building_name"/>
+                                    <field name="site_floor_no"/>
+                                    <field name="site_floor_type"/>
+                                    <field name="site_location_description"/>
+                                    <field name="site_lot_number"/>
+                                    <field name="site_street_number"/>
+                                    <field name="site_street_number_suffix"/>
+                                    <field name="site_street_name"/>
+                                    <field name="site_street_type"/>
+                                    <field name="site_street_suffix"/>
+                                    <field name="site_suburb"/>
+                                    <field name="site_state"/>
+                                    <field name="site_post_code"/>
+                                </group>
+                            </group>
+
+                            <group colspan="2">
+                                <group string="Gas Site Address" colspan="1">
+                                    <field name="gas_site_apartment_number"/>
+                                    <field name="gas_site_apartment_type"/>
+                                    <field name="gas_site_building_name"/>
+                                    <field name="gas_site_floor_number"/>
+                                    <field name="gas_site_floor_type"/>
+                                    <field name="gas_site_location_description"/>
+                                    <field name="gas_site_lot_number"/>
+                                    <field name="gas_site_street_number"/>
+                                    <field name="gas_site_street_number_suffix"/>
+                                    <field name="gas_site_street_name"/>
+                                    <field name="gas_site_street_type"/>
+                                    <field name="gas_site_street_suffix"/>
+                                    <field name="gas_site_suburb"/>
+                                    <field name="gas_site_state"/>
+                                    <field name="gas_site_post_code"/>
+                                </group>
+
+                                <group string="Meter And Product Info" colspan="1">
+                                    <field name="network_tariff_code"/>
+                                    <field name="nmi"/>
+                                    <field name="mirn"/>
+                                    <field name="fuel"/>
+                                    <field name="feed_in"/>
+                                    <field name="annual_usage"/>
+                                    <field name="gas_annual_usage"/>
+                                    <field name="product_code"/>
+                                    <field name="gas_product_code"/>
+                                    <field name="offer_description"/>
+                                    <field name="gas_offer_description"/>
+                                    <field name="green_percent"/>
+                                    <field name="proposed_transfer_date"/>
+                                    <field name="gas_proposed_transfer_date"/>
+                                    <field name="bill_cycle_code"/>
+                                    <field name="gas_bill_cycle_code"/>
+                                    <field name="average_monthly_spend"/>
+                                </group>
+                            </group>
+
+                            <group colspan="2">
+                                <group string="Billing And Postal" colspan="1">
+                                    <field name="is_owner" widget="radio"/>
+                                    <field name="has_accepted_marketing" widget="radio"/>
+                                    <field name="email_account_notice" widget="radio"/>
+                                    <field name="email_invoice" widget="radio"/>
+                                    <field name="billing_email"/>
+                                    <field name="postal_building_name"/>
+                                    <field name="postal_apartment_number"/>
+                                    <field name="postal_apartment_type"/>
+                                    <field name="postal_floor_number"/>
+                                    <field name="postal_floor_type"/>
+                                    <field name="postal_lot_no"/>
+                                    <field name="postal_street_number"/>
+                                    <field name="postal_street_number_suffix"/>
+                                    <field name="postal_street_name"/>
+                                    <field name="postal_street_type"/>
+                                    <field name="postal_street_suffix"/>
+                                    <field name="postal_suburb"/>
+                                    <field name="postal_post_code"/>
+                                    <field name="postal_state"/>
+                                </group>
+
+                                <group string="Additional Info" colspan="1">
+                                    <field name="comments"/>
+                                    <field name="transfer_special_instructions"/>
+                                    <field name="medical_cooling" widget="radio"/>
+                                    <field name="medical_cooling_energy_rebate" widget="radio"/>
+                                    <field name="benefit_end_date"/>
+                                    <field name="sales_class"/>
+                                    <field name="bill_group_code"/>
+                                    <field name="gas_meter_number"/>
+                                </group>
+                            </group>
+
+                            <group string="QC / Admin Info" colspan="2">
+                                <field name="centre_name"/>
+                                <field name="qc_name"/>
+                                <field name="verifiers_name"/>
+                                <field name="tl_name"/>
+                                <field name="dnc_ref_no"/>
+                                <field name="audit_2"/>
+                                <field name="welcome_call"/>
+                            </group>
+
+                        </sheet >
+                    </group>
+
+                    <!-- Energy State 2 1st Energy Form END-->
 
                 </page>
 

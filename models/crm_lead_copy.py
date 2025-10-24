@@ -38,16 +38,21 @@ class CrmLead(models.Model):
         string='Automatically Assigned Partner'
     )
 
+
+
     services = fields.Selection([
-        ('credit_card', 'Credit Card'),
-        ('energy', 'Electricity & Gas'),
-        ('optus_nbn', 'Broadband'),
+        ('credit_card_call_center', 'Credit Card (Call Center)'),
+        ('credit_card_website', 'Credit Card (Website)'),
+        ('energy_call_center', 'Electricity & Gas (Call Center)'),
+        ('energy_website', 'Electricity & Gas (Webite)'),
+        ('optus_nbn_call_center', 'Broadband (Call Center)'),
+        ('optus_nbn_website', 'Broadband (Website)'),
         ('home_moving', "Home Moving"),
         ('business_loan', "Business Loan"),
         ("home_loan", "Home Loan"),
         ("insurance", "Health Insurance"),
         ("veu", "Victorian Energy")
-    ],  required=True, default="energy")
+    ],  required=True)
 
     @api.constrains(
         "momentum_energy_transaction_reference",
@@ -364,84 +369,86 @@ class CrmLead(models.Model):
     #         'url': f"/web/content/{attachment.id}?download=true",
     #         'target': 'self',
     #     }
+
+
     # EXPORTS FULL MODEL
-    def action_export_lead_excel(self):
-        self.ensure_one()
-        output = io.BytesIO()
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        worksheet = workbook.add_worksheet('Lead Details')
+    # def action_export_lead_excel(self):
+    #     self.ensure_one()
+    #     output = io.BytesIO()
+    #     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    #     worksheet = workbook.add_worksheet('Lead Details')
 
-        # Formats
-        header_fmt = workbook.add_format({'bold': True, 'bg_color': '#DCE6F1', 'border': 1})
-        text_fmt = workbook.add_format({'text_wrap': True, 'border': 1})
-        title_fmt = workbook.add_format({'bold': True, 'font_size': 14, 'align': 'center'})
+    #     # Formats
+    #     header_fmt = workbook.add_format({'bold': True, 'bg_color': '#DCE6F1', 'border': 1})
+    #     text_fmt = workbook.add_format({'text_wrap': True, 'border': 1})
+    #     title_fmt = workbook.add_format({'bold': True, 'font_size': 14, 'align': 'center'})
 
-        # Set column widths
-        worksheet.set_column(0, 0, 35)
-        worksheet.set_column(1, 1, 60)
+    #     # Set column widths
+    #     worksheet.set_column(0, 0, 35)
+    #     worksheet.set_column(1, 1, 60)
 
-        # Title
-        worksheet.merge_range('A1:B1', f"CRM Lead Export - {self.name}", title_fmt)
+    #     # Title
+    #     worksheet.merge_range('A1:B1', f"CRM Lead Export - {self.name}", title_fmt)
 
-        # Write headers
-        worksheet.write(2, 0, "Field", header_fmt)
-        worksheet.write(2, 1, "Value", header_fmt)
+    #     # Write headers
+    #     worksheet.write(2, 0, "Field", header_fmt)
+    #     worksheet.write(2, 1, "Value", header_fmt)
 
-        row = 3
+    #     row = 3
 
-        # Dynamically iterate through all fields
-        for field_name, field in self._fields.items():
-            # Skip technical/internal fields
-            if field_name in ['__last_update', 'write_uid', 'write_date', 'create_uid', 'create_date', 'message_ids', 'activity_ids']:
-                continue
+    #     # Dynamically iterate through all fields
+    #     for field_name, field in self._fields.items():
+    #         # Skip technical/internal fields
+    #         if field_name in ['__last_update', 'write_uid', 'write_date', 'create_uid', 'create_date', 'message_ids', 'activity_ids']:
+    #             continue
 
-            display_name = field.string or field_name
-            value = getattr(self, field_name)
+    #         display_name = field.string or field_name
+    #         value = getattr(self, field_name)
 
-            # Handle many2one, many2many, one2many
-            if field.type == 'many2one':
-                value = value.display_name if value else ''
-            elif field.type in ('many2many', 'one2many'):
-                value = ', '.join(rec.display_name for rec in value) if value else ''
-            elif field.type == 'selection':
-                selection_dict = dict(field.selection)
-                value = selection_dict.get(value, value or '')
-            elif isinstance(value, bool):
-                value = "Yes" if value else "No"
-            elif isinstance(value, datetime):
-                value = value.strftime("%Y-%m-%d %H:%M:%S")
+    #         # Handle many2one, many2many, one2many
+    #         if field.type == 'many2one':
+    #             value = value.display_name if value else ''
+    #         elif field.type in ('many2many', 'one2many'):
+    #             value = ', '.join(rec.display_name for rec in value) if value else ''
+    #         elif field.type == 'selection':
+    #             selection_dict = dict(field.selection)
+    #             value = selection_dict.get(value, value or '')
+    #         elif isinstance(value, bool):
+    #             value = "Yes" if value else "No"
+    #         elif isinstance(value, datetime):
+    #             value = value.strftime("%Y-%m-%d %H:%M:%S")
 
-            if value is None:
-                value = ''
+    #         if value is None:
+    #             value = ''
 
-            worksheet.write(row, 0, display_name, text_fmt)
-            worksheet.write(row, 1, str(value), text_fmt)
-            row += 1
+    #         worksheet.write(row, 0, display_name, text_fmt)
+    #         worksheet.write(row, 1, str(value), text_fmt)
+    #         row += 1
 
-        # Footer
-        footer_text = f"Exported by {self.env.user.name} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        worksheet.merge_range(row + 1, 0, row + 1, 1, footer_text, workbook.add_format({'italic': True, 'align': 'right'}))
+    #     # Footer
+    #     footer_text = f"Exported by {self.env.user.name} on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    #     worksheet.merge_range(row + 1, 0, row + 1, 1, footer_text, workbook.add_format({'italic': True, 'align': 'right'}))
 
-        workbook.close()
-        output.seek(0)
-        file_data = output.read()
+    #     workbook.close()
+    #     output.seek(0)
+    #     file_data = output.read()
 
-        file_name = f"Lead_{self.id}_{self.name or 'Unknown'}.xlsx"
+    #     file_name = f"Lead_{self.id}_{self.name or 'Unknown'}.xlsx"
 
-        attachment = self.env['ir.attachment'].create({
-            'name': file_name,
-            'type': 'binary',
-            'datas': base64.b64encode(file_data),
-            'res_model': self._name,
-            'res_id': self.id,
-            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        })
+    #     attachment = self.env['ir.attachment'].create({
+    #         'name': file_name,
+    #         'type': 'binary',
+    #         'datas': base64.b64encode(file_data),
+    #         'res_model': self._name,
+    #         'res_id': self.id,
+    #         'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    #     })
 
-        return {
-            'type': 'ir.actions.act_url',
-            'url': f"/web/content/{attachment.id}?download=true",
-            'target': 'self',
-        }    
+    #     return {
+    #         'type': 'ir.actions.act_url',
+    #         'url': f"/web/content/{attachment.id}?download=true",
+    #         'target': 'self',
+    #     }    
 
 
     def action_next_stage(self):
@@ -482,6 +489,7 @@ class CrmLead(models.Model):
                     result = {"success": True, "new_stage": new_stage}
                 else:
                     result = {"success": False, "error": "Please set disposition before moving to stage 3"}
+               
 
         return result
 
@@ -526,7 +534,10 @@ class CrmLead(models.Model):
         ('residential', 'Residential'),
         ('business', 'Business'),
     ], string="What type of property?")
-    en_moving_in = fields.Boolean(string="Are you moving into this property?")
+    en_moving_in = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Are you moving into this property?")
     en_date = fields.Date("Date")
     en_property_ownership = fields.Selection([
         ('own', 'Own'),
@@ -537,9 +548,18 @@ class CrmLead(models.Model):
         ('medium', '3-4 people, home in the evening and weekend regular washing, heating and cooling.'),
         ('high', '5+ people, home during the day, evenings and weekend daily washing, heating and cooling.')
     ], string="Usage Profile")
-    en_require_life_support = fields.Boolean(string="Does anyone residing or intending to reside at your premises require life support equipment?")
-    en_concesion_card_holder = fields.Boolean("Are you a concession card holder?")
-    en_rooftop_solar = fields.Boolean(string="Do you have rooftop solar panels :")
+    en_require_life_support = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Does anyone residing or intending to reside at your premises require life support equipment?")
+    en_concesion_card_holder = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Are you a concession card holder?")
+    en_rooftop_solar = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Do you have rooftop solar panels :")
     en_electricity_provider = fields.Selection([
         ('1st_energy', '1st Energy'),
         ('actew_agl', 'ActewAGL'),
@@ -565,7 +585,7 @@ class CrmLead(models.Model):
         ('tango_energy', 'Tango Energy'),
         ('other', 'Other/Unknown'),
 
-    ],"Who is your current electricity provider")
+    ],string="Who is your current electricity provider")
 
     en_gas_provider = fields.Selection([
         ('1st_energy', '1st Energy'),
@@ -593,11 +613,14 @@ class CrmLead(models.Model):
         ('other', 'Other/Unknown'),
 
     ],"Who is your current gas provider")
-    en_name = fields.Char("Name", default=lambda self: self.name or '')
-    en_contact_number = fields.Char("Contact Number", default=lambda self: self.phone or self.phone_sanitized or '')
+    en_name = fields.Char("Name", related='contact_name', readonly=False)
+    en_contact_number = fields.Char("Contact Number", related='phone')
     en_customer_alt_phone = fields.Char(string="Customer Alt. Number")
-    en_email = fields.Char("Email", default=lambda self: self.email_from or '')
-    en_request_callback = fields.Boolean(string="Request a call back")
+    en_email = fields.Char("Email", related='email_normalized')
+    en_request_callback = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Request a call back")
     en_accpeting_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.")
     nmi = fields.Char(string="NMI")
     mirn = fields.Char(string="MIRN")
@@ -627,14 +650,14 @@ class CrmLead(models.Model):
         ("hcc","HCC"),
         ("vcc", "VCC"),
         ("others", "Others")
-    ], string="Type of Concession", default="pcc")
+    ], string="Type of Concession", related='type_of_concession', readonly=False)
     stage_2_card_number = fields.Char(string="Concession Card Number")
     stage_2_card_holder_name = fields.Char(string="Concession Card Holder Name")
     stage_2_card_type = fields.Char(string="Concession Card Type")
     stage_2_card_start_date = fields.Date(string="Concession Card Start Date")
     stage_2_card_expiry_date = fields.Date(string="Concession Card Expiry Date")
     stage_2_sec_acc_holder = fields.Char(string="Secondary Account Holder Name")
-    stage_2_sec_acc_holder_dob = fields.Char(string="Secondary Account Holder DOB")
+    stage_2_sec_acc_holder_dob = fields.Date(string="Secondary Account Holder DOB")
     stage_2_sec_acc_holder_mobile = fields.Char(string="Secondary Account Holder Mobile")
     stage_2_sec_acc_holder_email = fields.Char(string="Secondary Account Holder Email")
     stage_2_bill = fields.Selection([
@@ -675,8 +698,58 @@ class CrmLead(models.Model):
     sale_date = fields.Date(string="Date of Sale")
     campaign_ref = fields.Char(string="Campaign Reference")
     promo_code = fields.Char(string="Promo Code")
-    current_elec_retailer = fields.Char(string="Current Electric Retailer")
-    current_gas_retailer = fields.Char(string="Current Gas Retailer")
+    current_elec_retailer = fields.Selection([
+        ('1st_energy', '1st Energy'),
+        ('actew_agl', 'ActewAGL'),
+        ('agl', 'AGL'),
+        ('alinta_energy', 'Alinta Energy'),
+        ('aus_power_gas', 'Australian Power & Gas'),
+        ('blue_nrg', 'BlueNRG'),
+        ('click_energy', 'Click Energy'),
+        ('dodo_energy', 'Dodo Energy'),
+        ('energy_australia', 'Energy Australia'),
+        ('lumo_energy', 'Lumo Energy'),
+        ('momentum_energy', 'Momentum Energy'),
+        ('neighbourhood', 'Neighbourhood'),
+        ('online_pow_gas', 'Online Power & Gas'),
+        ('origin', 'Orgin'),
+        ('people_energy', 'People Energy'),
+        ('power_direct', 'Power Direct'),
+        ('powershop', 'Powershop'),
+        ('q_energy', 'QEnergy'),
+        ('red_energy', 'Red Energy'),
+        ('simple_energy', 'Simple Energy'),
+        ('sumo_power', 'Sumo Power'),
+        ('tango_energy', 'Tango Energy'),
+        ('other', 'Other/Unknown'),
+
+    ],string="Current Electric Retailer")
+    current_gas_retailer = fields.Selection([
+        ('1st_energy', '1st Energy'),
+        ('actew_agl', 'ActewAGL'),
+        ('agl', 'AGL'),
+        ('alinta_energy', 'Alinta Energy'),
+        ('aus_power_gas', 'Australian Power & Gas'),
+        ('blue_nrg', 'BlueNRG'),
+        ('click_energy', 'Click Energy'),
+        ('dodo_energy', 'Dodo Energy'),
+        ('energy_australia', 'Energy Australia'),
+        ('lumo_energy', 'Lumo Energy'),
+        ('momentum_energy', 'Momentum Energy'),
+        ('neighbourhood', 'Neighbourhood'),
+        ('online_pow_gas', 'Online Power & Gas'),
+        ('origin', 'Orgin'),
+        ('people_energy', 'People Energy'),
+        ('power_direct', 'Power Direct'),
+        ('powershop', 'Powershop'),
+        ('q_energy', 'QEnergy'),
+        ('red_energy', 'Red Energy'),
+        ('simple_energy', 'Simple Energy'),
+        ('sumo_power', 'Sumo Power'),
+        ('tango_energy', 'Tango Energy'),
+        ('other', 'Other/Unknown'),
+
+    ],string="Current Gas Retailer")
     multisite = fields.Boolean(string="Multisite")
     existing_customer = fields.Boolean(string="Existing Customer")
     customer_account_no = fields.Char(string="Customer Account Number")
@@ -696,33 +769,41 @@ class CrmLead(models.Model):
         ('movein', 'Movein')
     ], string="Sale Type", default="transfer")
     customer_title = fields.Char(string="Title")
-    first_name = fields.Char(string="First Name")
+    first_name = fields.Char(string="First Name", related='contact_name', readonly=False)
     last_name = fields.Char(string="Last Name")
     phone_landline = fields.Char(string="Phone Landline")
-    phone_mobile = fields.Char(string="Mobile Number")
-    auth_date_of_birth = fields.Date(string="Authentication Date of Birth")
+    phone_mobile = fields.Char(string="Mobile Number", related='phone', readonly=False)
+    auth_date_of_birth = fields.Date(string="Authentication Date of Birth", related='stage_2_dob', readonly=False)
     auth_expiry = fields.Date(string="Authentication Expiry")
     auth_no = fields.Char(string="Authentication No")
     auth_type = fields.Char(string="Authentication Type")
-    email = fields.Char(string="Email")
-    life_support = fields.Boolean(string="Life Support", default=False)
-    concessioner_number = fields.Char(string="Concessioner Number")
-    concession_expiry = fields.Date(string="Concession Expiry Date")
+    email = fields.Char(string="Email", related='email_normalized', readonly=False)
+    life_support = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Life Support", related='en_require_life_support', readonly=False)
+    concessioner_number = fields.Char(string="Concessioner Number", related='stage_2_card_number', readonly=False)
+    concession_expiry = fields.Date(string="Concession Expiry Date", related='stage_2_card_expiry_date', readonly=False)
     concession_flag = fields.Boolean(string="Concession Flag", default=False)
-    concession_start_date = fields.Date(string="Concession Start Date")
-    concession_type = fields.Char(string="Concession Type")
-    conc_first_name = fields.Char(string="Concession First Name")
+    concession_start_date = fields.Date(string="Concession Start Date", related='stage_2_card_start_date', readonly=False)
+    concession_type = fields.Selection([
+        ("pcc", "PCC"),
+        ("hcc","HCC"),
+        ("vcc", "VCC"),
+        ("others", "Others")
+    ], string="Concession Type", related='stage_2_concession_type', readonly=False)
+    conc_first_name = fields.Char(string="Concession First Name", related='stage_2_card_holder_name', readonly=False)
     conc_last_name = fields.Char(string="Concession Last Name")
     secondary_title = fields.Char(string="Secondary Title")
-    sec_first_name = fields.Char(string="Secondary First Name")
+    sec_first_name = fields.Char(string="Secondary First Name", related='stage_2_sec_acc_holder', readonly=False)
     sec_last_name = fields.Char(string="Secondary Last Name")
-    sec_auth_date_of_birth = fields.Date(string="Secondary Authentication DOB")
+    sec_auth_date_of_birth = fields.Date(string="Secondary Authentication DOB", related='stage_2_sec_acc_holder_dob', readonly=False)
     sec_auth_no = fields.Char(string="Secondary Authentication No")
     sec_auth_type = fields.Char(string="Secondary Authentication Type")
     sec_auth_expiry = fields.Date(string="Secondary Authentication Expiry")
-    sec_email = fields.Char(string="Secondary Email")
+    sec_email = fields.Char(string="Secondary Email", related='stage_2_sec_acc_holder_email', readonly=False)
     sec_phone_home = fields.Char(string="Secondary Phone Home")
-    sec_mobile_number = fields.Char(string="Secondary Mobile Number")
+    sec_mobile_number = fields.Char(string="Secondary Mobile Number" ,related='stage_2_sec_acc_holder_mobile', readonly=False)
     site_apartment_no = fields.Char(string="Site Apartment Number")
     site_apartment_type = fields.Char(string="Site Apartment Type")
     site_building_name = fields.Char(string="Site Building Name")
@@ -770,10 +851,22 @@ class CrmLead(models.Model):
     bill_cycle_code = fields.Char("Bill Cycle Code")
     gas_bill_cycle_code = fields.Char("Gas Bill Cycle Code")
     average_monthly_spend = fields.Float("Average Monthly Spend")
-    is_owner = fields.Boolean("Is Owner")
-    has_accepted_marketing = fields.Boolean("Has Accepted Marketing")
-    email_account_notice = fields.Boolean("Email Account Notice")
-    email_invoice = fields.Boolean("Email Invoice")
+    is_owner = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Is Owner")
+    has_accepted_marketing = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Has Accepted Marketing")
+    email_account_notice = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Email Account Notice")
+    email_invoice = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Email Invoice")
     billing_email = fields.Char("Billing Email")
     postal_building_name = fields.Char("Postal Building Name")
     postal_apartment_number = fields.Char("Postal Apartment Number")
@@ -791,8 +884,14 @@ class CrmLead(models.Model):
     postal_state = fields.Char("Postal State")
     comments = fields.Text("Comments")
     transfer_special_instructions = fields.Text("Transfer Special Instructions")
-    medical_cooling = fields.Boolean("Medical Cooling")
-    medical_cooling_energy_rebate = fields.Boolean("Medical Cooling Energy Rebate")
+    medical_cooling = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Medical Cooling")
+    medical_cooling_energy_rebate = fields.Selection([
+        ("no", "No"),
+        ("yes","Yes")
+    ],string="Medical Cooling Energy Rebate")
     benefit_end_date = fields.Date("Benefit End Date")
     sales_class = fields.Char("Sales Class")
     bill_group_code = fields.Char("Bill Group Code")
@@ -1306,11 +1405,13 @@ class CrmLead(models.Model):
     cc_prefix = fields.Selection([
         ('n/a', 'N/A'), ('mr', 'Mr.'), ('mrs', 'Mrs.'), ('ms', 'Ms.'), ('dr', 'Dr.'), ('miss', 'Miss')
     ], string="Prefix")
-    cc_first_name = fields.Char("First Name")
-    cc_last_name = fields.Char("Last Name")
+    cc_customer_name = fields.Char("Customer Name", related='contact_name', readonly=False)
+    cc_first_name = fields.Char("First Name", related='contact_name', readonly=False)
+    cc_last_name = fields.Char("Last Name", related='contact_name', readonly=False)
     cc_job_title = fields.Char("Job Title")
-    cc_phone = fields.Char("Phone")
-    cc_email = fields.Char("Email")
+    cc_phone = fields.Char("Phone", related='phone', readonly=False)
+    cc_email = fields.Char("Email", related='email_normalized', readonly=False)
+    cc_address = fields.Char("Enter postcode or address")
     cc_run_business = fields.Selection([
         ("no", "No"),
         ("yes", "Yes")
@@ -1321,7 +1422,7 @@ class CrmLead(models.Model):
     ], string="Do you have active ABN?")
     cc_annual_revenue = fields.Selection([
         ('under_2m', 'Under ~ $2M'), ('2m_10m', '$2M ~ $10M'), ('10m_50m', '$10M ~ $50M'), ('50m_100m', '$50M ~ $100M'), ('100m_above', 'Above $100M')
-    ], string="Annual Revenue")
+    ], string="Annual Company Revenue")
     cc_annual_spend = fields.Selection([
         ('under_1m', 'Under ~ $1M'), ('2m_5m', '$2M ~ $5M'), ('6m_10m', '$6M ~ $10M'),
         ('11m_15m', '$11M ~ $15M'), ('16m_20m', '$16M ~ $20M'),('20m_above', 'Above $20M')
@@ -1343,7 +1444,7 @@ class CrmLead(models.Model):
     ], string="In order to best process this lead the salesperson should contact")
     cc_stage2_business = fields.Char("Business Name")
     cc_stage2_business_address = fields.Char("Business Address")
-    cc_stage2_email = fields.Char("Email")
+    cc_stage2_email = fields.Char("Email" , related='email_normalized', readonly=False)
     cc_stage2_monthly = fields.Char("Estimated Monthly Spend")
     cc_stage2_annual = fields.Char("Estimated Annual Turnover")
     cc_stage2_running = fields.Char("How long does the business running")
@@ -1357,7 +1458,7 @@ class CrmLead(models.Model):
     amex_date = fields.Date(string="Date")
     amex_center = fields.Char(string="Center", default="Utility Hub")
     amex_company_name = fields.Char(string="Company Name")
-    amex_abn = fields.Char(string="ABN")
+    amex_abn = fields.Char(string="ABN", related='cc_stage2_abn', readonly=False)
     amex_address_1 = fields.Char(string="Address Line 1")
     amex_address_2 = fields.Char(string="Address Line 2")
     amex_suburb = fields.Char(string="Suburb")
@@ -1372,11 +1473,11 @@ class CrmLead(models.Model):
         ('dr', 'Dr.'), 
         ('miss', 'Miss')
     ], string="Prefix", default="mr")
-    amex_first_name = fields.Char(string="First Name")
+    amex_first_name = fields.Char(string="First Name", related='contact_name', readonly=False)
     amex_last_name = fields.Char(string="Last Name")
     amex_position = fields.Char(string="Position in Business")
-    amex_contact = fields.Char(string="Contact Number")
-    amex_email = fields.Char(string="Email")
+    amex_contact = fields.Char(string="Contact Number", related='phone', readonly=False)
+    amex_email = fields.Char(string="Email", related='email_normalized', readonly=False)
     amex_current_turnover = fields.Char(string = "Current turnover less than 2 million or more")
     amex_estimated_expense = fields.Char(string="Estimated Expenses On Card")
     amex_existing_product = fields.Char(string="Existing Competitor Product")
@@ -1384,7 +1485,7 @@ class CrmLead(models.Model):
     amex_tool_used =  fields.Char(string="Expense Management Tool Used")
 
     # BROADBAND NBN FIELDS
-    in_current_address = fields.Char(string="Current Address")
+    in_current_address = fields.Char(string="Enter your postcode or address")
     in_important_feature = fields.Selection([
         ("speed", "Speed"),
         ("price", "Price"),
@@ -1424,12 +1525,21 @@ class CrmLead(models.Model):
         ("gaming", "Online Gaming"),
         ("streaming", "Streaming video/TV/Movies")       
     ], string="How will you use the internet?", default="work")
-    in_compare_plans = fields.Boolean(string="Would you also like to comapre your energy plans to see if you could save?")
-    in_name = fields.Char(string="Full Name")
-    in_contact_number = fields.Char(string="Contact Number")
-    in_email = fields.Char(string="Email")
+    in_compare_plans = fields.Selection([
+        ("no", "No"),
+        ("yes", "Yes")
+    ], string="Would you also like to comapre your energy plans to see if you could save?")
+    in_name = fields.Char(string="Customer Name", related='contact_name', readonly=False)
+    in_contact_number = fields.Char(string="Mobile Number", related='phone', readonly=False)
+    in_contact_number_alt = fields.Char(string="Alt. Mobile Number")
+    in_email = fields.Char(string="Email" , related='email_normalized', readonly=False)
+    in_supply_address = fields.Char("Supply Address")
+    in_customer_dob = fields.Date("Date of Birth")
     in_lead_agent = fields.Char("Lead Agent Name")
-    in_request_callback = fields.Boolean(string="Request Callback :")
+    in_request_callback = fields.Selection([
+        ("no", "No"),
+        ("yes", "Yes")
+    ], string="Request Callback")
     in_accept_terms = fields.Boolean(string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy.")
     in_stage2_provider = fields.Selection([
         ("optus", "Optus NBN"),
@@ -1464,9 +1574,9 @@ class CrmLead(models.Model):
         ('dr', 'Dr.'), 
         ('miss', 'Miss')
     ], string="Title", default="mr")
-    do_first_name = fields.Char(string="First Name")
+    do_first_name = fields.Char(string="First Name", related='contact_name', readonly=False)
     do_last_name = fields.Char(string="Last Name")
-    do_mobile_no = fields.Char(string="Mobile No")
+    do_mobile_no = fields.Char(string="Mobile No", related='phone', readonly=False)
     do_installation_address = fields.Char(string="Installation address - Unit/Flat Number")
     do_house_number = fields.Char(string="House No")
     do_street_name = fields.Char(string="Street Name")
@@ -1475,7 +1585,7 @@ class CrmLead(models.Model):
     do_state = fields.Char(string="State")
     do_post_code = fields.Char("Post Code")
     do_sale_date = fields.Date(string="Sale Date")
-    do_center_name = fields.Char(string="Center Name")
+    do_center_name = fields.Char(string="Center Name", default="Utility Hub")
     do_closer_name = fields.Char(string="Closer Name")
     do_dnc_ref_no = fields.Char(string="DNC Reference No")
     do_dnc_exp_date = fields.Date(string="DNC Expiry Date")
@@ -1485,15 +1595,15 @@ class CrmLead(models.Model):
     optus_date = fields.Date(string="Sale Date")
     optus_activation = fields.Date(string="Activation Date")
     optus_order = fields.Char(string="Order Number")
-    optus_customer = fields.Char(string="Customer Name")
+    optus_customer = fields.Char(string="Customer Name", related='contact_name', readonly=False)
     optus_address = fields.Char(string="Service Address")
-    optus_service = fields.Char(string="Service")
+    optus_service = fields.Char(string="Service", related='in_supply_address', readonly=False)
     optus_plan = fields.Char(string="Plan")
     optus_per_month = fields.Char(string="Cost Per Month")
     optus_center = fields.Char(string="Center", default="Utility Hub")
     optus_salesperson = fields.Char(string="Sales Person")
-    optus_contact = fields.Char(string="Contact Number")
-    optus_email = fields.Char(string="Email")
+    optus_contact = fields.Char(string="Contact Number", related='phone', readonly=False)
+    optus_email = fields.Char(string="Email", related='email_normalized', readonly=False)
     optus_notes = fields.Char(string="Notes")
     optus_dcn = fields.Char(string="DCN Reference")
     optus_audit_1 = fields.Char(string="Audit 1")
@@ -1685,6 +1795,7 @@ class CrmLead(models.Model):
         self.ensure_one()
         _logger.info("Save & Close called for lead ID: %s", self.id)
 
+
         # Execute stage logic and get optional message
         qa_message = self._handle_stage_logic()
 
@@ -1730,7 +1841,9 @@ class CrmLead(models.Model):
         vals_to_write = {}
         qa_message = None
 
-        if lead.lead_stage == "3":
+        
+
+        if lead.lead_stage == "4":
             if (
                 lead.stage_3_dispostion == "closed"
                 and lead.lead_for == "energy"
@@ -1744,6 +1857,17 @@ class CrmLead(models.Model):
                 vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
             elif lead.stage_3_dispostion == "failed":
                 vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
+
+        # Stage 3 → Stage 4
+
+        elif lead.lead_stage == "3":
+            if lead.stage_3_dispostion == "closed":
+                vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
+                vals_to_write["lead_stage"] = "4"
+            elif lead.stage_3_dispostion == "on_hold":
+                vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
+            elif lead.stage_3_dispostion == "failed":
+                vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id               
 
         elif lead.lead_stage == "2":
             if lead.disposition == "callback":
@@ -1760,8 +1884,9 @@ class CrmLead(models.Model):
                 lead.en_name
                 or lead.en_contact_number
                 or lead.cc_prefix
-                or lead.cc_first_name
-                or lead.in_current_address
+                or lead.cc_customer_name
+                or lead.in_name
+                or lead.in_contact_number
             ):
                 vals_to_write["lead_stage"] = "2"
                 vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
@@ -2238,6 +2363,11 @@ class CrmLead(models.Model):
             raise UserError(f"Failed to reach Momentum API: {str(e)}")
 
         return None
+
+    # @api.depends('email_normalized', 'email_from')
+    # def _compute_cc_email(self):
+    #     for record in self:
+    #         record.cc_email = record.email_normalized or record.email_from or ''    
 
 
 

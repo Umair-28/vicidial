@@ -40,7 +40,7 @@ function injectServicesWidget() {
       console.log("[SERVICES] Lead by phone:", data);
 
       if (!data.error) {
-        setupStageNav(wrapper, data); // build stage nav after lead loaded
+        // setupStageNav(wrapper, data);
       } else {
         console.warn("[SERVICES] No lead found:", data.error);
       }
@@ -189,9 +189,16 @@ function injectServicesWidget() {
     btn.type = "button";
     btn.dataset.value = opt.value;
     const ICON_MAP = {
-      credit_card: "/vicidial/static/src/img/credit_card.png",
+      credit_card_call_center: "/vicidial/static/src/img/credit_card.png",
+      credit_card_website: "/vicidial/static/src/img/credit_card.png",
       energy: "/vicidial/static/src/img/electricty_and_gas.png",
+      energy_call_center: "/vicidial/static/src/img/electricty_and_gas.png",
+      energy_website: "/vicidial/static/src/img/electricty_and_gas.png",
+
       optus_nbn: "/vicidial/static/src/img/broadband.png",
+      optus_nbn_call_center: "/vicidial/static/src/img/broadband.png",
+      optus_nbn_website: "/vicidial/static/src/img/broadband.png",
+
       home_moving: "/vicidial/static/src/img/home_moving.png",
       business_loan: "https://utilityhub.com.au/wp-content/uploads/2025/05/interest.svg",
       home_loan: "https://utilityhub.com.au/wp-content/uploads/2025/05/home.svg",

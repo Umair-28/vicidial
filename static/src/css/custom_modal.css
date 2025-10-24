@@ -1,3 +1,32 @@
+/* Improve dropdown and many2one field visibility in Odoo 18 */
+
+.o_field_widget.o_field_many2one,
+.o_field_widget.o_field_selection {
+    background-color: #ffffff !important; /* ensure visible background */
+    border: 1px solid #ced4da !important;
+    border-radius: 6px !important;
+    color: #212529 !important;
+    min-height: 36px;
+    padding: 4px 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+.o_field_widget.o_field_many2one:hover,
+/* .o_field_widget.o_field_selection:hover, */
+.o_field_widget.o_field_many2one:focus-within,
+.o_field_widget.o_field_selection:focus-within {
+    border-color: #0d6efd !important; /* blue highlight */
+    box-shadow: 0 0 3px rgba(13, 110, 253, 0.4);
+}
+
+/* Placeholder color fix for empty selections */
+.o_field_widget.o_field_selection:empty::before,
+.o_field_widget.o_field_many2one:empty::before {
+    content: "Select...";
+    color: #6c757d; /* gray placeholder */
+}
+
+
 .o_dialog.o_modal_fullscreen {
   max-width: 90% !important;
   width: 90% !important;
