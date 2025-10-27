@@ -1341,7 +1341,7 @@ class CrmLead(models.Model):
         default="EMAIL",
     )
     momentum_energy_promotion_allowed = fields.Boolean(
-        "Promotion Allowed" default=True
+        "Promotion Allowed", default=True
     )
     momentum_energy_passport_id = fields.Char("Passport Number", required=True)
     momentum_energy_passport_expiry = fields.Date("Passport Expiry Date", required=True)
