@@ -1332,71 +1332,95 @@ action = {
 
                             <!-- Transaction Info -->
                             <group string="Transaction Information" col="2" colspan="4">
-                                <field name="momentum_energy_transaction_reference" help="Letters, numbers, and hyphens only (max 30 characters)."/>
-                                <field name="momentum_energy_transaction_channel"/>
-                                <field name="momentum_energy_transaction_date"/>
-                                <field name="momentum_energy_transaction_verification_code"/>
-                                <field name="momentum_energy_transaction_source"/>
+                                <label for="momentum_energy_transaction_reference" string="Transaction Reference" class="o_form_label"/>
+                                <field name="momentum_energy_transaction_reference" nolabel="1" help="Letters, numbers, and hyphens only (max 30 characters)." />
+                                <label for="momentum_energy_transaction_channel" string="Transaction Channel" class="o_form_label"/>
+                                <field name="momentum_energy_transaction_channel" nolabel="1" help="Letters, numbers, and spaces only." />
+                                <label for="momentum_energy_transaction_date" string="Transaction Date" class="o_form_label"/>
+                                <field name="momentum_energy_transaction_date" nolabel="1"  />
+                                <field name="momentum_energy_transaction_verification_code" help="Letters, numbers, and hyphens only."/>
+                                <label for="momentum_energy_transaction_source" string="Transaction Source" class="o_form_label"/>
+                                <field name="momentum_energy_transaction_source" nolabel="1"  help="Letters and spaces only." />
                             </group>
 
                             <!-- Customer + Business -->
                             <group col="2" colspan="4">
                                 <group string="Customer Information" colspan="1">
-                                    <field name="momentum_energy_customer_type" required="services == 'energy' and stage_2_campign_name == 'momentum'"/>
-                                    <field name="momentum_energy_customer_sub_type"/>
-                                    <field name="momentum_energy_communication_preference"/>
-                                    <field name="momentum_energy_promotion_allowed"/>
+                                 <label for="momentum_energy_customer_type" string="Customer Type" class="o_form_label"/>
+                                    <field name="momentum_energy_customer_type" nolabel="1"  required="services == 'energy' and stage_2_campign_name == 'momentum'"/>
+                                    <label for="momentum_energy_customer_sub_type" string="Customer Sub Type" class="o_form_label"/>
+                                    <field name="momentum_energy_customer_sub_type" nolabel="1"/>
+                                    <label for="momentum_energy_communication_preference" string="Communication Preference" class="o_form_label"/>
+                                    <field name="momentum_energy_communication_preference" nolabel="1"/>
+                                    <label for="momentum_energy_promotion_allowed" string="Promotion Allowed" class="o_form_label"/>
+                                    <field name="momentum_energy_promotion_allowed" nolabel="1"/>
                                 </group>
 
                                 <group string="Business Details" colspan="1">
-                                    <field name="momentum_energy_industry"/>
-                                    <field name="momentum_energy_entity_name"/>
-                                    <field name="momentum_energy_trading_name"/>
-                                    <field name="momentum_energy_trustee_name"/>
-                                    <field name="momentum_energy_abn_document_id"/>
-                                    <field name="momentum_energy_acn_document_id"/>
+                                    <label for="momentum_energy_industry" string="Industry" class="o_form_label"/>
+                                    <field name="momentum_energy_industry" nolabel="1"/>
+                                    <label for="momentum_energy_entity_name" string="Entity Name" class="o_form_label"/>
+                                    <field name="momentum_energy_entity_name"  nolabel="1"
+    help="Start with a letter or number; can include letters, numbers, spaces, and (' &amp; @ / ( ) . , -). Max 100 characters."/>
+<field name="momentum_energy_trading_name" 
+    help="Start with a letter or number; can include letters, numbers, spaces, and (' &amp; @ / ( ) . , -). Max 100 characters."/>
+<field name="momentum_energy_trustee_name" 
+    help="Start with a letter or number; can include letters, numbers, spaces, and (' &amp; @ / ( ) . , -). Max 100 characters."/>
+                                    <label for="momentum_energy_abn_document_id" string="ABN Document ID" class="o_form_label"/>
+                                    <field name="momentum_energy_abn_document_id" nolabel="1"  help="Exactly 11 digits, no spaces or symbols."/>
+                                    <label for="momentum_energy_acn_document_id" string="ACN Document ID" class="o_form_label"/>
+                                    <field name="momentum_energy_acn_document_id" nolabel="1"  help="Exactly 9 digits, no spaces or symbols."/>
                                 </group>
                             </group>
 
                             <!-- Identity -->
                             <group col="2" colspan="4">
                                 <group string="Passport Details" colspan="1">
-                                    <field name="momentum_energy_passport_id"/>
-                                    <field name="momentum_energy_passport_expiry"/>
-                                    <field name="momentum_energy_passport_country"/>
+                                <label for="momentum_energy_passport_id" string="Passport ID" class="o_form_label"/>
+                                    <field name="momentum_energy_passport_id" nolabel="1" help="Letters, numbers, and hyphens only (max 30 characters)."/>
+                                     <label for="momentum_energy_passport_expiry" string="Passport Expiry" class="o_form_label"/>
+                                    <field name="momentum_energy_passport_expiry" nolabel="1"/>
+                                    <label for="momentum_energy_passport_country" string="Passport Country" class="o_form_label"/>
+                                    <field name="momentum_energy_passport_country" nolabel="1"/>
                                 </group>
 
                                 <group string="Driving License" colspan="1">
-                                    <field name="momentum_energy_driving_license_id"/>
-                                    <field name="momentum_energy_driving_license_expiry"/>
-                                    <field name="momentum_energy_driving_license_state"/>
+                                    <label for="momentum_energy_driving_license_id" string="Driving License ID" class="o_form_label"/>
+                                    <field name="momentum_energy_driving_license_id" nolabel="1" help="Letters, numbers, and hyphens only (max 30 characters)."/>
+                                    <label for="momentum_energy_driving_license_expiry" string="Driving License Expiry" class="o_form_label"/>
+                                    <field name="momentum_energy_driving_license_expiry" nolabel="1"/>
+                                    <label for="momentum_energy_driving_license_state" string="Driving License State" class="o_form_label"/>
+                                    <field name="momentum_energy_driving_license_state" nolabel="1"/>
                                 </group>
                             </group>
 
                             <!-- Medicare -->
                             <group string="Medicare Details">
-                                <field name="momentum_energy_medicare_id"/>
-                                <field name="momentum_energy_medicare_number"/>
-                                <field name="momentum_energy_medicare_expiry"/>
+                                <label for="momentum_energy_medicare_id" string="Medicare Number" class="o_form_label"/>
+                                <field name="momentum_energy_medicare_id" nolabel="1" help="Letters, numbers, and hyphens only (max 30 characters)."/>
+                                <label for="momentum_energy_medicare_number" string="Medicare Document Number" class="o_form_label"/>
+                                <field name="momentum_energy_medicare_number" nolabel="1" help="Only digits (0–9), max 30 characters."/>
+                                <label for="momentum_energy_medicare_expiry" string="Medicare Expiry Date" class="o_form_label"/>
+                                <field name="momentum_energy_medicare_expiry" nolabel="1" />
                             </group>
 
                             <!-- Primary Contact -->
                             <group col="2" colspan="4">
                                 <group string="Primary Contact Details" colspan="1">
-                                    <field name="momentum_energy_primary_contact_type"/>
+                                    <field name="momentum_energy_primary_contact_type" help="Letters and spaces only."/>
                                     <field name="momentum_energy_primary_salutation"/>
                                     <field name="momentum_energy_primary_first_name"/>
                                     <field name="momentum_energy_primary_middle_name"/>
                                     <field name="momentum_energy_primary_last_name"/>
                                     <field name="momentum_energy_primary_country_of_birth"/>
                                     <field name="momentum_energy_primary_date_of_birth"/>
-                                    <field name="momentum_energy_primary_email" widget="email"/>
+                                    <field name="momentum_energy_primary_email" help="Must follow format example@domain.com. Letters, numbers, and allowed special chars before '@'." widget="email"/>
                                 </group>
 
                                 <group string="Primary Contact Phone" colspan="1">
-                                    <field name="momentum_energy_primary_phone_work" placeholder="0412345678"/>
-                                    <field name="momentum_energy_primary_phone_home" placeholder="0412345678"/>
-                                    <field name="momentum_energy_primary_phone_mobile" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_work" help="Valid Australian phone (landline, mobile, 13/1300/1800)." placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_home" help="Valid Australian phone (landline, mobile, 13/1300/1800)." placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_mobile" help="Valid Australian phone (landline, mobile, 13/1300/1800)." placeholder="0412345678"/>
                                 </group>
                             </group>
 
@@ -1404,11 +1428,11 @@ action = {
                             <group string="Primary Contact Address" col="2" colspan="4">
                                 <field name="momentum_energy_primary_address_type"/>
                                 <field name="momentum_energy_primary_unit_number"/>
-                                <field name="momentum_energy_primary_street_number"/>
-                                <field name="momentum_energy_primary_street_name"/>
-                                <field name="momentum_energy_primary_suburb"/>
+                                <field name="momentum_energy_primary_street_number" help="Letters, numbers, and hyphens (-) only."/>
+                                <field name="momentum_energy_primary_street_name" help="Letters, numbers, spaces, and (', . / ( ) -) allowed."/>
+                                <field name="momentum_energy_primary_suburb" help="Letters, numbers, and hyphens (-) only."/>
                                 <field name="momentum_energy_primary_state"/>
-                                <field name="momentum_energy_primary_post_code"/>
+                                <field name="momentum_energy_primary_post_code" help="Exactly 4 digits (0–9)."/>
                             </group>
 
                             <!-- Secondary Contact -->
@@ -1416,18 +1440,18 @@ action = {
                                 <group string="Secondary Contact Details" colspan="1">
                                     <field name="momentum_energy_secondary_contact_type"/>
                                     <field name="momentum_energy_secondary_salutation"/>
-                                    <field name="momentum_energy_secondary_first_name"/>
+                                    <field name="momentum_energy_secondary_first_name" help="Start with a capital letter; only letters, apostrophes ('), hyphens (-), periods (.), and spaces allowed (max 100 chars)."/>
                                     <field name="momentum_energy_secondary_middle_name"/>
-                                    <field name="momentum_energy_secondary_last_name"/>
+                                    <field name="momentum_energy_secondary_last_name" help="Start with a capital letter; only letters, apostrophes ('), hyphens (-), periods (.), and spaces allowed (max 100 chars)."/>
                                     <field name="momentum_energy_secondary_country_of_birth"/>
                                     <field name="momentum_energy_secondary_date_of_birth"/>
-                                    <field name="momentum_energy_secondary_email" widget="email"/>
+                                    <field name="momentum_energy_secondary_email" help="Must follow format example@domain.com. Letters, numbers, and allowed special chars before '@'." widget="email"/>
                                 </group>
 
                                 <group string="Secondary Contact Phone" colspan="1">
-                                    <field name="momentum_energy_secondary_phone_work"/>
-                                    <field name="momentum_energy_secondary_phone_home"/>
-                                    <field name="momentum_energy_secondary_phone_mobile"/>
+                                    <field name="momentum_energy_secondary_phone_work" help="Valid Australian phone (landline, mobile, 13/1300/1800)."/>
+                                    <field name="momentum_energy_secondary_phone_home" help="Valid Australian phone (landline, mobile, 13/1300/1800)."/>
+                                    <field name="momentum_energy_secondary_phone_mobile" help="Valid Australian phone (landline, mobile, 13/1300/1800)."/>
                                 </group>
                             </group>
 
@@ -1435,11 +1459,11 @@ action = {
                             <group string="Secondary Contact Address" col="2" colspan="4">
                                 <field name="momentum_energy_secondary_address_type"/>
                                 <field name="momentum_energy_secondary_unit_number"/>
-                                <field name="momentum_energy_secondary_street_number"/>
-                                <field name="momentum_energy_secondary_street_name"/>
+                                <field name="momentum_energy_secondary_street_number" help="Letters, numbers, and hyphens (-) only."/>
+                                <field name="momentum_energy_secondary_street_name" help="Letters and spaces only."/>
                                 <field name="momentum_energy_secondary_suburb"/>
                                 <field name="momentum_energy_secondary_state"/>
-                                <field name="momentum_energy_secondary_post_code"/>
+                                <field name="momentum_energy_secondary_post_code" help="Digits only (0–9)."/>
                             </group>
 
                             <!-- Service Information -->
@@ -1447,20 +1471,20 @@ action = {
                                 <group string="Service Information" colspan="1">
                                     <field name="momentum_energy_service_type"/>
                                     <field name="momentum_energy_service_sub_type"/>
-                                    <field name="momentum_energy_service_connection_id"/>
+                                    <field name="momentum_energy_service_connection_id" help="Letters and numbers only, no spaces or symbols."/>
                                     <field name="momentum_energy_service_meter_id"/>
                                     <field name="momentum_energy_service_start_date"/>
-                                    <field name="momentum_energy_estimated_annual_kwhs"/>
+                                    <field name="momentum_energy_estimated_annual_kwhs" help="Digits only (0–9)."/>
                                 </group>
 
                                 <group string="Service Address" colspan="1">
                                     <field name="momentum_energy_lot_number"/>
-                                    <field name="momentum_energy_service_street_number"/>
-                                    <field name="momentum_energy_service_street_name"/>
+                                    <field name="momentum_energy_service_street_number" help="Letters, numbers, and hyphens (-) only."/>
+                                    <field name="momentum_energy_service_street_name" help="Letters, numbers, spaces, and (', . / ( ) -) allowed."/>
                                     <field name="momentum_energy_service_street_type_code"/>
-                                    <field name="momentum_energy_service_suburb"/>
+                                    <field name="momentum_energy_service_suburb" help="Letters, numbers, and spaces only (no symbols)."/>
                                     <field name="momentum_energy_service_state"/>
-                                    <field name="momentum_energy_service_post_code"/>
+                                    <field name="momentum_energy_service_post_code"  help="Exactly 4 digits (0–9)."/>
                                 </group>
                             </group>
 
@@ -1473,7 +1497,7 @@ action = {
 
                                 <group string="Floor" colspan="1">
 
-                                    <field name="momentum_energy_floor_number"/>
+                                    <field name="momentum_energy_floor_number" help="Digits only (0–9)."/>
                                 </group>
                             </group>
 
@@ -1506,11 +1530,11 @@ action = {
                             <!-- Concession / Card info -->
                             <group string="Concession Card Information" col="2" colspan="4" invisible="en_concesion_card_holder != 'yes'">
                                 <field name="momentum_energy_conc_card_type_code"/>
-                                <field name="momentum_energy_conc_card_code"/>
-                                <field name="momentum_energy_conc_card_number"/>
+                                <field name="momentum_energy_conc_card_code" help="Letters, numbers, and hyphens (-) only. No spaces or symbols."/>
+                                <field name="momentum_energy_conc_card_number" help="Letters, numbers, and hyphens (-) only (max 30 characters)."/>
                                 <field name="momentum_energy_conc_card_exp_date"/>
-                                <field name="momentum_energy_card_first_name"/>
-                                <field name="momentum_energy_card_last_name"/>
+                                <field name="momentum_energy_card_first_name" help="Start with a capital letter; only letters, apostrophes ('), hyphens (-), periods (.), and spaces allowed (max 100 chars)."/>
+                                <field name="momentum_energy_card_last_name" help="Start with a capital letter; only letters, apostrophes ('), hyphens (-), periods (.), and spaces allowed (max 100 chars)."/>
                                 <field name="momentum_energy_conc_start_date"/>
                                 <field name="momentum_energy_conc_end_date"/>
                                 <field name="momentum_energy_concession_obtained"/>

@@ -175,6 +175,53 @@
     transform: none !important;
     transition: opacity 0.2s ease !important;
 }
+.o_form_view label.o_form_label[for^="momentum_energy_transaction_reference"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_transaction_channel"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_transaction_date"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_transaction_source"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_customer_type"]::after, 
+.o_form_view label.o_form_label[for^="momentum_energy_customer_sub_type"]::after ,
+.o_form_view label.o_form_label[for^="momentum_energy_communication_preference"]::after, 
+.o_form_view label.o_form_label[for^="momentum_energy_promotion_allowed"]::after ,
+.o_form_view label.o_form_label[for^="momentum_energy_passport_id"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_passport_expiry"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_passport_country"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_driving_license_id"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_driving_license_expiry"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_driving_license_state"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_medicare_id"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_medicare_number"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_medicare_expiry"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_industry"]::after, 
+.o_form_view label.o_form_label[for^="momentum_energy_entity_name"]::after, 
+.o_form_view label.o_form_label[for^="momentum_energy_trading_name"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_abn_document_id"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_acn_document_id"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_salutation"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_first_name"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_last_name"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_date_of_birth"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_email"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_street_number"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_street_name"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_suburb"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_state"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_post_code"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_phone_work"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_phone_home"]::after,
+.o_form_view label.o_form_label[for^="momentum_energy_primary_phone_mobile"]::after
+{
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+    margin-left: 2px;
+}
+/* .o_form_view label.o_form_label[for^="momentum_energy_transaction_reference"]::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+    margin-left: 2px;
+} */
 
 /* Responsive design */
 @media (max-width: 768px) {
