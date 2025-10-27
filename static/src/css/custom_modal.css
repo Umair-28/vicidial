@@ -168,6 +168,13 @@
 .o_service_btn:active {
     transform: translateY(-1px) scale(0.98);
 }
+.o_field_widget.o_field_selection .o_input::after,
+.o_field_widget.o_field_many2one .o_input::after {
+    opacity: 1 !important;          
+    visibility: visible !important;
+    transform: none !important;
+    transition: opacity 0.2s ease !important;
+}
 
 /* Responsive design */
 @media (max-width: 768px) {
@@ -199,5 +206,6 @@
     .o_service_btn span {
         font-size: 12px;
     }
+
 }
 
