@@ -1298,25 +1298,24 @@ class CrmLead(models.Model):
 
     # MOMENTUM ENERGY FORM
     momentum_energy_transaction_reference = fields.Char(
-        "Transaction Reference", required=True
+        "Transaction Reference"
     )
     momentum_energy_transaction_channel = fields.Char(
-        "Transaction Channel", required=True
+        "Transaction Channel"
     )
     momentum_energy_transaction_date = fields.Datetime(
-        "Transaction Date", required=True
+        "Transaction Date"
     )
     momentum_energy_transaction_verification_code = fields.Char(
         "Transaction Verification Code"
     )
     momentum_energy_transaction_source = fields.Char(
-        "Transaction Source", required=True, default="EXTERNAL"
+        "Transaction Source", default="EXTERNAL"
     )
 
     momentum_energy_customer_type = fields.Selection(
         [("RESIDENT", "Resident"), ("COMPANY", "Company")],
         string="Customer Type",
-        required=True,
         default="RESIDENT",
     )
 
@@ -1334,28 +1333,26 @@ class CrmLead(models.Model):
             ("SME", "SME"),
         ],
         string="Customer Sub Type",
-        required=True,
         default="RESIDENT",
     )
     momentum_energy_communication_preference = fields.Selection(
         [("EMAIL", "Email"), ("PHONE", "Phone"), ("SMS", "SMS")],
         string="Communication Preference",
-        required=True,
         default="EMAIL",
     )
     momentum_energy_promotion_allowed = fields.Boolean(
-        "Promotion Allowed", required=True, default=True
+        "Promotion Allowed" default=True
     )
     momentum_energy_passport_id = fields.Char("Passport Number", required=True)
     momentum_energy_passport_expiry = fields.Date("Passport Expiry Date", required=True)
     momentum_energy_passport_country = fields.Char(
-        "Passport Issuing Country", required=True
+        "Passport Issuing Country"
     )
     momentum_energy_driving_license_id = fields.Char(
-        "Driving License Number", required=True
+        "Driving License Number"
     )
     momentum_energy_driving_license_expiry = fields.Date(
-        "Driving License Expiry Date", required=True
+        "Driving License Expiry Date"
     )
     momentum_energy_driving_license_state = fields.Selection(
         [
@@ -1369,12 +1366,11 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="Issuing State",
-        required=True,
         default="NSW",
     )
     momentum_energy_medicare_id = fields.Char("Medicare Number", required=True)
     momentum_energy_medicare_number = fields.Char(
-        "Medicare Document Number", required=True
+        "Medicare Document Number"
     )
     momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date", required=True)
     momentum_energy_industry = fields.Selection(
@@ -1413,14 +1409,13 @@ class CrmLead(models.Model):
             ("Utilities", "Utilities"),
         ],
         string="Industry",
-        required=True,
     )
 
-    momentum_energy_entity_name = fields.Char("Entity Name", required=True)
-    momentum_energy_trading_name = fields.Char("Trading Name", required=True)
+    momentum_energy_entity_name = fields.Char("Entity Name")
+    momentum_energy_trading_name = fields.Char("Trading Name")
     momentum_energy_trustee_name = fields.Char("Trustee Name")
-    momentum_energy_abn_document_id = fields.Char("ABN Document ID", required=True)
-    momentum_energy_acn_document_id = fields.Char("ACN Document ID", required=True)
+    momentum_energy_abn_document_id = fields.Char("ABN Document ID")
+    momentum_energy_acn_document_id = fields.Char("ACN Document ID")
     momentum_energy_primary_contact_type = fields.Char(
         "Contact Type", default="PRIMARY"
     )
@@ -1433,30 +1428,29 @@ class CrmLead(models.Model):
             ("Prof.", "Prof."),
         ],
         string="Salutation",
-        required=True,
         default="Mr.",
     )
     momentum_energy_primary_first_name = fields.Char(
-        "Primary First Name", related="contact_name", required=True, readonly=False
+        "Primary First Name", related="contact_name", readonly=False
     )
     momentum_energy_primary_middle_name = fields.Char("Primary Middle Name")
-    momentum_energy_primary_last_name = fields.Char("Primary Last Name", required=True)
+    momentum_energy_primary_last_name = fields.Char("Primary Last Name")
     momentum_energy_primary_country_of_birth = fields.Char("Primary Country of Birth")
     momentum_energy_primary_date_of_birth = fields.Date(
-        "Primary Date of Birth", related="stage_2_dob", readonly=False, required=True
+        "Primary Date of Birth", related="stage_2_dob", readonly=False
     )
     momentum_energy_primary_email = fields.Char(
-        "Primary Email", related="email_normalized", readonly=False, required=True
+        "Primary Email", related="email_normalized", readonly=False
     )
     momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL")
     momentum_energy_primary_street_number = fields.Char(
-        "Primary Street Number", required=True
+        "Primary Street Number"
     )
     momentum_energy_primary_street_name = fields.Char(
-        "Primary Street Name", required=True
+        "Primary Street Name"
     )
     momentum_energy_primary_unit_number = fields.Char("Primary Unit Number")
-    momentum_energy_primary_suburb = fields.Char("Primary Suburb", required=True)
+    momentum_energy_primary_suburb = fields.Char("Primary Suburb")
     momentum_energy_primary_state = fields.Selection(
         [
             ("NSW", "NSW"),
@@ -1469,18 +1463,17 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="State",
-        required=True,
         default="NSW",
     )
     momentum_energy_primary_post_code = fields.Char("Primary Post Code", required=True)
     momentum_energy_primary_phone_work = fields.Char(
-        "Primary Work Phone", required=True
+        "Primary Work Phone"
     )
     momentum_energy_primary_phone_home = fields.Char(
-        "Primary Home Phone", required=True
+        "Primary Home Phone"
     )
     momentum_energy_primary_phone_mobile = fields.Char(
-        "Primary Mobile Phone", required=True
+        "Primary Mobile Phone"
     )
     momentum_energy_secondary_contact_type = fields.Char(
         "Secondary Contact Type", default="SECONDARY"
