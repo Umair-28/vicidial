@@ -103,222 +103,222 @@ class CrmLead(models.Model):
         "momentum_energy_card_last_name",
         "momentum_energy_secondary_email",
     )
-    # def _check_field_validations(self):
-    #     """
-    #     Unified field validation for all Momentum Energy fields.
-    #     """
-    #     # Predefined regex patterns for different field types
-    #     patterns = {
-    #         "momentum_energy_transaction_reference": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Transaction Reference. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_transaction_channel": (
-    #             r"^[A-Za-z0-9\s]+$",
-    #             "Invalid Transaction Channel. Only letters, numbers, and spaces are allowed.",
-    #         ),
-    #         "momentum_energy_transaction_verification_code": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Transaction Verification Code. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_transaction_source": (
-    #             r"^[A-Za-z\s]+$",
-    #             "Invalid Transaction Source. Only letters and spaces are allowed.",
-    #         ),
-    #         "momentum_energy_passport_id": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Passport Number. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_driving_license_id": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Driving Liscense Number. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_medicare_id": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Medicare Number. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_medicare_number": (
-    #             r"^[0-9]{1,30}$",
-    #             "Invalid Medicare Document Number. Only digits (0–9) are allowed, with a maximum length of 30 characters",
-    #         ),
-    #         "momentum_energy_entity_name": (
-    #             r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
-    #             "Invalid Entity Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
-    #         ),
-    #         "momentum_energy_trading_name": (
-    #             r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
-    #             "Invalid Trading Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
-    #         ),
-    #         "momentum_energy_trustee_name": (
-    #             r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
-    #             "Invalid Trustee Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
-    #         ),
-    #         "momentum_energy_abn_document_id": (
-    #             r"^\d{11}$",
-    #             "Invalid ABN Number. It must contain exactly 11 digits with no spaces or special characters.",
-    #         ),
-    #         "momentum_energy_acn_document_id": (
-    #             r"^\d{9}$",
-    #             "Invalid ACN Number. It must contain exactly 9 digits with no spaces or special characters.",
-    #         ),
-    #         "momentum_energy_primary_contact_type": (
-    #             r"^[A-Za-z\s]+$",
-    #             "Invalid Primary Contact Type. Only letters are allowed.",
-    #         ),
-    #         "momentum_energy_primary_first_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Customer First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_primary_last_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Customer Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_primary_email": (
-    #             r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
-    #             "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
-    #         ),
-    #         "momentum_energy_primary_street_number": (
-    #             r"^[A-Za-z0-9-]*$",
-    #             "Invalid Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
-    #         ),
-    #         "momentum_energy_primary_street_name": (
-    #             r"^[a-zA-Z0-9'.,/()\-\s]+$",
-    #             "Invalid Street Name. Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed.",
-    #         ),
-    #         "momentum_energy_primary_unit_number": (
-    #             r"^[a-zA-Z0-9'.,/()\-\s]+$",
-    #             "Invalid Primary Unit Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed.",
-    #         ),
-    #         "momentum_energy_primary_suburb": (
-    #             r"^[A-Za-z0-9-]*$",
-    #             "Invalid Suburb. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
-    #         ),
-    #         "momentum_energy_primary_post_code": (
-    #             r"^[0-9]{4}$",
-    #             "Invalid Primary PIN Code format. It must contain exactly 4 digits (0–9).",
-    #         ),
-    #         "momentum_energy_primary_phone_work": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Primary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_primary_phone_home": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Primary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_primary_phone_mobile": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Primary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_secondary_contact_type": (
-    #             r"^[A-Za-z\s]+$",
-    #             "Invalid Secondary Contact Type. Only letters are allowed.",
-    #         ),
-    #         "momentum_energy_secondary_first_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Customer Secondary First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_secondary_last_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Customer Secondary Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_secondary_country_of_birth": (
-    #             r"^[A-Za-z]+$",
-    #             "Invalid Customer Secondary Country of Birth. Only letters are allowed.",
-    #         ),
-    #         "momentum_energy_secondary_email": (
-    #             r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
-    #             "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
-    #         ),
-    #         "momentum_energy_secondary_phone_work": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Secondary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_secondary_phone_home": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Secondary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_secondary_phone_mobile": (
-    #             r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
-    #             "Invalid Secondary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
-    #         ),
-    #         "momentum_energy_secondary_unit_number": (
-    #             r"^[0-9]+$",
-    #             "Invalid Secondary Unit Number. Only digits (0–9) are allowed.",
-    #         ),
-    #         "momentum_energy_secondary_street_number": (
-    #             r"^[A-Za-z0-9-]*$",
-    #             "Invalid Secondary Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
-    #         ),
-    #         "momentum_energy_secondary_street_name": (
-    #             r"^[A-Za-z\s]+$",
-    #             "Invalid Secondary Street Name. Only letters and spaces are allowed.",
-    #         ),
-    #         "momentum_energy_secondary_post_code": (
-    #             r"^[0-9]+$",
-    #             "Invalid Secondary Post Code. Only digits (0–9) are allowed.",
-    #         ),
-    #         "momentum_energy_service_connection_id": (
-    #             r"^[0-9A-Za-z]+$",
-    #             "Invalid Service Connection ID input. Only letters (A–Z, a–z) and numbers (0–9) are allowed, with no spaces or special characters.",
-    #         ),
-    #         "momentum_energy_service_street_number": (
-    #             r"^[A-Za-z0-9-]*$",
-    #             "Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
-    #         ),
-    #         "momentum_energy_service_street_name": (
-    #             r"^[a-zA-Z0-9'.,/()\-\s]+$",
-    #             "Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed.",
-    #         ),
-    #         "momentum_energy_service_suburb": (
-    #             r"^[A-Za-z0-9 ]*$",
-    #             "Invalid Service Suburb input. Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted.",
-    #         ),
-    #         "momentum_energy_estimated_annual_kwhs": (
-    #             r"^[0-9]+$",
-    #             "Invalid Estimated Annual KWHS. Only digits (0–9) are allowed.",
-    #         ),
-    #         "momentum_energy_service_post_code": (
-    #             r"^[0-9]{4}$",
-    #             "Invalid Service PIN Code format. It must contain exactly 4 digits (0–9).",
-    #         ),
-    #         "momentum_energy_service_offer_code": (
-    #             r"^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$",
-    #             "Invalid Service Offer Code input. Must be 15 or 18 alphanumeric characters (letters and numbers only, no spaces or symbols).",
-    #         ),
-    #         "momentum_energy_floor_number": (
-    #             r"^[0-9]+$",
-    #             "Invalid Floor Number. Only digits (0–9) are allowed.",
-    #         ),
-    #         "momentum_energy_conc_card_code": (
-    #             r"^[A-Za-z0-9\-]+$",
-    #             "Invalid Concession Card Code input. Only letters, numbers, and hyphens (-) are allowed. No spaces or special characters.",
-    #         ),
-    #         "momentum_energy_conc_card_number": (
-    #             r"^[A-Za-z0-9\-]{1,30}$",
-    #             "Invalid Concession Card Number. Use only letters, digits, and hyphens (-), max 30 chars.",
-    #         ),
-    #         "momentum_energy_card_first_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Concession Card Holder First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_card_last_name": (
-    #             r"^[A-Z][a-zA-Z'-. ]{1,100}$",
-    #             "Invalid Concession Card Holder Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
-    #         ),
-    #         "momentum_energy_secondary_email": (
-    #             r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
-    #             "Invalid Secondary Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
-    #         ),
-    #     }
+    def _check_field_validations(self):
+        """
+        Unified field validation for all Momentum Energy fields.
+        """
+        # Predefined regex patterns for different field types
+        patterns = {
+            "momentum_energy_transaction_reference": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Transaction Reference. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_transaction_channel": (
+                r"^[A-Za-z0-9\s]+$",
+                "Invalid Transaction Channel. Only letters, numbers, and spaces are allowed.",
+            ),
+            "momentum_energy_transaction_verification_code": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Transaction Verification Code. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_transaction_source": (
+                r"^[A-Za-z\s]+$",
+                "Invalid Transaction Source. Only letters and spaces are allowed.",
+            ),
+            "momentum_energy_passport_id": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Passport Number. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_driving_license_id": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Driving Liscense Number. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_medicare_id": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Medicare Number. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_medicare_number": (
+                r"^[0-9]{1,30}$",
+                "Invalid Medicare Document Number. Only digits (0–9) are allowed, with a maximum length of 30 characters",
+            ),
+            "momentum_energy_entity_name": (
+                r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
+                "Invalid Entity Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
+            ),
+            "momentum_energy_trading_name": (
+                r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
+                "Invalid Trading Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
+            ),
+            "momentum_energy_trustee_name": (
+                r"^[A-Za-z0-9][A-Za-z0-9'&@/()., -]{1,100}$",
+                "Invalid Trustee Name. It must start with a letter or number and can include letters, numbers, spaces, and special characters (' & @ / ( ) . , -). Maximum length: 100 characters.",
+            ),
+            "momentum_energy_abn_document_id": (
+                r"^\d{11}$",
+                "Invalid ABN Number. It must contain exactly 11 digits with no spaces or special characters.",
+            ),
+            "momentum_energy_acn_document_id": (
+                r"^\d{9}$",
+                "Invalid ACN Number. It must contain exactly 9 digits with no spaces or special characters.",
+            ),
+            "momentum_energy_primary_contact_type": (
+                r"^[A-Za-z\s]+$",
+                "Invalid Primary Contact Type. Only letters are allowed.",
+            ),
+            "momentum_energy_primary_first_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Customer First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_primary_last_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Customer Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_primary_email": (
+                r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
+                "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
+            ),
+            "momentum_energy_primary_street_number": (
+                r"^[A-Za-z0-9-]*$",
+                "Invalid Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
+            ),
+            "momentum_energy_primary_street_name": (
+                r"^[a-zA-Z0-9'.,/()\-\s]+$",
+                "Invalid Street Name. Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed.",
+            ),
+            "momentum_energy_primary_unit_number": (
+                r"^[a-zA-Z0-9'.,/()\-\s]+$",
+                "Invalid Primary Unit Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed.",
+            ),
+            "momentum_energy_primary_suburb": (
+                r"^[A-Za-z0-9-]*$",
+                "Invalid Suburb. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
+            ),
+            "momentum_energy_primary_post_code": (
+                r"^[0-9]{4}$",
+                "Invalid Primary PIN Code format. It must contain exactly 4 digits (0–9).",
+            ),
+            "momentum_energy_primary_phone_work": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Primary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_primary_phone_home": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Primary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_primary_phone_mobile": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Primary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_secondary_contact_type": (
+                r"^[A-Za-z\s]+$",
+                "Invalid Secondary Contact Type. Only letters are allowed.",
+            ),
+            "momentum_energy_secondary_first_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Customer Secondary First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_secondary_last_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Customer Secondary Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_secondary_country_of_birth": (
+                r"^[A-Za-z]+$",
+                "Invalid Customer Secondary Country of Birth. Only letters are allowed.",
+            ),
+            "momentum_energy_secondary_email": (
+                r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
+                "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
+            ),
+            "momentum_energy_secondary_phone_work": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Secondary Phone Work Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_secondary_phone_home": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Secondary Phone Home Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_secondary_phone_mobile": (
+                r"^(0[2378]\d{8}|0\d{9}|13\d{4}|1300\d{6}|1800\d{6})$",
+                "Invalid Secondary Phone Mobile Number format. Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800).",
+            ),
+            "momentum_energy_secondary_unit_number": (
+                r"^[0-9]+$",
+                "Invalid Secondary Unit Number. Only digits (0–9) are allowed.",
+            ),
+            "momentum_energy_secondary_street_number": (
+                r"^[A-Za-z0-9-]*$",
+                "Invalid Secondary Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
+            ),
+            "momentum_energy_secondary_street_name": (
+                r"^[A-Za-z\s]+$",
+                "Invalid Secondary Street Name. Only letters and spaces are allowed.",
+            ),
+            "momentum_energy_secondary_post_code": (
+                r"^[0-9]+$",
+                "Invalid Secondary Post Code. Only digits (0–9) are allowed.",
+            ),
+            "momentum_energy_service_connection_id": (
+                r"^[0-9A-Za-z]+$",
+                "Invalid Service Connection ID input. Only letters (A–Z, a–z) and numbers (0–9) are allowed, with no spaces or special characters.",
+            ),
+            "momentum_energy_service_street_number": (
+                r"^[A-Za-z0-9-]*$",
+                "Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
+            ),
+            "momentum_energy_service_street_name": (
+                r"^[a-zA-Z0-9'.,/()\-\s]+$",
+                "Invalid Service Street Number. Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed.",
+            ),
+            "momentum_energy_service_suburb": (
+                r"^[A-Za-z0-9 ]*$",
+                "Invalid Service Suburb input. Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted.",
+            ),
+            "momentum_energy_estimated_annual_kwhs": (
+                r"^[0-9]+$",
+                "Invalid Estimated Annual KWHS. Only digits (0–9) are allowed.",
+            ),
+            "momentum_energy_service_post_code": (
+                r"^[0-9]{4}$",
+                "Invalid Service PIN Code format. It must contain exactly 4 digits (0–9).",
+            ),
+            "momentum_energy_service_offer_code": (
+                r"^[a-zA-Z0-9]{15}(?:[a-zA-Z0-9]{3})?$",
+                "Invalid Service Offer Code input. Must be 15 or 18 alphanumeric characters (letters and numbers only, no spaces or symbols).",
+            ),
+            "momentum_energy_floor_number": (
+                r"^[0-9]+$",
+                "Invalid Floor Number. Only digits (0–9) are allowed.",
+            ),
+            "momentum_energy_conc_card_code": (
+                r"^[A-Za-z0-9\-]+$",
+                "Invalid Concession Card Code input. Only letters, numbers, and hyphens (-) are allowed. No spaces or special characters.",
+            ),
+            "momentum_energy_conc_card_number": (
+                r"^[A-Za-z0-9\-]{1,30}$",
+                "Invalid Concession Card Number. Use only letters, digits, and hyphens (-), max 30 chars.",
+            ),
+            "momentum_energy_card_first_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Concession Card Holder First Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_card_last_name": (
+                r"^[A-Z][a-zA-Z'-. ]{1,100}$",
+                "Invalid Concession Card Holder Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
+            ),
+            "momentum_energy_secondary_email": (
+                r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
+                "Invalid Secondary Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
+            ),
+        }
 
-    #     for rec in self:
-    #         for field, (pattern, msg) in patterns.items():
-    #             if hasattr(rec, field):
-    #                 value = getattr(rec, field)
-    #                 if value:
-    #                     value = value.strip()
-    #                     if not re.fullmatch(pattern, value):
-    #                         raise ValidationError(_(msg))
+        for rec in self:
+            for field, (pattern, msg) in patterns.items():
+                if hasattr(rec, field):
+                    value = getattr(rec, field)
+                    if value:
+                        value = value.strip()
+                        if not re.fullmatch(pattern, value):
+                            raise ValidationError(_(msg))
 
     @api.model
     def _get_stage_sequence(self):
