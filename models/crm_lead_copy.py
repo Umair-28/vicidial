@@ -614,9 +614,9 @@ class CrmLead(models.Model):
 
     ],"Who is your current gas provider")
     en_name = fields.Char("Name", related='contact_name', readonly=False)
-    en_contact_number = fields.Char("Contact Number", related='phone')
+    en_contact_number = fields.Char("Contact Number", related='phone', readonly=False)
     en_customer_alt_phone = fields.Char(string="Customer Alt. Number")
-    en_email = fields.Char("Email", related='email_normalized')
+    en_email = fields.Char("Email", related='email_normalized', readonly=False)
     en_request_callback = fields.Selection([
         ("no", "No"),
         ("yes","Yes")
@@ -969,18 +969,18 @@ class CrmLead(models.Model):
         ('sms', 'SMS')
     ], string="Invoice Method")
     dp_customer_salutation = fields.Char(string="Customer Salutation")
-    dp_first_name = fields.Char(string="First Name")
+    dp_first_name = fields.Char(string="First Name", related='contact_name', readonly=False)
     dp_last_name = fields.Char(string="Last Name")
-    dp_date_of_birth = fields.Date(string="Date of Birth")
-    dp_email_contact = fields.Char(string="Email Contact")
-    dp_contact_number = fields.Char(string="Contact Number")
+    dp_date_of_birth = fields.Date(string="Date of Birth", related='stage_2_dob', readonly=False)
+    dp_email_contact = fields.Char(string="Email Contact", related='email_normalized', readonly=False)
+    dp_contact_number = fields.Char(string="Contact Number", related='phone', readonly=False)
     dp_hearing_impaired = fields.Boolean(string="Hearing Impaired", default=False)
     dp_secondary_contact = fields.Boolean(string="Secondary Contact", default=False)
     dp_secondary_salutation = fields.Char(string="Secondary Salutation")
-    dp_secondary_first_name = fields.Char(string="Secondary First Name")
+    dp_secondary_first_name = fields.Char(string="Secondary First Name", realted='stage_2_sec_acc_holder', readonly=False)
     dp_secondary_last_name = fields.Char(string="Secondary Last Name")
-    dp_secondary_date_of_birth = fields.Date(string="Secondary Date of Birth")
-    dp_secondary_email = fields.Char(string="Secondary Email")
+    dp_secondary_date_of_birth = fields.Date(string="Secondary Date of Birth", realted='stage_2_sec_acc_holder_dob', readonly=False)
+    dp_secondary_email = fields.Char(string="Secondary Email", realted='stage_2_sec_acc_holder_email', readonly=False)
     dp_referral_code = fields.Char(string="Referral Code")
     dp_new_username = fields.Char(string="New Username")
     dp_new_password = fields.Char(string="New Password")
@@ -1013,7 +1013,7 @@ class CrmLead(models.Model):
     dp_cert_electrical_safety_id = fields.Char(string="Cert Electrical Safety ID")
     dp_cert_electrical_safety_sent = fields.Boolean(string="Cert Sent")
     dp_explicit_informed_consent = fields.Boolean(string="Explicit Informed Consent")
-    dp_center_name = fields.Char(string="Center Name")
+    dp_center_name = fields.Char(string="Center Name", default="Utility Hub")
     dp_closer_name = fields.Char(string="Closer Name")
     dp_dnc_wash_number = fields.Char(string="DNC Wash Number")
     dp_dnc_exp_date = fields.Date(string="DNC Exp Date")
@@ -1023,7 +1023,7 @@ class CrmLead(models.Model):
 
     # MOMENTUM ENERGY FORM
     momentum_energy_transaction_reference = fields.Char("Transaction Reference")
-    momentum_energy_transaction_channel = fields.Char("Transaction Channel", default="Residential Connections")
+    momentum_energy_transaction_channel = fields.Char("Transaction Channel")
     momentum_energy_transaction_date = fields.Datetime("Transaction Date")
     momentum_energy_transaction_verification_code = fields.Char("Transaction Verification Code")
     momentum_energy_transaction_source = fields.Char("Transaction Source", default="EXTERNAL")
@@ -1118,12 +1118,12 @@ class CrmLead(models.Model):
         ("Prof.","Prof."),
 
     ],string="Salutation", default="Mr.")
-    momentum_energy_primary_first_name = fields.Char("Primary First Name")
+    momentum_energy_primary_first_name = fields.Char("Primary First Name", related='contact_name', readonly=False)
     momentum_energy_primary_middle_name = fields.Char("Primary Middle Name")
     momentum_energy_primary_last_name = fields.Char("Primary Last Name")
     momentum_energy_primary_country_of_birth = fields.Char("Primary Country of Birth")
-    momentum_energy_primary_date_of_birth = fields.Date("Primary Date of Birth")
-    momentum_energy_primary_email = fields.Char("Primary Email")
+    momentum_energy_primary_date_of_birth = fields.Date("Primary Date of Birth", related='stage_2_dob', readonly=False)
+    momentum_energy_primary_email = fields.Char("Primary Email", related='email_normalized', readonly=False)
     momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL")
     momentum_energy_primary_street_number = fields.Char("Primary Street Number")
     momentum_energy_primary_street_name = fields.Char("Primary Street Name")
@@ -1846,7 +1846,7 @@ class CrmLead(models.Model):
         if lead.lead_stage == "4":
             if (
                 lead.stage_3_dispostion == "closed"
-                and lead.lead_for == "energy"
+                and lead.lead_for in ("energy_website", "energy_call_center")
                 and lead.stage_2_campign_name == "momentum"
             ):
                 lead._send_momentum_energy()
