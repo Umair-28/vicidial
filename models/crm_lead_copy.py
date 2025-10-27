@@ -1343,8 +1343,8 @@ class CrmLead(models.Model):
     momentum_energy_promotion_allowed = fields.Boolean(
         "Promotion Allowed", default=True
     )
-    momentum_energy_passport_id = fields.Char("Passport Number", required=True)
-    momentum_energy_passport_expiry = fields.Date("Passport Expiry Date", required=True)
+    momentum_energy_passport_id = fields.Char("Passport Number")
+    momentum_energy_passport_expiry = fields.Date("Passport Expiry Date")
     momentum_energy_passport_country = fields.Char(
         "Passport Issuing Country"
     )
@@ -1368,11 +1368,11 @@ class CrmLead(models.Model):
         string="Issuing State",
         default="NSW",
     )
-    momentum_energy_medicare_id = fields.Char("Medicare Number", required=True)
+    momentum_energy_medicare_id = fields.Char("Medicare Number")
     momentum_energy_medicare_number = fields.Char(
         "Medicare Document Number"
     )
-    momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date", required=True)
+    momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date")
     momentum_energy_industry = fields.Selection(
         [
             ("Agriculture", "Agriculture"),
@@ -1465,7 +1465,7 @@ class CrmLead(models.Model):
         string="State",
         default="NSW",
     )
-    momentum_energy_primary_post_code = fields.Char("Primary Post Code", required=True)
+    momentum_energy_primary_post_code = fields.Char("Primary Post Code")
     momentum_energy_primary_phone_work = fields.Char(
         "Primary Work Phone"
     )
