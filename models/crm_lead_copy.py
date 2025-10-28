@@ -316,9 +316,14 @@ class CrmLead(models.Model):
                 if hasattr(rec, field):
                     value = getattr(rec, field)
                     if value:
+                        # Safely handle string or other types
+                        if not isinstance(value, str):
+                            value = str(value)
                         value = value.strip()
+
                         if not re.fullmatch(pattern, value):
                             raise ValidationError(_(msg))
+
 
     @api.model
     def _get_stage_sequence(self):
@@ -1298,7 +1303,7 @@ class CrmLead(models.Model):
 
     # MOMENTUM ENERGY FORM
     momentum_energy_transaction_reference = fields.Char(
-        "Transaction Reference"
+        "Sale Ref Number"
     )
     momentum_energy_transaction_channel = fields.Char(
         "Transaction Channel"
@@ -1316,7 +1321,6 @@ class CrmLead(models.Model):
     momentum_energy_customer_type = fields.Selection(
         [("RESIDENT", "Resident"), ("COMPANY", "Company")],
         string="Customer Type",
-        default="RESIDENT",
     )
 
     momentum_energy_customer_sub_type = fields.Selection(
@@ -1333,12 +1337,10 @@ class CrmLead(models.Model):
             ("SME", "SME"),
         ],
         string="Customer Sub Type",
-        default="RESIDENT",
     )
     momentum_energy_communication_preference = fields.Selection(
         [("EMAIL", "Email"), ("PHONE", "Phone"), ("SMS", "SMS")],
         string="Communication Preference",
-        default="EMAIL",
     )
     momentum_energy_promotion_allowed = fields.Boolean(
         "Promotion Allowed", default=True
@@ -1366,7 +1368,6 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="Issuing State",
-        default="NSW",
     )
     momentum_energy_medicare_id = fields.Char("Medicare Number")
     momentum_energy_medicare_number = fields.Char(
@@ -1428,7 +1429,6 @@ class CrmLead(models.Model):
             ("Prof.", "Prof."),
         ],
         string="Salutation",
-        default="Mr.",
     )
     momentum_energy_primary_first_name = fields.Char(
         "Primary First Name", related="contact_name", readonly=False
@@ -1463,7 +1463,6 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="State",
-        default="NSW",
     )
     momentum_energy_primary_post_code = fields.Char("Primary Post Code")
     momentum_energy_primary_phone_work = fields.Char(
@@ -1487,7 +1486,6 @@ class CrmLead(models.Model):
             ("Prof.", "Prof."),
         ],
         string="Salutation",
-        default="Mr.",
     )
     momentum_energy_secondary_first_name = fields.Char("Secondary First Name")
     momentum_energy_secondary_middle_name = fields.Char("Secondary Middle Name")
@@ -1514,7 +1512,6 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="State",
-        default="NSW",
     )
     momentum_energy_secondary_post_code = fields.Char("Secondary Post Code")
     momentum_energy_secondary_phone_work = fields.Char("Secondary Work Phone")
@@ -1526,7 +1523,6 @@ class CrmLead(models.Model):
             ("GAS", "Gas"),
         ],
         string="Service Type",
-        default="POWER",
     )
     momentum_energy_service_sub_type = fields.Selection(
         [
@@ -1569,7 +1565,6 @@ class CrmLead(models.Model):
             ("WE", "WE"),
         ],
         string="Unit Type",
-        default="APT",
     )
     momentum_energy_unit_number = fields.Char(string="Unit Number")
     momentum_energy_floor_type = fields.Selection(
@@ -1604,35 +1599,40 @@ class CrmLead(models.Model):
     momentum_energy_service_street_type_code = fields.Selection(
         [
             ("ACCS", "ACCS"),
-            ("ACRE", "ACRE"),
             ("ALLY", "ALLY"),
             ("ALWY", "ALWY"),
             ("AMBL", "AMBL"),
             ("ANCG", "ANCG"),
+            ("ANT", "ANT"),
             ("APP", "APP"),
             ("ARC", "ARC"),
             ("ART", "ART"),
-            ("ARTL", "ARTL"),
+            ("ATM", "ATM"),
+            ("AV", "AV"),
             ("AVE", "AVE"),
-            ("BA", "BA"),
             ("BASN", "BASN"),
-            ("BAY", "BAY"),
+            ("BBQ", "BBQ"),
             ("BCH", "BCH"),
             ("BDGE", "BDGE"),
             ("BDWY", "BDWY"),
             ("BEND", "BEND"),
+            ("BLCK", "BLCK"),
+            ("BLDG", "BLDG"),
             ("BLK", "BLK"),
+            ("BNGW", "BNGW"),
             ("BOWL", "BOWL"),
             ("BRAE", "BRAE"),
-            ("BRAN", "BRAN"),
             ("BRCE", "BRCE"),
-            ("BRET", "BRET"),
             ("BRK", "BRK"),
             ("BROW", "BROW"),
+            ("BTSD", "BTSD"),
             ("BVD", "BVD"),
             ("BVDE", "BVDE"),
-            ("BWLK", "BWLK"),
             ("BYPA", "BYPA"),
+            ("BYWY", "BYWY"),
+            ("CAGE", "CAGE"),
+            ("CARP", "CARP"),
+            ("CARS", "CARS"),
             ("CAUS", "CAUS"),
             ("CCT", "CCT"),
             ("CDS", "CDS"),
@@ -1640,20 +1640,22 @@ class CrmLead(models.Model):
             ("CIR", "CIR"),
             ("CL", "CL"),
             ("CLDE", "CLDE"),
-            ("CLR", "CLR"),
+            ("CLT", "CLT"),
+            ("CLUB", "CLUB"),
             ("CMMN", "CMMN"),
-            ("CNN", "CNN"),
+            ("CNR", "CNR"),
             ("CNWY", "CNWY"),
             ("CON", "CON"),
+            ("COOL", "COOL"),
             ("COVE", "COVE"),
             ("COWY", "COWY"),
             ("CPS", "CPS"),
+            ("CR", "CR"),
             ("CRCS", "CRCS"),
             ("CRD", "CRD"),
             ("CRES", "CRES"),
-            ("CRF", "CRF"),
-            ("CRK", "CRK"),
             ("CRSE", "CRSE"),
+            ("CRSG", "CRSG"),
             ("CRSS", "CRSS"),
             ("CRST", "CRST"),
             ("CSO", "CSO"),
@@ -1661,23 +1663,209 @@ class CrmLead(models.Model):
             ("CTR", "CTR"),
             ("CTTG", "CTTG"),
             ("CTYD", "CTYD"),
-            ("CUT", "CUT"),
+            ("CUWY", "CUWY"),
             ("DALE", "DALE"),
-            ("DASH", "DASH"),
             ("DELL", "DELL"),
             ("DEVN", "DEVN"),
             ("DIP", "DIP"),
-            ("DIV", "DIV"),
-            ("DOCK", "DOCK"),
             ("DR", "DR"),
             ("DRWY", "DRWY"),
+            ("DSTR", "DSTR"),
+            ("DUPL", "DUPL"),
             ("DWNS", "DWNS"),
             ("EDGE", "EDGE"),
             ("ELB", "ELB"),
+            ("END", "END"),
+            ("ENT", "ENT"),
+            ("ESP", "ESP"),
+            ("EST", "EST"),
+            ("EXP", "EXP"),
+            ("EXTN", "EXTN"),
+            ("FAWY", "FAWY"),
+            ("FCTY", "FCTY"),
+            ("FITR", "FITR"),
+            ("FLAT", "FLAT"),
+            ("FOLW", "FOLW"),
+            ("FORM", "FORM"),
+            ("FRNT", "FRNT"),
+            ("FRTG", "FRTG"),
+            ("FSHR", "FSHR"),
+            ("FTRK", "FTRK"),
+            ("FTWY", "FTWY"),
+            ("FWY", "FWY"),
+            ("GAP", "GAP"),
+            ("GDN", "GDN"),
+            ("GDNS", "GDNS"),
+            ("GLD", "GLD"),
+            ("GLEN", "GLEN"),
+            ("GLY", "GLY"),
+            ("GR", "GR"),
+            ("GRA", "GRA"),
+            ("GRGE", "GRGE"),
+            ("GRN", "GRN"),
+            ("GRND", "GRND"),
+            ("GTE", "GTE"),
+            ("GTES", "GTES"),
+            ("GTWY", "GTWY"),
+            ("HALL", "HALL"),
+            ("HETH", "HETH"),
+            ("HILL", "HILL"),
+            ("HRD", "HRD"),
+            ("HTS", "HTS"),
+            ("HUB", "HUB"),
+            ("HWY", "HWY"),
+            ("INTG", "INTG"),
+            ("INTN", "INTN"),
+            ("ISLD", "ISLD"),
+            ("JNC", "JNC"),
+            ("KEY", "KEY"),
+            ("KEYS", "KEYS"),
+            ("LANE", "LANE"),
+            ("LBBY", "LBBY"),
+            ("LDG", "LDG"),
+            ("LEES", "LEES"),
+            ("LINE", "LINE"),
+            ("LINK", "LINK"),
+            ("LKT", "LKT"),
+            ("LNWY", "LNWY"),
+            ("LOFT", "LOFT"),
+            ("LOOP", "LOOP"),
+            ("LOT", "LOT"),
+            ("LSE", "LSE"),
+            ("LT", "LT"),
+            ("LWR", "LWR"),
+            ("MALL", "MALL"),
+            ("MBTH", "MBTH"),
+            ("MEW", "MEW"),
+            ("MEWS", "MEWS"),
+            ("MILE", "MILE"),
+            ("MNDR", "MNDR"),
+            ("MT", "MT"),
+            ("MWY", "MWY"),
+            ("NOOK", "NOOK"),
+            ("OFFC", "OFFC"),
+            ("OTLK", "OTLK"),
+            ("OTLT", "OTLT"),
+            ("PARK", "PARK"),
+            ("PART", "PART"),
+            ("PASS", "PASS"),
+            ("PATH", "PATH"),
+            ("PDE", "PDE"),
+            ("PHWY", "PHWY"),
+            ("PIAZ", "PIAZ"),
+            ("PKLD", "PKLD"),
+            ("PKT", "PKT"),
+            ("PKWY", "PKWY"),
+            ("PL", "PL"),
+            ("PLAT", "PLAT"),
+            ("PLM", "PLM"),
+            ("PLZA", "PLZA"),
+            ("PNT", "PNT"),
+            ("PORT", "PORT"),
+            ("PROM", "PROM"),
+            ("PRST", "PRST"),
+            ("PSGE", "PSGE"),
+            ("QDGL", "QDGL"),
+            ("QDRT", "QDRT"),
+            ("QUAD", "QUAD"),
+            ("QY", "QY"),
+            ("QYS", "QYS"),
+            ("RAMP", "RAMP"),
+            ("RCH", "RCH"),
+            ("RD", "RD"),
+            ("RDGE", "RDGE"),
+            ("RDS", "RDS"),
+            ("RDSD", "RDSD"),
+            ("RDWY", "RDWY"),
+            ("REAR", "REAR"),
+            ("RES", "RES"),
+            ("REST", "REST"),
+            ("RESV", "RESV"),
+            ("RGWY", "RGWY"),
+            ("RIDE", "RIDE"),
+            ("RING", "RING"),
+            ("RISE", "RISE"),
+            ("RMBL", "RMBL"),
+            ("RND", "RND"),
+            ("RNDE", "RNDE"),
+            ("RNGE", "RNGE"),
+            ("ROOM", "ROOM"),
+            ("ROW", "ROW"),
+            ("ROWY", "ROWY"),
+            ("RSBL", "RSBL"),
+            ("RTE", "RTE"),
+            ("RTRN", "RTRN"),
+            ("RTT", "RTT"),
+            ("RTY", "RTY"),
+            ("RUE", "RUE"),
+            ("RUN", "RUN"),
+            ("RVR", "RVR"),
+            ("RVRA", "RVRA"),
+            ("RVWY", "RVWY"),
+            ("SBWY", "SBWY"),
+            ("SDNG", "SDNG"),
+            ("SEC", "SEC"),
+            ("SHRM", "SHRM"),
+            ("SHWY", "SHWY"),
+            ("SIGN", "SIGN"),
+            ("SLPE", "SLPE"),
+            ("SND", "SND"),
+            ("SPUR", "SPUR"),
+            ("SQ", "SQ"),
+            ("ST", "ST"),
+            ("STH", "STH"),
+            ("STLL", "STLL"),
+            ("STOR", "STOR"),
+            ("STPS", "STPS"),
+            ("STR", "STR"),
+            ("STRA", "STRA"),
+            ("STRP", "STRP"),
+            ("STRS", "STRS"),
+            ("STRT", "STRT"),
+            ("SUBS", "SUBS"),
+            ("SWY", "SWY"),
+            ("TARN", "TARN"),
+            ("TCE", "TCE"),
+            ("THOR", "THOR"),
+            ("TKWY", "TKWY"),
+            ("TLWY", "TLWY"),
+            ("TNCY", "TNCY"),
+            ("TOP", "TOP"),
+            ("TOR", "TOR"),
+            ("TRI", "TRI"),
+            ("TRK", "TRK"),
+            ("TRL", "TRL"),
+            ("TRLR", "TRLR"),
+            ("TURN", "TURN"),
+            ("TWR", "TWR"),
+            ("TWRS", "TWRS"),
+            ("UNIT", "UNIT"),
+            ("UPAS", "UPAS"),
+            ("UPR", "UPR"),
+            ("VALE", "VALE"),
+            ("VDCT", "VDCT"),
+            ("VIEW", "VIEW"),
+            ("VLGE", "VLGE"),
+            ("VLL", "VLL"),
+            ("VLLA", "VLLA"),
+            ("VLLS", "VLLS"),
+            ("VLT", "VLT"),
+            ("VSTA", "VSTA"),
+            ("WADE", "WADE"),
+            ("WALK", "WALK"),
+            ("WAY", "WAY"),
+            ("WHRF", "WHRF"),
+            ("WHSE", "WHSE"),
+            ("WKSH", "WKSH"),
+            ("WKWY", "WKWY"),
+            ("WOOD", "WOOD"),
+            ("WTRS", "WTRS"),
+            ("WYND", "WYND"),
+            ("YARD", "YARD"),
         ],
         string="Service Street Type Code",
-        default="ACCS",
     )
+
 
     momentum_energy_service_suburb = fields.Char("Service Suburb")
     momentum_energy_service_state = fields.Selection(
@@ -1692,7 +1880,6 @@ class CrmLead(models.Model):
             ("NT", "NT"),
         ],
         string="State",
-        default="NSW",
     )
     momentum_energy_service_post_code = fields.Char("Service Post Code")
     momentum_energy_service_access_instructions = fields.Text(
@@ -1711,7 +1898,8 @@ class CrmLead(models.Model):
     )
 
     momentum_energy_offer_quote_date = fields.Datetime("Offer Quote Date")
-    momentum_energy_service_offer_code = fields.Char("Service Offer Code")
+    momentum_energy_service_offer_code = fields.Char("Rate ID")
+    momentum_energy_owr = fields.Char("OWR")
     momentum_energy_service_plan_code = fields.Selection(
         [
             ("Bill Boss Electricity", "Bill Boss Electricity"),
@@ -1723,7 +1911,6 @@ class CrmLead(models.Model):
             ("EV Does It", "EV Does It"),
         ],
         string="Service Plan Code",
-        default="Bill Boss Electricity",
     )
 
     momentum_energy_contract_term_code = fields.Selection(
@@ -1733,8 +1920,6 @@ class CrmLead(models.Model):
             ("24MTH", "24 Months"),
             ("36MTH", "36 Months"),
         ],
-        string="Contract Term Code",
-        default="OPEN",
     )
 
     momentum_energy_contract_date = fields.Datetime("Contract Date")
@@ -1745,7 +1930,6 @@ class CrmLead(models.Model):
             # ('bank_transfer', 'Bank Transfer')
         ],
         string="Payment Method",
-        default="Cheque",
     )
     momentum_energy_bill_cycle_code = fields.Selection(
         [
@@ -1754,12 +1938,10 @@ class CrmLead(models.Model):
             ("Quarterly", "Quarterly"),
         ],
         string="Bill Cycle Code",
-        default="Monthly",
     )
     momentum_energy_bill_delivery_method = fields.Selection(
         [("EMAIL", "Email"), ("POST", "Post")],
         string="Bill Delivery Method",
-        default="EMAIL",
     )
     momentum_energy_concession_obtained = fields.Boolean(
         string="Concession Consent Obtained", default=True

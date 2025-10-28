@@ -1332,7 +1332,7 @@ action = {
 
                             <!-- Transaction Info -->
                             <group string="Transaction Information" col="2" colspan="4">
-                                <label for="momentum_energy_transaction_reference" string="Transaction Reference" class="o_form_label"/>
+                                <label for="momentum_energy_transaction_reference" string="Sale Ref Number" class="o_form_label"/>
                                 <field name="momentum_energy_transaction_reference" nolabel="1" help="Letters, numbers, and hyphens only (max 30 characters)." />
                                 <label for="momentum_energy_transaction_channel" string="Transaction Channel" class="o_form_label"/>
                                 <field name="momentum_energy_transaction_channel" nolabel="1" help="Letters, numbers, and spaces only." />
@@ -1516,6 +1516,7 @@ action = {
                                     <field name="momentum_energy_offer_quote_date"/>
                                     <field name="momentum_energy_service_offer_code"/>
                                     <field name="momentum_energy_service_plan_code"/>
+                                    <field name="momentum_energy_owr"/>
                                     <field name="momentum_energy_contract_term_code"/>
                                     <field name="momentum_energy_contract_date"/>
                                 </group>
