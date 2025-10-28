@@ -34,6 +34,44 @@ class CrmLead(models.Model):
         "res.partner", string="Automatically Assigned Partner"
     )
 
+    unlock_stage_1 = fields.Boolean(default=False)
+    unlock_stage_2 = fields.Boolean(default=False)
+    unlock_stage_3 = fields.Boolean(default=False)
+    unlock_stage_4 = fields.Boolean(default=False)
+
+    unlock_previous_stage = fields.Boolean(
+            string="Unlock Previous Stage",
+            default=True,
+            help="Allows editing of previous stage fields.",
+            store=True
+        )
+
+    @api.onchange('stage_id')
+    def _onchange_stage_id(self):
+        """Lock all stages again when moving forward"""
+        for rec in self:
+            rec.unlock_stage_1 = False
+            rec.unlock_stage_2 = False
+            rec.unlock_stage_3 = False
+            rec.unlock_stage_4 = False
+
+    def action_toggle_stage_lock(self):
+        stage_number = self.env.context.get("stage_number")
+        unlock = self.env.context.get("unlock")
+
+        if stage_number and unlock is not None:
+            field_name = f"unlock_stage_{stage_number}"
+            self.write({field_name: unlock})
+
+        # Force UI reload so buttons and readonly states update
+        return {
+            "type": "ir.actions.client",
+            "tag": "reload",
+        }
+
+
+
+
     services = fields.Selection(
         [
             ("credit_card_call_center", "Credit Card (Call Center)"),
@@ -719,6 +757,8 @@ class CrmLead(models.Model):
         readonly=True,
     )
 
+
+
     en_current_address = fields.Char(string="Current Address")
     en_what_to_compare = fields.Selection(
         [
@@ -842,10 +882,10 @@ class CrmLead(models.Model):
     nmi = fields.Char(string="NMI")
     mirn = fields.Char(string="MIRN")
     frmp = fields.Char(string="FRMP")
+    
     type_of_concession = fields.Selection(
-        [("pcc", "PCC"), ("hcc", "HCC"), ("vcc", "VCC"), ("others", "Others")],
+        [("pcc", "PCC"), ("hcc", "HCC"), ("vcc", "VCC"),("dva_gold_card", "DVA Gold Card"), ("others", "Others")],
         string="Type of Concession",
-        default="pcc",
     )
     lead_agent_notes = fields.Text(string="Notes By Lead Agent")
 
@@ -860,7 +900,7 @@ class CrmLead(models.Model):
         string="Type Of ID Proof",
         default="driver_licence",
     )
-    stage_2_id_proof_name = fields.Char(string="Name of ID Proof")
+    stage_2_id_proof_name = fields.Char(string="Name on ID Proof")
     stage_2_id_number = fields.Char(string="ID Number")
     stage_2_id_start_date = fields.Date(string="ID Start Date")
     stage_2_id_expiry_date = fields.Date(string="ID Expire date")
@@ -1315,7 +1355,7 @@ class CrmLead(models.Model):
         "Transaction Verification Code"
     )
     momentum_energy_transaction_source = fields.Char(
-        "Transaction Source", default="EXTERNAL"
+        "Transaction Source", default="EXTERNAL", readonly=True
     )
 
     momentum_energy_customer_type = fields.Selection(
@@ -1418,7 +1458,7 @@ class CrmLead(models.Model):
     momentum_energy_abn_document_id = fields.Char("ABN Document ID")
     momentum_energy_acn_document_id = fields.Char("ACN Document ID")
     momentum_energy_primary_contact_type = fields.Char(
-        "Contact Type", default="PRIMARY"
+        "Contact Type", default="PRIMARY",readonly=True
     )
     momentum_energy_primary_salutation = fields.Selection(
         [
@@ -1442,7 +1482,7 @@ class CrmLead(models.Model):
     momentum_energy_primary_email = fields.Char(
         "Primary Email", related="email_normalized", readonly=False
     )
-    momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL")
+    momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL", readonly=True)
     momentum_energy_primary_street_number = fields.Char(
         "Primary Street Number"
     )
@@ -1475,7 +1515,7 @@ class CrmLead(models.Model):
         "Primary Mobile Phone"
     )
     momentum_energy_secondary_contact_type = fields.Char(
-        "Secondary Contact Type", default="SECONDARY"
+        "Secondary Contact Type", default="SECONDARY", readonly=True
     )
     momentum_energy_secondary_salutation = fields.Selection(
         [
@@ -1496,7 +1536,7 @@ class CrmLead(models.Model):
     momentum_energy_secondary_date_of_birth = fields.Date("Secondary Date of Birth")
     momentum_energy_secondary_email = fields.Char("Secondary Email")
     momentum_energy_secondary_address_type = fields.Char(
-        "Secondary Address Type", default="POSTAL"
+        "Secondary Address Type", default="POSTAL", readonly=True
     )
     momentum_energy_secondary_street_number = fields.Char("Secondary Street Number")
     momentum_energy_secondary_street_name = fields.Char("Secondary Street Name")
@@ -2118,7 +2158,6 @@ class CrmLead(models.Model):
             ("reliability", "Reliability"),
         ],
         string="What is the most important feature to you?",
-        default="speed",
     )
     in_speed_preference = fields.Selection(
         [
@@ -2128,7 +2167,6 @@ class CrmLead(models.Model):
             ("not_sure", "Not Sure"),
         ],
         string="Do you have a speed preferece?",
-        default="25Mb",
     )
     in_broadband_reason = fields.Selection(
         [
@@ -2137,7 +2175,6 @@ class CrmLead(models.Model):
             ("connection", "I need broadband connected"),
         ],
         string="Why are you looking into broadband options?",
-        default="moving",
     )
     in_when_to_connect_type = fields.Selection(
         [
@@ -2146,7 +2183,6 @@ class CrmLead(models.Model):
             ("specific_date", "Choose a date"),
         ],
         string="When would you like broadband connected?",
-        default="asap",
     )
     in_when_to_connect_date = fields.Date(string="Select connection date?")
     in_current_provider = fields.Char("Current Provider Name")
@@ -2161,7 +2197,6 @@ class CrmLead(models.Model):
             ("5+", "5+"),
         ],
         string="How many people are using the internet?",
-        default="1",
     )
     in_internet_usage_type = fields.Selection(
         [
@@ -2172,7 +2207,6 @@ class CrmLead(models.Model):
             ("streaming", "Streaming video/TV/Movies"),
         ],
         string="How will you use the internet?",
-        default="work",
     )
     in_compare_plans = fields.Selection(
         [("no", "No"), ("yes", "Yes")],
@@ -2476,27 +2510,7 @@ class CrmLead(models.Model):
         default=False,
     )
 
-    # def read(self, fields=None, load='_classic_read'):
-    #     """Override read to check and update lead stage when record is accessed"""
-    #     result = super().read(fields, load)
 
-    #     # Check if we need to update lead stage for each record
-    #     for record in self:
-    #         current_stage = record.lead_stage
-
-    #         # Check if lead is in stage 1 but should be in stage 2
-    #         if current_stage == '1' and record.en_name:
-    #             _logger.info("Lead %s should be updated from stage 1 to stage 2", record.id)
-    #             # Update to stage 2
-    #             record.with_context(skip_stage_assign=True).write({'lead_stage': '2'})
-    #             # Also trigger CRM stage assignment
-    #             record._assign_lead_assigned_stage()
-    #             _logger.info("Lead %s updated to stage 2", record.id)
-
-    #         if current_stage == "2" and record.disposition == "sold_pending_quality":
-    #             record.with_context(skip_stage_assign=True).write({'lead_stage':'3'})
-
-    #     return result
 
     @api.model_create_multi
     def create(self, vals_list):

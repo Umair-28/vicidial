@@ -1,5 +1,14 @@
 /* Improve dropdown and many2one field visibility in Odoo 18 */
 
+/* .o_form_view .o_form_sheet_bg {
+    background-color: #95aec7 !important; 
+} */
+ /* .o_form_sheet{
+    background-color: #e6e6e6 !important; 
+    border-radius: 5px;
+
+ } */
+
 .o_field_widget.o_field_many2one,
 .o_field_widget.o_field_selection {
     background-color: #ffffff !important; /* ensure visible background */
@@ -9,6 +18,7 @@
     min-height: 36px;
     padding: 4px 8px;
     transition: all 0.2s ease-in-out;
+
 }
 
 .o_field_widget.o_field_many2one:hover,
