@@ -1,6 +1,6 @@
 import re
 from odoo import models, fields, api, _
-from datetime import timezone
+from datetime import timezone, date
 import logging
 import json
 import requests
@@ -706,6 +706,7 @@ class CrmLead(models.Model):
         "stage_2_id_number",
         "stage_2_id_start_date",
         "stage_2_id_expiry_date",
+        "stage_2_dob",
         "lead_stage",
         "lead_for",
     )
@@ -813,6 +814,29 @@ class CrmLead(models.Model):
             # -------------------------------------------------------
             else:
                 continue  
+
+    @api.constrains(
+        "stage_2_dob",
+    )
+    def _check_stage_2_id_proof(self):
+        """Validate ID Proof details for Stage 2 (Energy Call Center)."""
+
+        for rec in self:
+            # ✅ Only validate for Stage 2 and energy_call_center
+            if not (rec.lead_for == "energy_call_center" and rec.lead_stage == "2"):
+                continue
+
+            # ✅ Validate Date of Birth (Must be 18 years or older)
+            if rec.stage_2_dob:
+                today = date.today()
+                age_in_years = (today - rec.stage_2_dob).days / 365.25
+
+                if age_in_years < 18:
+                    raise ValidationError(_(
+                        f"Applicant must be at least 18 years old. Current age: {int(age_in_years)} years."
+                    ))
+            else:
+                raise ValidationError(_("Date of Birth (DOB) is required for Stage 2 ID proof validation."))            
 
     @api.constrains(
         "momentum_energy_service_state",
@@ -1916,7 +1940,7 @@ class CrmLead(models.Model):
         [
             ("TRANSFER", "Transfer"),
             ("MOVE IN", "Move In"),
-            ("New Installation", "New Installation")
+            # ("NEW INSTALLATION", "New Installation")
         ],
         string="Service Sub Type",
     )
@@ -3414,7 +3438,7 @@ class CrmLead(models.Model):
         # ✅ Conditionally include serviceStartDate only when subtype is not TRANSFER or MOVE IN
         if (
             self.momentum_energy_service_sub_type
-            and self.momentum_energy_service_sub_type.upper() not in ["TRANSFER", "MOVE IN"]
+            and self.momentum_energy_service_sub_type.upper() not in ["TRANSFER"]
             and self.momentum_energy_service_start_date
         ):
             service["serviceStartDate"] = (
