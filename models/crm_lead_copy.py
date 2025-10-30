@@ -3415,10 +3415,16 @@ class CrmLead(models.Model):
                     "tradingName": self.momentum_energy_trading_name,
                     "trusteeName": self.momentum_energy_trustee_name,
                     "abn": {"documentId": self.momentum_energy_abn_document_id},
-                    "acn": {"documentId": self.momentum_energy_acn_document_id},
                 },
                 "contacts": contacts,
             }
+
+            # ✅ Conditionally include 'acn' only if value exists
+            if self.momentum_energy_acn_document_id:
+                customer["companyIdentity"]["acn"] = {
+                    "documentId": self.momentum_energy_acn_document_id
+                }
+
 
 
         # -------------------------------
