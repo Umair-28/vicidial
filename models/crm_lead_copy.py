@@ -3404,7 +3404,6 @@ class CrmLead(models.Model):
             "serviceConnectionId": self.momentum_energy_service_connection_id,
             "serviceMeterId": self.momentum_energy_service_meter_id,
             "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
-            # "lotNumber": self.momentum_energy_lot_number,
         }
 
         if (self.momentum_energy_lot_number):
@@ -3431,6 +3430,9 @@ class CrmLead(models.Model):
             "state": self.momentum_energy_service_state,
             "postCode": self.momentum_energy_service_post_code,
         }
+
+        if self.momentum_energy_unit_type:
+            serviced_address["unitType"]=self.momentum_energy_unit_type
 
         if self.momentum_energy_service_access_instructions:
             serviced_address["accessInstructions"] = self.momentum_energy_service_access_instructions
