@@ -3430,8 +3430,11 @@ class CrmLead(models.Model):
             "serviceConnectionId": self.momentum_energy_service_connection_id,
             "serviceMeterId": self.momentum_energy_service_meter_id,
             "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
-            "lotNumber": self.momentum_energy_lot_number,
+            # "lotNumber": self.momentum_energy_lot_number,
         }
+
+        if (self.momentum_energy_lot_number):
+            service["lotNumber"] = self.momentum_energy_lot_number
 
         # ✅ Conditionally include serviceStartDate only when subtype is not TRANSFER or MOVE IN
         if (
@@ -3515,81 +3518,6 @@ class CrmLead(models.Model):
                 "concessionInGroupHome": self.momentum_energy_conc_in_grp_home,
             }
 
-        # service = {
-        #     "serviceType": (self.momentum_energy_service_type or "").upper(),
-        #     "serviceSubType": self.momentum_energy_service_sub_type,
-        #     "serviceConnectionId": self.momentum_energy_service_connection_id,
-        #     "serviceMeterId": self.momentum_energy_service_meter_id,
-        #     # "serviceStartDate": (
-        #     #     self.momentum_energy_service_start_date.isoformat().replace(
-        #     #         "+00:00", "Z"
-        #     #     )
-        #     #     if self.momentum_energy_service_start_date
-        #     #     else None
-        #     # ),
-        #     "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
-        #     "lotNumber": self.momentum_energy_lot_number,
-        #     "servicedAddress": {
-        #         "streetNumber": self.momentum_energy_service_street_number,
-        #         "streetName": self.momentum_energy_service_street_name,
-        #         "streetTypeCode": self.momentum_energy_service_street_type_code,
-        #         "suburb": self.momentum_energy_service_suburb,
-        #         "state": self.momentum_energy_service_state,
-        #         "postCode": self.momentum_energy_service_post_code,
-        #         "accessInstructions": self.momentum_energy_service_access_instructions,
-        #         "safetyInstructions": self.momentum_energy_service_safety_instructions,
-        #     },
-        #     "serviceBilling": {
-        #         "offerQuoteDate": (
-        #             self.momentum_energy_offer_quote_date.replace(tzinfo=timezone.utc)
-        #             .isoformat()
-        #             .replace("+00:00", "Z")
-        #             if self.momentum_energy_offer_quote_date
-        #             else None
-        #         ),
-        #         "serviceOfferCode": self.momentum_energy_service_offer_code,
-        #         "servicePlanCode": self.momentum_energy_service_plan_code,
-        #         "contractTermCode": self.momentum_energy_contract_term_code,
-        #         "contractDate": (
-        #             self.momentum_energy_contract_date.replace(tzinfo=timezone.utc)
-        #             .isoformat()
-        #             .replace("+00:00", "Z")
-        #             if self.momentum_energy_contract_date
-        #             else None
-        #         ),
-        #         "paymentMethod": (self.momentum_energy_payment_method or ""),
-        #         "billCycleCode": self.momentum_energy_bill_cycle_code,
-        #         "billDeliveryMethod": (
-        #             self.momentum_energy_bill_delivery_method or ""
-        #         ).upper(),
-        #         "concession": {
-        #             "concessionCardType": self.momentum_energy_conc_card_type_code,
-        #             "concessionCardCode": self.momentum_energy_conc_card_code,
-        #             "concessionCardNumber": self.momentum_energy_conc_card_number,
-        #             "concessionCardExpiryDate": (
-        #                 self.momentum_energy_conc_card_exp_date.isoformat()
-        #                 if self.momentum_energy_conc_card_exp_date
-        #                 else None
-        #             ),
-        #             "concessionCardFirstName": self.momentum_energy_card_first_name,
-        #             "concessionCardLastName": self.momentum_energy_card_last_name,
-        #             "concessionStartDate": (
-        #                 self.momentum_energy_conc_start_date.isoformat()
-        #                 if self.momentum_energy_conc_start_date
-        #                 else None
-        #             ),
-        #             "concessionEndDate": (
-        #                 self.momentum_energy_conc_end_date.isoformat()
-        #                 if self.momentum_energy_conc_end_date
-        #                 else None
-        #             ),
-        #             "concessionConsentObtained": self.momentum_energy_concession_obtained,
-        #             "concessionHasMS": self.momentum_energy_conc_has_ms,
-        #             "concessionInGroupHome": self.momentum_energy_conc_in_grp_home,
-        #         },
-
-        #     },
-        # }
         #  ✅ Add serviceStartDate only when sub type is not TRANSFER or MOVE IN
         if self.momentum_energy_service_sub_type not in ("TRANSFER", "MOVE IN"):
             if self.momentum_energy_service_start_date:
