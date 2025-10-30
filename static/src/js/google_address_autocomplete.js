@@ -16,7 +16,7 @@ function loadGoogleMapsAPI() {
       const checkInterval = setInterval(() => {
         if (window.google && window.google.maps && window.google.maps.places) {
           clearInterval(checkInterval);
-          console.log("✅ Google Maps loaded");
+          // console.log("✅ Google Maps loaded");
           resolve();
         }
       }, 100);
@@ -62,13 +62,13 @@ async function initializeAutocomplete() {
 
     // Retry after short delay (for Odoo's async rendering)
     setTimeout(() => {
-      console.log("🔄 Retrying field detection...");
+      console.log("🔄 Retrying field detection...");  
       initGoogleMapsForAddressFields();
     }, 1000);
 
     // Another retry after longer delay
     setInterval(() => {
-      console.log("🔄 Second retry...");
+      // console.log("🔄 Second retry...");
       initGoogleMapsForAddressFields();
     }, 3000);
 
@@ -93,7 +93,7 @@ async function initializeAutocomplete() {
       });
 
       if (shouldCheck) {
-        console.log("🔄 Field detected in DOM mutation");
+        // console.log("🔄 Field detected in DOM mutation");
         initGoogleMapsForAddressFields();
       }
     });
@@ -154,14 +154,14 @@ function initGoogleMapsForAddressFields() {
     if (elements.length > 0) {
       addressInputs = Array.from(elements);
       console.log(
-        `✅ Found ${elements.length} field(s) with selector: ${selector}`
+        // `✅ Found ${elements.length} field(s) with selector: ${selector}`
       );
       break;
     }
   }
 
   if (addressInputs.length === 0) {
-    console.log("⏳ No address fields found yet, will retry on DOM changes...");
+    // console.log("⏳ No address fields found yet, will retry on DOM changes...");
     return;
   }
 
@@ -247,7 +247,7 @@ function updateFieldIfExists(fieldName, value) {
     field.value = value;
     field.dispatchEvent(new Event("input", { bubbles: true }));
     field.dispatchEvent(new Event("change", { bubbles: true }));
-    console.log(`✅ Updated ${fieldName}:`, value);
+    // console.log(`✅ Updated ${fieldName}:`, value);
   }
 }
 
@@ -262,11 +262,11 @@ console.log("🔍 Google Maps Autocomplete module loaded");
 
 // Debug helper - expose function globally to test manually
 window.debugGoogleMapsFields = function () {
-  console.log("=== Debug Info ===");
-  console.log(
-    "Google Maps loaded?",
-    !!(window.google && window.google.maps && window.google.maps.places)
-  );
+  // console.log("=== Debug Info ===");
+  // console.log(
+  //   "Google Maps loaded?",
+  //   !!(window.google && window.google.maps && window.google.maps.places)
+  // );
 
   const allInputs = document.querySelectorAll(
     'input[name*="address"], textarea[name*="address"]'

@@ -106,7 +106,7 @@ action = {
                     </group>
                     <!-- Electricty and GAS CALL CENTER Stage 1 Form -->
 
-                    <group string="Stage 1 Form" invisible="lead_for != 'energy_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
+                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
@@ -129,9 +129,11 @@ action = {
                                     <field name="en_contact_number" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="en_customer_alt_phone" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="en_email" widget="email" readonly="lead_stage != '1' and not unlock_stage_1"/>
-                                    <field name="en_current_address"  readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                    <field name="en_current_address" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                                 <group string="Utility Identifiers">
+                                    <field name="stage_1_state" readonly="lead_stage != '1' and not unlock_stage_1"/>
+
                                     <field name="nmi" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="mirn" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="frmp" readonly="lead_stage != '1' and not unlock_stage_1"/>
@@ -160,7 +162,7 @@ action = {
 
                     <!-- Electricty and GAS Stage WEBSITE 1 Form -->
 
-                    <group string="Stage 1 Form" invisible="lead_for != 'energy_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
+                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
@@ -181,7 +183,7 @@ action = {
                                     <field name="en_name" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="en_contact_number" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="en_email" widget="email" readonly="lead_stage != '1' and not unlock_stage_1"/>
-                                    <field name="en_current_address"  readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                    <field name="en_current_address" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
 
                                 <group string="Property Information" colspan="1">
@@ -227,7 +229,7 @@ action = {
 
 
                     <!-- ENERGY STAGE 2 SHEET -->
-                    <group string="Stage 2: Verification by Expert" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage != '1')">
+                    <group string="Stage 2: Verification by Expert" class="stage-section stage-2" data-stage="2" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage != '1')">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -253,6 +255,9 @@ action = {
 
                                 </group>
                                 <group string="Concession Details" colspan="1" invisible="en_concesion_card_holder != 'yes'">
+                                
+                                    <field name="stage_2_state" readonly="lead_stage != '2' and not unlock_stage_2"/>
+
                                     <field name="stage_2_concession_type" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_card_number" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_card_holder_name" readonly="lead_stage != '2' and not unlock_stage_2"/>
@@ -272,13 +277,26 @@ action = {
                                     <field name="stage_2_bill"/>
                                 </group>
                                 <group string="Identification Proof" colspan="1">
+                                    <field name="stage_2_id_issuance_state" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_dob" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_id_proof_type" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_id_proof_name" readonly="lead_stage != '2' and not unlock_stage_2"/>
-                                    <field name="stage_2_id_number" readonly="lead_stage != '2' and not unlock_stage_2"/>
+                                    
+                                    <field name="stage_2_passport_number" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'passport'"/>
+
+                                    <field name="stage_2_passport_issued_country" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'passport'"/>
+
+                                    <field name="stage_2_licence_number" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'driver_licence'"/>
+
+                                    <field name="stage_2_medicard_irn" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'medicare_card'"/>
+
+                                    <field name="stage_2_medicard_color" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'medicare_card'"/>
+
+                                    <field name="stage_2_medicard_number" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'medicare_card'"/>
+
+                                    <!-- <field name="stage_2_id_number" readonly="lead_stage != '2' and not unlock_stage_2"/> -->
                                     <field name="stage_2_id_start_date" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_id_expiry_date" readonly="lead_stage != '2' and not unlock_stage_2"/>
-                                    <field name="stage_2_id_issuance_state" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                 </group>
 
 
@@ -460,7 +478,7 @@ action = {
 
 
                     <!-- Credit Card Call Center Stage 1 Form -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -495,7 +513,7 @@ action = {
                     </group>
                     <!-- Credit Card Call Center Stage 1 Form END -->
                     <!-- Credit Card Website Stage 1 Form -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -549,7 +567,7 @@ action = {
                     </group>
                     <!-- Credit Card Website Stage 1 Form END -->
                     <!-- Credit Card Stage 2 From Start -->
-                    <group string="Stage 2 FORM" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage != '1')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 2 FORM" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage != '1')" class="o_form_sheet_bg_gray stage-section stage-2">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -608,7 +626,7 @@ action = {
                     <!-- Credt Card Stage 2 Form End -->
 
                     <!-- Broadband Stage 1 CAll center Form Start -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -660,7 +678,7 @@ action = {
                     </group>
                     <!-- Broadband Stage 1 CAll center Form End -->
                     <!-- Broadband Stage 1 Website Form Start -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -678,7 +696,7 @@ action = {
 
                             <group col="2" colspan="4">
                                 <group string="Address Info" colspan="1">
-                                    <field name="in_current_address" widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                    <field name="in_current_address" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
 
                                 <group string="Preferences" colspan="1">
@@ -717,7 +735,7 @@ action = {
                     </group>
                     <!-- Broadband Stage 1 Website Form End -->
                     <!-- Broadband Stage 2 Form Start -->
-                    <group string="Stage 2 FORM" invisible="not ((lead_for in ('optus_nbn_call_center','optus_nbn_website')) and lead_stage != '1')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 2 FORM" invisible="not ((lead_for in ('optus_nbn_call_center','optus_nbn_website')) and lead_stage != '1')" class="o_form_sheet_bg_gray stage-section stage-2">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -772,7 +790,7 @@ action = {
                     <!-- Broadband Stage 2 Form End -->
 
                     <!-- QA Stage FORM - Stage 3 -->
-                    <group string="Stage 3: Quality Audit" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('3', '4')))">
+                    <group string="Stage 3: Quality Audit" class="stage-section stage-3" data-stage="3" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('3', '4')))">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -1458,7 +1476,7 @@ action = {
                             <group string="Transaction Information" col="2" colspan="4">
                                 <field name="momentum_energy_transaction_reference" help="Letters, numbers, and hyphens only (max 30 characters)."/>
                                 <field name="momentum_energy_transaction_channel"/>
-                                <field name="momentum_energy_transaction_date"/>
+                                <field name="momentum_energy_transaction_date" help="Transaction date must not be more than 3 working days in the past"/>
                                 <field name="momentum_energy_transaction_verification_code"/>
                                 <field name="momentum_energy_transaction_source"/>
                             </group>
@@ -1472,26 +1490,26 @@ action = {
                                     <field name="momentum_energy_promotion_allowed"/>
                                 </group>
 
-                                <group string="Business Details" colspan="1">
-                                    <field name="momentum_energy_industry"/>
-                                    <field name="momentum_energy_entity_name"/>
-                                    <field name="momentum_energy_trading_name"/>
-                                    <field name="momentum_energy_trustee_name"/>
-                                    <field name="momentum_energy_abn_document_id"/>
-                                    <field name="momentum_energy_acn_document_id"/>
+                                <group string="Business Details" colspan="1" invisible="momentum_energy_customer_type != 'COMPANY'">
+                                    <field name="momentum_energy_industry" help="Industry of the customer business,required if customer Type is COMPANY"/>
+                                    <field name="momentum_energy_entity_name" help="Legal name of the Company"/>
+                                    <field name="momentum_energy_trading_name" help="Trading name of the Company"/>
+                                    <field name="momentum_energy_trustee_name" help="Name of the Trustee  of the Company"/>
+                                    <field name="momentum_energy_abn_document_id" help="ABN Details of Company. It must contain exactly 11 digits with no spaces or special characters."/>
+                                    <field name="momentum_energy_acn_document_id" help="Company's ACN number. Required for a LTD company. It must contain exactly 9 digits with no spaces or special characters."/>
                                 </group>
                             </group>
 
                             <!-- Identity -->
                             <group col="2" colspan="4">
                                 <group string="Passport Details" colspan="1">
-                                    <field name="momentum_energy_passport_id"/>
+                                    <field name="momentum_energy_passport_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                     <field name="momentum_energy_passport_expiry"/>
                                     <field name="momentum_energy_passport_country"/>
                                 </group>
 
                                 <group string="Driving License" colspan="1">
-                                    <field name="momentum_energy_driving_license_id"/>
+                                    <field name="momentum_energy_driving_license_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                     <field name="momentum_energy_driving_license_expiry"/>
                                     <field name="momentum_energy_driving_license_state"/>
                                 </group>
@@ -1499,7 +1517,7 @@ action = {
 
                             <!-- Medicare -->
                             <group string="Medicare Details">
-                                <field name="momentum_energy_medicare_id"/>
+                                <field name="momentum_energy_medicare_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                 <field name="momentum_energy_medicare_number"/>
                                 <field name="momentum_energy_medicare_expiry"/>
                             </group>
@@ -1507,19 +1525,19 @@ action = {
                             <!-- Primary Contact -->
                             <group col="2" colspan="4">
                                 <group string="Primary Contact Details" colspan="1">
-                                    <field name="momentum_energy_primary_contact_type"/>
+                                    <field name="momentum_energy_primary_contact_type" help="Saluation of the contact person."/>
                                     <field name="momentum_energy_primary_salutation"/>
-                                    <field name="momentum_energy_primary_first_name"/>
+                                    <field name="momentum_energy_primary_first_name" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
                                     <field name="momentum_energy_primary_middle_name"/>
-                                    <field name="momentum_energy_primary_last_name"/>
-                                    <field name="momentum_energy_primary_country_of_birth"/>
+                                    <field name="momentum_energy_primary_last_name" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
+                                    <field name="momentum_energy_primary_country_of_birth" help="Required when passport details are provided"/>
                                     <field name="momentum_energy_primary_date_of_birth"/>
                                     <field name="momentum_energy_primary_email" widget="email"/>
                                 </group>
 
                                 <group string="Primary Contact Phone" colspan="1">
                                     <field name="momentum_energy_primary_phone_work" placeholder="0412345678"/>
-                                    <field name="momentum_energy_primary_phone_home" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_home" placeholder="0412345678" help="Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."/>
                                     <field name="momentum_energy_primary_phone_mobile" placeholder="0412345678"/>
                                 </group>
                             </group>
@@ -1527,12 +1545,12 @@ action = {
                             <!-- Primary Address -->
                             <group string="Primary Contact Address" col="2" colspan="4">
                                 <field name="momentum_energy_primary_address_type"/>
-                                <field name="momentum_energy_primary_unit_number"/>
-                                <field name="momentum_energy_primary_street_number"/>
-                                <field name="momentum_energy_primary_street_name"/>
-                                <field name="momentum_energy_primary_suburb"/>
+                                <field name="momentum_energy_primary_unit_number" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."/>
+                                <field name="momentum_energy_primary_street_number" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
+                                <field name="momentum_energy_primary_street_name" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed."/>
+                                <field name="momentum_energy_primary_suburb" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
                                 <field name="momentum_energy_primary_state"/>
-                                <field name="momentum_energy_primary_post_code"/>
+                                <field name="momentum_energy_primary_post_code" help="It must contain exactly 4 digits (0–9)."/>
                             </group>
 
                             <!-- Secondary Contact -->
@@ -1569,22 +1587,23 @@ action = {
                             <!-- Service Information -->
                             <group col="2" colspan="4">
                                 <group string="Service Information" colspan="1">
-                                    <field name="momentum_energy_service_type"/>
-                                    <field name="momentum_energy_service_sub_type"/>
-                                    <field name="momentum_energy_service_connection_id"/>
-                                    <field name="momentum_energy_service_meter_id"/>
-                                    <field name="momentum_energy_service_start_date"/>
-                                    <field name="momentum_energy_estimated_annual_kwhs"/>
+                                    <field name="momentum_energy_service_type" help="Type of service"/>
+                                    <field name="momentum_energy_service_sub_type" help="Sub type of service"/>
+                                    <field name="momentum_energy_service_connection_id" help ="NMI / MIRN of the site, depending on the type of the service if service is POWER, it must be NMI and MIRN for GAS"/>
+                                    <field name="momentum_energy_service_meter_id" help="Number of the Meter,Only letters, numbers, commas (,), periods (.), forward slashes (/), ampersands, colons (:), and hyphens (-) are allowed."/>
+                                    <field name="momentum_energy_service_start_date" help="Service Start Date is required when Service Sub Type is 'Move In' or 'New Installation'."/>
+                                    <field name="momentum_energy_estimated_annual_kwhs" hrlp="Site's estimated annual consumption in kWh"/>
                                 </group>
 
                                 <group string="Service Address" colspan="1">
-                                    <field name="momentum_energy_lot_number"/>
-                                    <field name="momentum_energy_service_street_number"/>
-                                    <field name="momentum_energy_service_street_name"/>
+                                    <field name="momentum_energy_property_name" help="Name must start with a capital letter and contain only letters, apostrophes ('), hyphens (-), or periods (.)"/>
+                                    <field name="momentum_energy_lot_number" help="Name must start with a capital letter and contain only letters, apostrophes ('), hyphens (-), or periods (.)"/>
+                                    <field name="momentum_energy_service_street_number" help="Street number of site, If not known, populate with 0. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
+                                    <field name="momentum_energy_service_street_name" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."/>
                                     <field name="momentum_energy_service_street_type_code"/>
-                                    <field name="momentum_energy_service_suburb"/>
+                                    <field name="momentum_energy_service_suburb" help="Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted."/>
                                     <field name="momentum_energy_service_state"/>
-                                    <field name="momentum_energy_service_post_code"/>
+                                    <field name="momentum_energy_service_post_code" help="It must contain exactly 4 digits (0–9)."/>
                                 </group>
                             </group>
 
@@ -1598,6 +1617,7 @@ action = {
                                 <group string="Floor" colspan="1">
 
                                     <field name="momentum_energy_floor_number"/>
+                                    <field name="momentum_energy_floor_type"/>
                                 </group>
                             </group>
 
@@ -1605,40 +1625,40 @@ action = {
                             <group col="2" colspan="4">
 
                                 <group string="Service Instructions" colspan="1">
-                                    <field name="momentum_energy_service_access_instructions"/>
-                                    <field name="momentum_energy_service_safety_instructions"/>
+                                    <field name="momentum_energy_service_access_instructions" help="Instructions for Property Access"/>
+                                    <field name="momentum_energy_service_safety_instructions" help="Safety instructions for property"/>
                                 </group>
                             </group>
 
                             <!-- Offer & Billing -->
                             <group col="2" colspan="4">
                                 <group string="Offer Details" colspan="1">
-                                    <field name="momentum_energy_offer_quote_date"/>
+                                    <field name="momentum_energy_offer_quote_date" help="The day when quote was presented to the customer."/>
                                     <field name="momentum_energy_service_offer_code"/>
                                     <field name="momentum_energy_service_plan_code"/>
-                                    <field name="momentum_energy_contract_term_code"/>
-                                    <field name="momentum_energy_contract_date"/>
+                                    <field name="momentum_energy_contract_term_code" help="Used to define the contract term the customer has agreed to. "/>
+                                    <field name="momentum_energy_contract_date" help="Customer's contract start date"/>
                                 </group>
 
                                 <group string="Billing Details" colspan="1">
                                     <field name="momentum_energy_payment_method"/>
-                                    <field name="momentum_energy_bill_cycle_code"/>
-                                    <field name="momentum_energy_bill_delivery_method"/>
+                                    <field name="momentum_energy_bill_cycle_code" help="Bill cycle code for the customer. "/>
+                                    <field name="momentum_energy_bill_delivery_method" help="Delivery method of Bills whether elctronic or pyhsical(postal)"/>
                                 </group>
                             </group>
 
                             <!-- Concession / Card info -->
                             <group string="Concession Card Information" col="2" colspan="4" invisible="en_concesion_card_holder != 'yes'">
                                 <field name="momentum_energy_conc_card_type_code"/>
-                                <field name="momentum_energy_conc_card_code"/>
-                                <field name="momentum_energy_conc_card_number"/>
+                                <field name="momentum_energy_conc_card_code" help="Concession Card Code"/>
+                                <field name="momentum_energy_conc_card_number" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                 <field name="momentum_energy_conc_card_exp_date"/>
                                 <field name="momentum_energy_card_first_name"/>
                                 <field name="momentum_energy_card_last_name"/>
                                 <field name="momentum_energy_conc_start_date"/>
                                 <field name="momentum_energy_conc_end_date"/>
                                 <field name="momentum_energy_concession_obtained"/>
-                                <field name="momentum_energy_conc_has_ms"/>
+                                <field name="momentum_energy_conc_has_ms" help="Whether customer requires a medical cooling application form to be sent to apply for medical cooling concession"/>
                                 <field name="momentum_energy_conc_in_grp_home"/>
                             </group>
 

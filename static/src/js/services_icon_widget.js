@@ -12,7 +12,7 @@ function injectServicesWidget() {
   }
 
   if (wrapper.dataset.widgetMounted === "1") {
-    console.log("[SERVICES] Already mounted, skipping.");
+    // console.log("[SERVICES] Already mounted, skipping.");
     return;
   }
 

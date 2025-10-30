@@ -20,6 +20,7 @@
         "vicidial/static/src/js/lead_form_close.js",
         # 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB8_jft7R5en3Q4rrnLqsnuGEyg5_W7CHU&libraries=places',
         'vicidial/static/src/js/google_address_autocomplete.js',
+        'vicidial/static/src/js/stage_scroll.js',
 
         # "vicidial/static/src/js/custom_footer.js",
 
