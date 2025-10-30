@@ -3485,7 +3485,11 @@ class CrmLead(models.Model):
             "paymentMethod": (self.momentum_energy_payment_method or ""),
             "billCycleCode": self.momentum_energy_bill_cycle_code,
             "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
-            "concession": {
+        }
+
+        # 🟩 Add concession details only when applicable
+        if getattr(self, "en_concession_card_holder", "").lower() == "yes":
+            service["serviceBilling"]["concession"] = {
                 "concessionCardType": self.momentum_energy_conc_card_type_code,
                 "concessionCardCode": self.momentum_energy_conc_card_code,
                 "concessionCardNumber": self.momentum_energy_conc_card_number,
@@ -3509,8 +3513,8 @@ class CrmLead(models.Model):
                 "concessionConsentObtained": self.momentum_energy_concession_obtained,
                 "concessionHasMS": self.momentum_energy_conc_has_ms,
                 "concessionInGroupHome": self.momentum_energy_conc_in_grp_home,
-            },
-        }
+            }
+
         # service = {
         #     "serviceType": (self.momentum_energy_service_type or "").upper(),
         #     "serviceSubType": self.momentum_energy_service_sub_type,
