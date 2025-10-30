@@ -52,49 +52,58 @@ function loadGoogleMapsAPI() {
   });
 }
 
-// Initialize after Google Maps is loaded
 async function initializeAutocomplete() {
   try {
     await loadGoogleMapsAPI();
 
-    // Try immediate initialization
+    // Initial check
     initGoogleMapsForAddressFields();
 
-    // Retry after short delay (for Odoo's async rendering)
-    setTimeout(() => {
-      console.log("🔄 Retrying field detection...");  
-      initGoogleMapsForAddressFields();
-    }, 1000);
+    // Retry mechanism
+    [500, 1500, 3000].forEach(delay => {
+      setTimeout(() => initGoogleMapsForAddressFields(), delay);
+    });
 
-    // Another retry after longer delay
-    setInterval(() => {
-      // console.log("🔄 Second retry...");
-      initGoogleMapsForAddressFields();
-    }, 3000);
+    // Modal open detection
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('[data-bs-toggle="modal"]') || 
+          e.target.closest('.o_form_button_edit') ||
+          e.target.closest('.o_form_button_create')) {
+        setTimeout(() => initGoogleMapsForAddressFields(), 500);
+        setTimeout(() => initGoogleMapsForAddressFields(), 1500);
+      }
+    });
 
-    // Watch for dynamically added fields
+    // Field focus fallback
+    document.addEventListener('focus', (e) => {
+      const addressSelectors = [
+        'input[name="en_current_address"]',
+        'input[name="cc_stage2_business_address"]',
+        // ... add your other selectors
+      ];
+      
+      if (addressSelectors.some(sel => e.target.matches(sel)) &&
+          !e.target.hasAttribute('data-gmap-initialized')) {
+        setTimeout(() => initGoogleMapsForAddressFields(), 100);
+      }
+    }, true);
+
+    // Enhanced MutationObserver
     const observer = new MutationObserver((mutations) => {
-      // Check if mutations affect our target field
-      const shouldCheck = mutations.some((mutation) => {
+      const hasRelevantChanges = mutations.some((mutation) => {
         return Array.from(mutation.addedNodes).some((node) => {
           if (node.nodeType === 1) {
-            // Element node
-            return (
-              node.matches &&
-              (node.matches('input[name="en_current_address"]') ||
-                node.matches('textarea[name="en_current_address"]') ||
-                node.querySelector(
-                  'input[name="en_current_address"], textarea[name="en_current_address"]'
-                ))
+            return node.matches && (
+              node.matches('.modal, .o_dialog, .o_form_view') ||
+              node.querySelector('input[name="en_current_address"]')
             );
           }
           return false;
         });
       });
 
-      if (shouldCheck) {
-        // console.log("🔄 Field detected in DOM mutation");
-        initGoogleMapsForAddressFields();
+      if (hasRelevantChanges) {
+        setTimeout(() => initGoogleMapsForAddressFields(), 300);
       }
     });
 
@@ -103,11 +112,67 @@ async function initializeAutocomplete() {
       subtree: true,
     });
 
-    console.log("👁️ Observer watching for field changes");
   } catch (error) {
     console.error("❌ Google Maps initialization failed:", error);
   }
 }
+
+// Initialize after Google Maps is loaded
+// async function initializeAutocomplete() {
+//   try {
+//     await loadGoogleMapsAPI();
+
+//     // Try immediate initialization
+//     initGoogleMapsForAddressFields();
+
+//     // Retry after short delay (for Odoo's async rendering)
+//     setTimeout(() => {
+//       console.log("🔄 Retrying field detection...");  
+//       initGoogleMapsForAddressFields();
+//     }, 1000);
+
+//     // Another retry after longer delay
+//     setInterval(() => {
+//       // console.log("🔄 Second retry...");
+//       initGoogleMapsForAddressFields();
+//     }, 3000);
+
+//     // Watch for dynamically added fields
+//     const observer = new MutationObserver((mutations) => {
+//       // Check if mutations affect our target field
+//       const shouldCheck = mutations.some((mutation) => {
+//         return Array.from(mutation.addedNodes).some((node) => {
+//           if (node.nodeType === 1) {
+//             // Element node
+//             return (
+//               node.matches &&
+//               (node.matches('input[name="en_current_address"]') ||
+//                 node.matches('textarea[name="en_current_address"]') ||
+//                 node.querySelector(
+//                   'input[name="en_current_address"], textarea[name="en_current_address"]'
+//                 ))
+//             );
+//           }
+//           return false;
+//         });
+//       });
+
+//       if (shouldCheck) {
+//         // console.log("🔄 Field detected in DOM mutation");
+//         initGoogleMapsForAddressFields();
+//       }
+//     });
+
+//     observer.observe(document.body, {
+//       childList: true,
+//       subtree: true,
+//     });
+
+//     console.log("👁️ Observer watching for field changes");
+//   } catch (error) {
+//     console.error("❌ Google Maps initialization failed:", error);
+//   }
+// }
 
 function initGoogleMapsForAddressFields() {
   // Double check Google Maps is loaded
