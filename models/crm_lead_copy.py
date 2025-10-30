@@ -587,8 +587,7 @@ class CrmLead(models.Model):
             # --------------------------
             # 🧩 NMI Validation
             # --------------------------
-            if not nmi:
-                raise ValidationError(_("NMI is required for energy call center leads."))
+
 
             # VIC: Starts with 6, alphanumeric 11 chars
             if state == "VIC":
@@ -621,8 +620,7 @@ class CrmLead(models.Model):
             # --------------------------
             # 🔢 MIRN Validation
             # --------------------------
-            if not mirn:
-                raise ValidationError(_("MIRN is required for energy call center leads."))
+
             if mirn:
                 if not mirn.isdigit() or len(mirn) != 11:
                     raise ValidationError(_("MIRN must be an 11-digit number."))
