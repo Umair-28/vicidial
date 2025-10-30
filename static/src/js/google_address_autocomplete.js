@@ -231,42 +231,79 @@ function initGoogleMapsForAddressFields() {
   }
 
   addressInputs.forEach((input) => {
-    if (input.hasAttribute("data-gmap-initialized")) return;
+  if (input.hasAttribute("data-gmap-initialized")) return;
 
-    input.setAttribute("data-gmap-initialized", "true");
+  input.setAttribute("data-gmap-initialized", "true");
 
-    try {
-      const autocomplete = new google.maps.places.Autocomplete(input, {
-        types: ["address"],
-        // componentRestrictions: { country: "pk" },
+  try {
+    const autocomplete = new google.maps.places.Autocomplete(input, {
+      types: ["address"],
+    });
+
+    // Set z-index after autocomplete is created
+    google.maps.event.addListenerOnce(autocomplete, 'place_changed', function() {
+      const pacContainers = document.querySelectorAll('.pac-container');
+      pacContainers.forEach(container => {
+        container.style.zIndex = '10000';
       });
+    });
+    
+    // Also set it when dropdown opens
+    input.addEventListener('focus', function() {
+      setTimeout(() => {
+        const pacContainers = document.querySelectorAll('.pac-container');
+        pacContainers.forEach(container => {
+          container.style.zIndex = '10000';
+        });
+      }, 100);
+    });
 
-      autocomplete.addListener("place_changed", function () {
-        const place = autocomplete.getPlace();
+    autocomplete.addListener("place_changed", function () {
+      // ... your existing place_changed code
+    });
 
-        if (!place || !place.formatted_address) {
-          console.warn("No valid place selected");
-          return;
-        }
+  } catch (error) {
+    console.error("❌ Failed to attach autocomplete:", error);
+  }
+});
 
-        console.log("✅ Place selected:", place.formatted_address);
+  // addressInputs.forEach((input) => {
+  //   if (input.hasAttribute("data-gmap-initialized")) return;
 
-        // Update the address field
-        input.value = place.formatted_address;
+  //   input.setAttribute("data-gmap-initialized", "true");
 
-        // Trigger Odoo's change event
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-        input.dispatchEvent(new Event("change", { bubbles: true }));
+  //   try {
+  //     const autocomplete = new google.maps.places.Autocomplete(input, {
+  //       types: ["address"],
+  //       // componentRestrictions: { country: "pk" },
+  //     });
 
-        // Extract and fill related fields
-        fillRelatedAddressFields(place);
-      });
+  //     autocomplete.addListener("place_changed", function () {
+  //       const place = autocomplete.getPlace();
 
-      console.log("✅ Google Autocomplete attached to:", input.name);
-    } catch (error) {
-      console.error("❌ Failed to attach autocomplete:", error);
-    }
-  });
+  //       if (!place || !place.formatted_address) {
+  //         console.warn("No valid place selected");
+  //         return;
+  //       }
+
+  //       console.log("✅ Place selected:", place.formatted_address);
+
+  //       // Update the address field
+  //       input.value = place.formatted_address;
+
+  //       // Trigger Odoo's change event
+  //       input.dispatchEvent(new Event("input", { bubbles: true }));
+  //       input.dispatchEvent(new Event("change", { bubbles: true }));
+
+  //       // Extract and fill related fields
+  //       fillRelatedAddressFields(place);
+  //     });
+
+  //     console.log("✅ Google Autocomplete attached to:", input.name);
+  //   } catch (error) {
+  //     console.error("❌ Failed to attach autocomplete:", error);
+  //   }
+  // });
 }
 
 function fillRelatedAddressFields(place) {
