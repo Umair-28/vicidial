@@ -113,7 +113,7 @@ const observer = new MutationObserver((mutations) => {
         clearTimeout(window.scrollDebounce);
         window.scrollDebounce = setTimeout(() => {
             checkAndScrollToStage();
-        }, 200);
+        }, 3000);
     }
 });
 
@@ -130,7 +130,7 @@ function startObserving() {
         // Initial check
         if (sessionStorage.getItem("scroll_to_stage")) {
             console.log("🚀 Initial scroll check");
-            setTimeout(tryScroll, 500);
+            setTimeout(tryScroll, 3000);
         }
     }
 }
