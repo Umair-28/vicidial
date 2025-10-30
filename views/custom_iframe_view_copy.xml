@@ -1501,7 +1501,7 @@ action = {
                             </group>
 
                             <!-- Identity -->
-                            <group col="2" colspan="4">
+                            <group col="2" colspan="4" invisible="momentum_energy_customer_type != 'RESIDENT'">
                                 <group string="Passport Details" colspan="1">
                                     <field name="momentum_energy_passport_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                     <field name="momentum_energy_passport_expiry"/>
@@ -1516,7 +1516,7 @@ action = {
                             </group>
 
                             <!-- Medicare -->
-                            <group string="Medicare Details">
+                            <group string="Medicare Details" invisible="momentum_energy_customer_type != 'RESIDENT'">
                                 <field name="momentum_energy_medicare_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
                                 <field name="momentum_energy_medicare_number"/>
                                 <field name="momentum_energy_medicare_expiry"/>
