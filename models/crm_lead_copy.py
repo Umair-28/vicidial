@@ -592,30 +592,30 @@ class CrmLead(models.Model):
             # VIC: Starts with 6, alphanumeric 11 chars
             if state == "VIC":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("VIC NMI must be 11 alphanumeric characters."))
+                    raise ValidationError(_("NMI for state VIC must be 11 alphanumeric characters."))
                 if not nmi.startswith("6"):
-                    raise ValidationError(_("VIC NMI must start with 6."))
+                    raise ValidationError(_("NMI for state VIC must start with 6."))
 
             # NSW: Starts with 4, alphanumeric 11 chars
             elif state == "NSW":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("NSW NMI must be 11 alphanumeric characters."))
+                    raise ValidationError(_("NMI for state NSW must be 11 alphanumeric characters."))
                 if not nmi.startswith("4"):
-                    raise ValidationError(_("NSW NMI must start with 4."))
+                    raise ValidationError(_("NMI for state NSW must start with 4."))
 
             # QLD: Starts with 3 or QB
             elif state == "QLD":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("QLD NMI must be 11 alphanumeric characters."))
+                    raise ValidationError(_("NMI for state QLD must be 11 alphanumeric characters."))
                 if not (nmi.startswith("3") or nmi.startswith("QB")):
-                    raise ValidationError(_("QLD NMI must start with 3 or QB."))
+                    raise ValidationError(_("NMI for state QLD must start with 3 or QB."))
 
             # SA: Starts with 2
             elif state == "SA":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("SA NMI must be 11 alphanumeric characters."))
+                    raise ValidationError(_("NMI for state SA must be 11 alphanumeric characters."))
                 if not nmi.startswith("2"):
-                    raise ValidationError(_("SA NMI must start with 2."))
+                    raise ValidationError(_("NMI for state SA must start with 2."))
 
             # --------------------------
             # 🔢 MIRN Validation
