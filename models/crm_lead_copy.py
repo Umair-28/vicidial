@@ -567,7 +567,7 @@ class CrmLead(models.Model):
 
 
                
-    @api.constrains("stage_1_state", "nmi", "mirn", "lead_for")
+    @api.constrains("stage_1_state", "nmi", "mirn")
     def _check_stage_1_energy_fields(self):
         """
         Validates NMI and MIRN based on state-specific rules
