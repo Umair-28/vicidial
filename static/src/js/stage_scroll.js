@@ -51,8 +51,8 @@ function checkAndScrollToStage() {
     // Scroll into view
     section.scrollIntoView({ 
         behavior: "smooth", 
-        block: "start",
-        inline: "nearest"
+        block: "center",
+        inline: "center"
     });
     
     // Highlight effect
