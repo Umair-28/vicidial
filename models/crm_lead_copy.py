@@ -3415,11 +3415,19 @@ class CrmLead(models.Model):
             and self.momentum_energy_service_sub_type.upper() not in ["TRANSFER"]
             and self.momentum_energy_service_start_date
         ):
-            service["serviceStartDate"] = (
-                self.momentum_energy_service_start_date.replace(tzinfo=timezone.utc)
-                .isoformat()
-                .replace("+00:00", "Z")
-            )
+            start_date = self.momentum_energy_service_start_date
+
+            # 🧠 Handle both date and datetime safely
+            if isinstance(start_date, datetime):
+                dt = start_date.astimezone(timezone.utc)
+            elif isinstance(start_date, date):
+                dt = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
+            else:
+                dt = None
+
+            if dt:
+                service["serviceStartDate"] = dt.isoformat().replace("+00:00", "Z")
+
 
         # ✅ Build servicedAddress dynamically (skip empty optional fields)
         serviced_address = {
