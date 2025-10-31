@@ -3475,7 +3475,7 @@ class CrmLead(models.Model):
             "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
         }
         # 🟩 Add concession details only when applicable
-        if str(self.en_concession_card_holder or "").strip().lower() == "yes":
+        if str(self.en_concesion_card_holder or "").strip().lower() == "yes":
             service["serviceBilling"]["concession"] = {
                 "concessionCardType": self.momentum_energy_conc_card_type_code,
                 "concessionCardCode": self.momentum_energy_conc_card_code,
