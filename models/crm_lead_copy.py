@@ -3306,9 +3306,6 @@ class CrmLead(models.Model):
         # -------------------------------
         # Customer block
         # -------------------------------
-        # -------------------------------
-        # Customer block
-        # -------------------------------
         if self.momentum_energy_customer_type == "RESIDENT":
             # Base structure
             customer = {
@@ -3477,9 +3474,8 @@ class CrmLead(models.Model):
             "billCycleCode": self.momentum_energy_bill_cycle_code,
             "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
         }
-
         # 🟩 Add concession details only when applicable
-        if getattr(self, "en_concession_card_holder", "").lower() == "yes":
+        if str(self.en_concession_card_holder or "").strip().lower() == "yes":
             service["serviceBilling"]["concession"] = {
                 "concessionCardType": self.momentum_energy_conc_card_type_code,
                 "concessionCardCode": self.momentum_energy_conc_card_code,
