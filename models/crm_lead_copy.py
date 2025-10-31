@@ -3207,7 +3207,7 @@ class CrmLead(models.Model):
                 "contactType": self.momentum_energy_primary_contact_type,
                 "salutation": self.momentum_energy_primary_salutation,
                 "firstName": self.momentum_energy_primary_first_name,
-                "middleName": self.momentum_energy_primary_middle_name,
+                # "middleName": self.momentum_energy_primary_middle_name,
                 "lastName": self.momentum_energy_primary_last_name,
                 "countryOfBirth": self.momentum_energy_primary_country_of_birth,
                 "dateOfBirth": (
@@ -3229,6 +3229,9 @@ class CrmLead(models.Model):
                 ],
             },
         }
+
+        if (self.momentum_energy_primary_middle_name):
+            contacts["primaryContact"]["middleName"] = self.momentum_energy_primary_middle_name
 
         # 🧩 Dynamically include only non-empty phone numbers for primary contact
         primary_phones = []
@@ -3402,12 +3405,13 @@ class CrmLead(models.Model):
             "serviceType": (self.momentum_energy_service_type or "").upper(),
             "serviceSubType": self.momentum_energy_service_sub_type,
             "serviceConnectionId": self.momentum_energy_service_connection_id,
-            "serviceMeterId": self.momentum_energy_service_meter_id,
             "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
         }
 
         if (self.momentum_energy_lot_number):
             service["lotNumber"] = self.momentum_energy_lot_number
+        if (self.momentum_energy_service_meter_id):
+            service["serviceMeterId"] = self.momentum_energy_service_meter_id    
 
         # ✅ Conditionally include serviceStartDate only when subtype is not TRANSFER or MOVE IN
         if (
@@ -3419,14 +3423,14 @@ class CrmLead(models.Model):
 
             # 🧠 Handle both date and datetime safely
             if isinstance(start_date, datetime):
-                dt = start_date.astimezone(timezone.utc)
+                dt = start_date.date()
             elif isinstance(start_date, date):
-                dt = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
+                dt = start_date
             else:
                 dt = None
 
             if dt:
-                service["serviceStartDate"] = dt.isoformat().replace("+00:00", "Z")
+                service["serviceStartDate"] = dt.strftime("%Y-%m-%d")
 
 
         # ✅ Build servicedAddress dynamically (skip empty optional fields)
