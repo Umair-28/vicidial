@@ -254,35 +254,6 @@
 .o_form_view label.o_form_label[for^="momentum_energy_conc_has_ms"]::after,
 .o_form_view label.o_form_label[for^="momentum_energy_conc_in_grp_home"]::after
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {
     content: " *";
     color: #dc3545;

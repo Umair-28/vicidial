@@ -16,7 +16,8 @@ class ExportLeadWizard(models.TransientModel):
     _description = 'Export Leads Wizard'
 
     form_type = fields.Selection([
-        ('amex', 'Amex Sales Form'),
+        # ('amex', 'Amex Sales Form'),
+        ('credit_card', 'Credit Card Sales'),
         ('first_energy', '1st Energy Sales Form'),
         ('dodo_power', 'Dodo Power and Gas Sales Form'),
         ('optus_nbn', 'Optus NBN Sales Form'),
@@ -36,8 +37,8 @@ class ExportLeadWizard(models.TransientModel):
         domain = []
         export_fields = []
 
-        if self.form_type == 'amex':
-            domain = [('lead_for', '=', 'credit_card')]
+        if self.form_type == 'credit_card':
+            domain = [('lead_for', '=', 'credit_card_call_center')]
             export_fields = [
                 "amex_date", "amex_center", "amex_company_name", "amex_abn",
                 "amex_address_1", "amex_address_2", "amex_suburb", "amex_state",
@@ -48,7 +49,7 @@ class ExportLeadWizard(models.TransientModel):
             ]
 
         elif self.form_type == 'first_energy':
-            domain = [('lead_for', '=', 'energy'),('stage_2_campign_name', '=', 'first_energy')]
+            domain = [('lead_for', '=', 'energy_call_center'),('stage_2_campign_name', '=', 'first_energy')]
             export_fields = [   
                 "internal_dnc_checked", "existing_sale", "online_enquiry_form", "vendor_id",
                 "agent", "channel_ref", "sale_ref", "lead_ref", "incentive", "sale_date",
@@ -90,7 +91,7 @@ class ExportLeadWizard(models.TransientModel):
             ]
 
         elif self.form_type == 'dodo_power':
-            domain = [('lead_for', '=', 'energy')]
+            domain = [('lead_for', '=', 'energy_call_center')]
             export_fields = [
                 "dp_internal_dnc_checked", "dp_existing_sale", "dp_online_enquiry_form",
                 "dp_sales_name", "dp_sales_reference", "dp_agreement_date",
@@ -126,7 +127,7 @@ class ExportLeadWizard(models.TransientModel):
             ]
 
         elif self.form_type == 'optus_nbn':
-            domain = [('lead_for', '=', 'optus_nbn'),('in_stage2_provider','=','optus')]
+            domain = [('lead_for', '=', 'optus_nbn_call_center'),('in_stage2_provider','=','optus')]
             export_fields = [
                 "optus_date", "optus_activation", "optus_order", "optus_customer",
                 "optus_address", "optus_service", "optus_plan", "optus_per_month",
@@ -134,7 +135,7 @@ class ExportLeadWizard(models.TransientModel):
                 "optus_notes", "optus_dcn", "optus_audit_1", "optus_audit_2"
             ]
         elif self.form_type == 'dodo_nbn':
-            domain = [('lead_for', '=', 'optus_nbn')]
+            domain = [('lead_for', '=', 'optus_nbn_call_center')]
             export_fields = [
                 "do_nbn_receipt", "do_nbn_service", "do_nbn_plans", "do_nbn_current",
                 "do_nbn_current_no", "do_nbn_title", "do_first_name", "do_last_name",
