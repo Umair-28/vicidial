@@ -104,7 +104,7 @@ async function showModalWithLeadData(leadId) {
       // Standard CRM lead defaults
       default_contact_name:
         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
-        "Unnamed Lead",
+        "",
       default_phone: lead.phone_number || "",
       default_email_normalized: lead.email || "",
       // default_description: lead.comments || "",
