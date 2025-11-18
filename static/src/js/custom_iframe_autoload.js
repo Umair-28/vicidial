@@ -56,14 +56,13 @@ const renderer = (item) => `
 
 // Solution 1: Create record first, then open form
 
+
+
 async function showModalWithLeadData(leadId) {
   try {
-    console.log(`🎯 [showModalWithLeadData] Starting process for lead ID: ${leadId}`);
-    
     const orm = owl.Component.env.services.orm;
 
     // Fetch Vicidial lead data
-    console.log(`🔍 [showModalWithLeadData] Fetching Vicidial lead data for ID: ${leadId}`);
     const vicidialLeadData = await orm.searchRead(
       "vicidial.lead",
       [["id", "=", parseInt(leadId)]],
@@ -82,141 +81,59 @@ async function showModalWithLeadData(leadId) {
       ]
     );
 
-    console.log(`📊 [showModalWithLeadData] Vicidial lead search result:`, vicidialLeadData);
-
     if (!vicidialLeadData.length) {
-      throw new Error(`Vicidial lead not found for ID: ${leadId}`);
+      throw new Error("Vicidial lead not found");
     }
 
     const lead = vicidialLeadData[0];
+
     console.log(
-      "🎯 [showModalWithLeadData] Processing Vicidial lead:",
+      "🎯 [showModalWithLeadData] Opening CRM form with Vicidial lead:",
       lead
     );
 
     const env = owl.Component.env;
     const actionService = env.services.action;
 
-    // Create the CRM lead first with all the data
-    console.log("🔄 [showModalWithLeadData] Creating CRM lead record...");
-    const createData = {
-      name: `${lead.first_name || ""} ${lead.last_name || ""}`.trim() || "Unnamed Lead",
-      phone: lead.phone_number || "",
-      email_from: lead.email || "",
-      description: lead.comments || "",
-      city: lead.city || "",
-      vicidial_lead_id: lead.id,
-      ref: lead.vendor_lead_code || "",
+    // First, check what fields actually exist in your crm.lead model
+    const crmLeadFields = await orm.call("crm.lead", "fields_get", []);
+    console.log("Available CRM Lead fields:", Object.keys(crmLeadFields));
+
+    // Map defaults for CRM form
+    const defaultValues = {
+      // Standard CRM lead defaults
+      default_contact_name:
+        `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
+        "Unnamed Lead",
+      default_phone: lead.phone_number || "",
+      default_email_normalized: lead.email || "",
+      // default_description: lead.comments || "",
+      // default_city: lead.city || "",
+      // default_ref: lead.vendor_lead_code || "",
+      default_vicidial_lead_id: lead.id,
+      default_services: "false",
+
     };
 
-    console.log("📝 [showModalWithLeadData] CRM lead creation data:", createData);
-
-    // FIX: Wrap the data in an array for ORM.create
-    const crmLeadId = await orm.create("crm.lead", [createData]);
-
-    console.log("✅ [showModalWithLeadData] Created CRM lead with ID:", crmLeadId);
-
-    // Now open the form with the created record
-    console.log("🔄 [showModalWithLeadData] Opening CRM lead form...");
+    console.log("Default values are ", defaultValues);
     await actionService.doAction({
       type: "ir.actions.act_window",
       res_model: "crm.lead",
-      res_id: crmLeadId, // Open the specific record we just created
+      res_id: false, // always new record
       views: [[false, "form"]],
       target: "new",
+      fullscreen: true,
+      context: defaultValues,
     });
 
-    console.log("🎉 [showModalWithLeadData] Successfully opened CRM lead form with ID:", crmLeadId);
-
+    console.log(
+      "✅ [showModalWithLeadData] CRM lead form opened with defaults"
+    );
   } catch (error) {
     console.error("❌ [showModalWithLeadData] Error:", error);
-    console.error("🔍 [showModalWithLeadData] Error details:", {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
-    
-    // Optional: Show user-friendly error message
-    // alert("Failed to create lead from Vicidial: " + error.message);
+    // alert("Failed to open lead modal: " + error.message);
   }
 }
-
-// async function showModalWithLeadData(leadId) {
-//   try {
-//     const orm = owl.Component.env.services.orm;
-
-//     // Fetch Vicidial lead data
-//     const vicidialLeadData = await orm.searchRead(
-//       "vicidial.lead",
-//       [["id", "=", parseInt(leadId)]],
-//       [
-//         "id",
-//         "first_name",
-//         "last_name",
-//         "phone_number",
-//         "email",
-//         "comments",
-//         "city",
-//         "state",
-//         "country_code",
-//         "vendor_lead_code",
-//         "lead_id",
-//       ]
-//     );
-
-//     if (!vicidialLeadData.length) {
-//       throw new Error("Vicidial lead not found");
-//     }
-
-//     const lead = vicidialLeadData[0];
-
-//     console.log(
-//       "🎯 [showModalWithLeadData] Opening CRM form with Vicidial lead:",
-//       lead
-//     );
-
-//     const env = owl.Component.env;
-//     const actionService = env.services.action;
-
-//     // First, check what fields actually exist in your crm.lead model
-//     const crmLeadFields = await orm.call("crm.lead", "fields_get", []);
-//     console.log("Available CRM Lead fields:", Object.keys(crmLeadFields));
-
-//     // Map defaults for CRM form
-//     const defaultValues = {
-//       // Standard CRM lead defaults
-//       default_contact_name:
-//         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
-//         "Unnamed Lead",
-//       default_phone: lead.phone_number || "",
-//       default_email_normalized: lead.email || "",
-//       // default_description: lead.comments || "",
-//       // default_city: lead.city || "",
-//       // default_ref: lead.vendor_lead_code || "",
-//       default_vicidial_lead_id: lead.id,
-//       default_services: "false",
-
-//     };
-
-//     console.log("Default values are ", defaultValues);
-//     await actionService.doAction({
-//       type: "ir.actions.act_window",
-//       res_model: "crm.lead",
-//       res_id: false, // always new record
-//       views: [[false, "form"]],
-//       target: "new",
-//       fullscreen: true,
-//       context: defaultValues,
-//     });
-
-//     console.log(
-//       "✅ [showModalWithLeadData] CRM lead form opened with defaults"
-//     );
-//   } catch (error) {
-//     console.error("❌ [showModalWithLeadData] Error:", error);
-//     // alert("Failed to open lead modal: " + error.message);
-//   }
-// }
 
 async function openCustomModal(vicidialLeadId) {
   console.log(
