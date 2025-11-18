@@ -100,16 +100,16 @@ async function showModalWithLeadData(leadId) {
     // Map defaults for CRM form
     const defaultValues = {
       // Standard CRM lead defaults
-      contact_name:
+      default_contact_name:
         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
         "Unnamed Lead",
-      phone: lead.phone_number || "",
-      email_normalized: lead.email || "",
+      default_phone: lead.phone_number || "",
+      default_email_normalized: lead.email || "",
       // default_description: lead.comments || "",
       // default_city: lead.city || "",
       // default_ref: lead.vendor_lead_code || "",
-      vicidial_lead_id: lead.id, // custom field in crm.lead
-      services: "false",
+      default_vicidial_lead_id: lead.id, // custom field in crm.lead
+      default_services: "false",
 
     };
 
@@ -121,7 +121,7 @@ async function showModalWithLeadData(leadId) {
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
-      context: defaultValues,
+      additional_context: defaultValues,
     });
 
     console.log(
