@@ -89,6 +89,9 @@ action = {
                 <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
                 <!-- <button name="action_export_energy_leads" type="object" string="Export First Energy Leads" class="btn-primary" icon="fa-download"/> -->
             </xpath>
+            <xpath expr="//page[@name='internal_notes']//field[@name='description']" position="before">
+                <field name="campaign_notes" widget="html" nolabel="1" placeholder="Campaign information will appear here..."/>
+            </xpath>
 
 
             <!-- Add content inside notebook -->
@@ -255,7 +258,7 @@ action = {
 
                                 </group>
                                 <group string="Concession Details" colspan="1" invisible="en_concesion_card_holder != 'yes'">
-                                
+
                                     <field name="stage_2_state" readonly="lead_stage != '2' and not unlock_stage_2"/>
 
                                     <field name="stage_2_concession_type" readonly="lead_stage != '2' and not unlock_stage_2"/>
@@ -281,7 +284,7 @@ action = {
                                     <field name="stage_2_dob" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_id_proof_type" readonly="lead_stage != '2' and not unlock_stage_2"/>
                                     <field name="stage_2_id_proof_name" readonly="lead_stage != '2' and not unlock_stage_2"/>
-                                    
+
                                     <field name="stage_2_passport_number" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'passport'"/>
 
                                     <field name="stage_2_passport_issued_country" readonly="lead_stage != '2' and not unlock_stage_2" invisible="stage_2_id_proof_type != 'passport'"/>
@@ -1474,125 +1477,126 @@ action = {
 
                             <!-- Transaction Info -->
                             <group string="Transaction Information" col="2" colspan="4">
-                                <field name="momentum_energy_transaction_reference" help="Letters, numbers, and hyphens only (max 30 characters)."/>
-                                <field name="momentum_energy_transaction_channel"/>
-                                <field name="momentum_energy_transaction_date" help="Transaction date must not be more than 3 working days in the past"/>
-                                <field name="momentum_energy_transaction_verification_code"/>
-                                <field name="momentum_energy_transaction_source"/>
+                                <field name="momentum_energy_transaction_reference" readonly="is_momentum_submitted" help="Letters, numbers, and hyphens only (max 30 characters)."/>
+                                <field name="momentum_transaction_id" invisible="not momentum_transaction_id"/>
+                                <field name="momentum_energy_transaction_channel" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_transaction_date" readonly="is_momentum_submitted" help="Transaction date must not be more than 3 working days in the past"/>
+                                <field name="momentum_energy_transaction_verification_code" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_transaction_source" readonly="is_momentum_submitted"/>
                             </group>
 
                             <!-- Customer + Business -->
                             <group col="2" colspan="4">
                                 <group string="Customer Information" colspan="1">
-                                    <field name="momentum_energy_customer_type" required="services == 'energy' and stage_2_campign_name == 'momentum'"/>
-                                    <field name="momentum_energy_customer_sub_type"/>
-                                    <field name="momentum_energy_communication_preference"/>
-                                    <field name="momentum_energy_promotion_allowed"/>
+                                    <field name="momentum_energy_customer_type" readonly="is_momentum_submitted" required="services == 'energy' and stage_2_campign_name == 'momentum'"/>
+                                    <field name="momentum_energy_customer_sub_type" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_communication_preference" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_promotion_allowed" readonly="is_momentum_submitted"/>
                                 </group>
 
-                                <group string="Business Details" colspan="1" invisible="momentum_energy_customer_type != 'COMPANY'">
-                                    <field name="momentum_energy_industry" help="Industry of the customer business,required if customer Type is COMPANY"/>
-                                    <field name="momentum_energy_entity_name" help="Legal name of the Company"/>
-                                    <field name="momentum_energy_trading_name" help="Trading name of the Company"/>
-                                    <field name="momentum_energy_trustee_name" help="Name of the Trustee  of the Company"/>
-                                    <field name="momentum_energy_abn_document_id" help="ABN Details of Company. It must contain exactly 11 digits with no spaces or special characters."/>
-                                    <field name="momentum_energy_acn_document_id" help="Company's ACN number. Required for a LTD company. It must contain exactly 9 digits with no spaces or special characters."/>
+                                <group string="Business Details" colspan="1" readonly="is_momentum_submitted" invisible="momentum_energy_customer_type != 'COMPANY'">
+                                    <field name="momentum_energy_industry" readonly="is_momentum_submitted" help="Industry of the customer business,required if customer Type is COMPANY"/>
+                                    <field name="momentum_energy_entity_name" readonly="is_momentum_submitted" help="Legal name of the Company"/>
+                                    <field name="momentum_energy_trading_name" readonly="is_momentum_submitted" help="Trading name of the Company"/>
+                                    <field name="momentum_energy_trustee_name" readonly="is_momentum_submitted" help="Name of the Trustee  of the Company"/>
+                                    <field name="momentum_energy_abn_document_id" readonly="is_momentum_submitted" help="ABN Details of Company. It must contain exactly 11 digits with no spaces or special characters."/>
+                                    <field name="momentum_energy_acn_document_id" readonly="is_momentum_submitted" help="Company's ACN number. Required for a LTD company. It must contain exactly 9 digits with no spaces or special characters."/>
                                 </group>
                             </group>
 
                             <!-- Identity -->
                             <group col="2" colspan="4" invisible="momentum_energy_customer_type != 'RESIDENT'">
                                 <group string="Passport Details" colspan="1">
-                                    <field name="momentum_energy_passport_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
-                                    <field name="momentum_energy_passport_expiry"/>
-                                    <field name="momentum_energy_passport_country"/>
+                                    <field name="momentum_energy_passport_id" readonly="is_momentum_submitted" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
+                                    <field name="momentum_energy_passport_expiry" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_passport_country" readonly="is_momentum_submitted"/>
                                 </group>
 
                                 <group string="Driving License" colspan="1">
-                                    <field name="momentum_energy_driving_license_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
-                                    <field name="momentum_energy_driving_license_expiry"/>
-                                    <field name="momentum_energy_driving_license_state"/>
+                                    <field name="momentum_energy_driving_license_id" readonly="is_momentum_submitted" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
+                                    <field name="momentum_energy_driving_license_expiry" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_driving_license_state" readonly="is_momentum_submitted"/>
                                 </group>
                             </group>
 
                             <!-- Medicare -->
                             <group string="Medicare Details" invisible="momentum_energy_customer_type != 'RESIDENT'">
-                                <field name="momentum_energy_medicare_id" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
-                                <field name="momentum_energy_medicare_number"/>
-                                <field name="momentum_energy_medicare_expiry"/>
+                                <field name="momentum_energy_medicare_id" readonly="is_momentum_submitted" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
+                                <field name="momentum_energy_medicare_number" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_medicare_expiry" readonly="is_momentum_submitted"/>
                             </group>
 
                             <!-- Primary Contact -->
                             <group col="2" colspan="4">
                                 <group string="Primary Contact Details" colspan="1">
-                                    <field name="momentum_energy_primary_contact_type" help="Saluation of the contact person."/>
-                                    <field name="momentum_energy_primary_salutation"/>
-                                    <field name="momentum_energy_primary_first_name" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
-                                    <field name="momentum_energy_primary_middle_name"/>
-                                    <field name="momentum_energy_primary_last_name" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
-                                    <field name="momentum_energy_primary_country_of_birth" help="Required when passport details are provided"/>
-                                    <field name="momentum_energy_primary_date_of_birth"/>
-                                    <field name="momentum_energy_primary_email" widget="email"/>
+                                    <field name="momentum_energy_primary_contact_type" readonly="is_momentum_submitted" help="Saluation of the contact person."/>
+                                    <field name="momentum_energy_primary_salutation" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_primary_first_name" readonly="is_momentum_submitted" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
+                                    <field name="momentum_energy_primary_middle_name" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_primary_last_name" readonly="is_momentum_submitted" help="It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters."/>
+                                    <field name="momentum_energy_primary_country_of_birth" readonly="is_momentum_submitted" help="Required when passport details are provided"/>
+                                    <field name="momentum_energy_primary_date_of_birth" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_primary_email" readonly="is_momentum_submitted" widget="email"/>
                                 </group>
 
                                 <group string="Primary Contact Phone" colspan="1">
-                                    <field name="momentum_energy_primary_phone_work" placeholder="0412345678"/>
-                                    <field name="momentum_energy_primary_phone_home" placeholder="0412345678" help="Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."/>
-                                    <field name="momentum_energy_primary_phone_mobile" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_work" readonly="is_momentum_submitted" placeholder="0412345678"/>
+                                    <field name="momentum_energy_primary_phone_home" readonly="is_momentum_submitted" placeholder="0412345678" help="Must be a valid Australian phone number such as landline, mobile, or toll-free (13, 1300, 1800)."/>
+                                    <field name="momentum_energy_primary_phone_mobile" readonly="is_momentum_submitted" placeholder="0412345678"/>
                                 </group>
                             </group>
 
                             <!-- Primary Address -->
                             <group string="Primary Contact Address" col="2" colspan="4">
-                                <field name="momentum_energy_primary_address_type"/>
-                                <field name="momentum_energy_primary_unit_number" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."/>
-                                <field name="momentum_energy_primary_street_number" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
-                                <field name="momentum_energy_primary_street_name" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed."/>
-                                <field name="momentum_energy_primary_suburb" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
-                                <field name="momentum_energy_primary_state"/>
-                                <field name="momentum_energy_primary_post_code" help="It must contain exactly 4 digits (0–9)."/>
+                                <field name="momentum_energy_primary_address_type" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_primary_unit_number" readonly="is_momentum_submitted" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."/>
+                                <field name="momentum_energy_primary_street_number" readonly="is_momentum_submitted" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
+                                <field name="momentum_energy_primary_street_name" readonly="is_momentum_submitted" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and special characters (', . / ( ) -) are allowed."/>
+                                <field name="momentum_energy_primary_suburb" readonly="is_momentum_submitted" help="Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
+                                <field name="momentum_energy_primary_state" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_primary_post_code" readonly="is_momentum_submitted" help="It must contain exactly 4 digits (0–9)."/>
                             </group>
 
                             <!-- Secondary Contact -->
                             <group col="2" colspan="4">
                                 <group string="Secondary Contact Details" colspan="1">
-                                    <field name="momentum_energy_secondary_contact_type"/>
-                                    <field name="momentum_energy_secondary_salutation"/>
-                                    <field name="momentum_energy_secondary_first_name"/>
-                                    <field name="momentum_energy_secondary_middle_name"/>
-                                    <field name="momentum_energy_secondary_last_name"/>
-                                    <field name="momentum_energy_secondary_country_of_birth"/>
-                                    <field name="momentum_energy_secondary_date_of_birth"/>
-                                    <field name="momentum_energy_secondary_email" widget="email"/>
+                                    <field name="momentum_energy_secondary_contact_type" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_salutation" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_first_name" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_middle_name" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_last_name" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_country_of_birth" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_date_of_birth" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_email" readonly="is_momentum_submitted" widget="email"/>
                                 </group>
 
                                 <group string="Secondary Contact Phone" colspan="1">
-                                    <field name="momentum_energy_secondary_phone_work"/>
-                                    <field name="momentum_energy_secondary_phone_home"/>
-                                    <field name="momentum_energy_secondary_phone_mobile"/>
+                                    <field name="momentum_energy_secondary_phone_work" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_phone_home" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_secondary_phone_mobile" readonly="is_momentum_submitted"/>
                                 </group>
                             </group>
 
                             <!-- Secondary Address -->
                             <group string="Secondary Contact Address" col="2" colspan="4">
-                                <field name="momentum_energy_secondary_address_type"/>
-                                <field name="momentum_energy_secondary_unit_number"/>
-                                <field name="momentum_energy_secondary_street_number"/>
-                                <field name="momentum_energy_secondary_street_name"/>
-                                <field name="momentum_energy_secondary_suburb"/>
-                                <field name="momentum_energy_secondary_state"/>
-                                <field name="momentum_energy_secondary_post_code"/>
+                                <field name="momentum_energy_secondary_address_type" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_unit_number" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_street_number" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_street_name" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_suburb" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_state" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_secondary_post_code" readonly="is_momentum_submitted"/>
                             </group>
 
                             <!-- Service Information -->
                             <group col="2" colspan="4">
                                 <group string="Service Information" colspan="1">
-                                    <field name="momentum_energy_service_type" help="Type of service"/>
-                                    <field name="momentum_energy_service_sub_type" help="Sub type of service"/>
-                                    <field name="momentum_energy_service_connection_id" help ="NMI / MIRN of the site, depending on the type of the service if service is POWER, it must be NMI and MIRN for GAS"/>
-                                    <field name="momentum_energy_service_meter_id" help="Number of the Meter,Only letters, numbers, commas (,), periods (.), forward slashes (/), ampersands, colons (:), and hyphens (-) are allowed."/>
-                                    <field name="momentum_energy_service_start_date" help="Service Start Date is required when Service Sub Type is 'Move In' or 'New Installation'."/>
-                                    <field name="momentum_energy_estimated_annual_kwhs" hrlp="Site's estimated annual consumption in kWh"/>
+                                    <field name="momentum_energy_service_type" readonly="is_momentum_submitted" help="Type of service"/>
+                                    <field name="momentum_energy_service_sub_type" readonly="is_momentum_submitted" help="Sub type of service"/>
+                                    <field name="momentum_energy_service_connection_id" readonly="is_momentum_submitted" help ="NMI / MIRN of the site, depending on the type of the service if service is POWER, it must be NMI and MIRN for GAS"/>
+                                    <field name="momentum_energy_service_meter_id" readonly="is_momentum_submitted" help="Number of the Meter,Only letters, numbers, commas (,), periods (.), forward slashes (/), ampersands, colons (:), and hyphens (-) are allowed."/>
+                                    <field name="momentum_energy_service_start_date" readonly="is_momentum_submitted" help="Service Start Date is required when Service Sub Type is 'Move In' or 'New Installation'."/>
+                                    <field name="momentum_energy_estimated_annual_kwhs" readonly="is_momentum_submitted" hrlp="Site's estimated annual consumption in kWh"/>
                                 </group>
 
                                 <group string="Service Address" colspan="1">
@@ -1600,24 +1604,24 @@ action = {
                                     <field name="momentum_energy_lot_number" help="Name must start with a capital letter and contain only letters, apostrophes ('), hyphens (-), or periods (.)"/>
                                     <field name="momentum_energy_service_street_number" help="Street number of site, If not known, populate with 0. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed."/>
                                     <field name="momentum_energy_service_street_name" help="Only letters (A–Z, a–z), numbers (0–9), spaces, and the special characters (', . / ( ) -) are allowed."/>
-                                    <field name="momentum_energy_service_street_type_code"/>
-                                    <field name="momentum_energy_service_suburb" help="Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted."/>
-                                    <field name="momentum_energy_service_state"/>
-                                    <field name="momentum_energy_service_post_code" help="It must contain exactly 4 digits (0–9)."/>
+                                    <field name="momentum_energy_service_street_type_code" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_service_suburb" readonly="is_momentum_submitted" help="Only letters (A–Z, a–z), numbers (0–9), and spaces are allowed. Special characters are not permitted."/>
+                                    <field name="momentum_energy_service_state" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_service_post_code" readonly="is_momentum_submitted" help="It must contain exactly 4 digits (0–9)."/>
                                 </group>
                             </group>
 
                             <!-- Unit / Floor -->
                             <group col="2" colspan="4">
                                 <group string="Unit and Floor" colspan="1">
-                                    <field name="momentum_energy_unit_type"/>
-                                    <field name="momentum_energy_unit_number"/>
+                                    <field name="momentum_energy_unit_type" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_unit_number" readonly="is_momentum_submitted"/>
                                 </group>
 
                                 <group string="Floor" colspan="1">
 
-                                    <field name="momentum_energy_floor_number"/>
-                                    <field name="momentum_energy_floor_type"/>
+                                    <field name="momentum_energy_floor_number" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_floor_type" readonly="is_momentum_submitted"/>
                                 </group>
                             </group>
 
@@ -1625,41 +1629,41 @@ action = {
                             <group col="2" colspan="4">
 
                                 <group string="Service Instructions" colspan="1">
-                                    <field name="momentum_energy_service_access_instructions" help="Instructions for Property Access"/>
-                                    <field name="momentum_energy_service_safety_instructions" help="Safety instructions for property"/>
+                                    <field name="momentum_energy_service_access_instructions" readonly="is_momentum_submitted" help="Instructions for Property Access"/>
+                                    <field name="momentum_energy_service_safety_instructions" readonly="is_momentum_submitted" help="Safety instructions for property"/>
                                 </group>
                             </group>
 
                             <!-- Offer & Billing -->
                             <group col="2" colspan="4">
                                 <group string="Offer Details" colspan="1">
-                                    <field name="momentum_energy_offer_quote_date" help="The day when quote was presented to the customer."/>
-                                    <field name="momentum_energy_service_offer_code"/>
-                                    <field name="momentum_energy_service_plan_code"/>
-                                    <field name="momentum_energy_contract_term_code" help="Used to define the contract term the customer has agreed to. "/>
-                                    <field name="momentum_energy_contract_date" help="Customer's contract start date"/>
+                                    <field name="momentum_energy_offer_quote_date" readonly="is_momentum_submitted" help="The day when quote was presented to the customer."/>
+                                    <field name="momentum_energy_service_offer_code" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_service_plan_code" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_contract_term_code" readonly="is_momentum_submitted" help="Used to define the contract term the customer has agreed to. "/>
+                                    <field name="momentum_energy_contract_date" readonly="is_momentum_submitted" help="Customer's contract start date"/>
                                 </group>
 
                                 <group string="Billing Details" colspan="1">
-                                    <field name="momentum_energy_payment_method"/>
-                                    <field name="momentum_energy_bill_cycle_code" help="Bill cycle code for the customer. "/>
-                                    <field name="momentum_energy_bill_delivery_method" help="Delivery method of Bills whether elctronic or pyhsical(postal)"/>
+                                    <field name="momentum_energy_payment_method" readonly="is_momentum_submitted"/>
+                                    <field name="momentum_energy_bill_cycle_code" readonly="is_momentum_submitted" help="Bill cycle code for the customer. "/>
+                                    <field name="momentum_energy_bill_delivery_method" readonly="is_momentum_submitted" help="Delivery method of Bills whether elctronic or pyhsical(postal)"/>
                                 </group>
                             </group>
 
                             <!-- Concession / Card info -->
                             <group string="Concession Card Information" col="2" colspan="4" invisible="en_concesion_card_holder != 'yes'">
-                                <field name="momentum_energy_conc_card_type_code"/>
-                                <field name="momentum_energy_conc_card_code" help="Concession Card Code"/>
-                                <field name="momentum_energy_conc_card_number" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
-                                <field name="momentum_energy_conc_card_exp_date"/>
-                                <field name="momentum_energy_card_first_name"/>
-                                <field name="momentum_energy_card_last_name"/>
-                                <field name="momentum_energy_conc_start_date"/>
-                                <field name="momentum_energy_conc_end_date"/>
-                                <field name="momentum_energy_concession_obtained"/>
-                                <field name="momentum_energy_conc_has_ms" help="Whether customer requires a medical cooling application form to be sent to apply for medical cooling concession"/>
-                                <field name="momentum_energy_conc_in_grp_home"/>
+                                <field name="momentum_energy_conc_card_type_code" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_conc_card_code" readonly="is_momentum_submitted" help="Concession Card Code"/>
+                                <field name="momentum_energy_conc_card_number" readonly="is_momentum_submitted" help="Use only letters, digits, and hyphens (-), max 30 chars."/>
+                                <field name="momentum_energy_conc_card_exp_date" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_card_first_name" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_card_last_name" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_conc_start_date" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_conc_end_date" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_concession_obtained" readonly="is_momentum_submitted"/>
+                                <field name="momentum_energy_conc_has_ms" readonly="is_momentum_submitted" help="Whether customer requires a medical cooling application form to be sent to apply for medical cooling concession"/>
+                                <field name="momentum_energy_conc_in_grp_home" readonly="is_momentum_submitted"/>
                             </group>
 
                         </sheet>

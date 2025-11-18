@@ -111,7 +111,7 @@ class CrmLead(models.Model):
         "momentum_energy_primary_contact_type",
         "momentum_energy_primary_first_name",
         "momentum_energy_primary_last_name",
-        "momentum_energy_primary_email",
+        # "momentum_energy_primary_email",
         "momentum_energy_primary_street_number",
         "momentum_energy_primary_street_name",
         "momentum_energy_primary_unit_number",
@@ -216,10 +216,10 @@ class CrmLead(models.Model):
                 r"^[A-Z][a-zA-Z'-. ]{1,100}$",
                 "Invalid Customer Last Name. It must start with a capital letter and can contain only letters, apostrophes ('), hyphens (-), periods (.), and spaces. Maximum length is 100 characters.",
             ),
-            "momentum_energy_primary_email": (
-                r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
-                "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
-            ),
+            # "momentum_energy_primary_email": (
+            #     r"^[a-zA-Z0-9._|%#~`=?&/$^*!}{+\-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$",
+            #     "Invalid Email Address. It must follow the format 'example@domain.com' and can include letters, numbers, and special characters (._|%#~`=?&/$^*!}{+-) before the '@'.",
+            # ),
             "momentum_energy_primary_street_number": (
                 r"^[A-Za-z0-9-]*$",
                 "Invalid Street Number. Only letters (A–Z, a–z), numbers (0–9), and hyphens (-) are allowed.",
@@ -919,7 +919,12 @@ class CrmLead(models.Model):
                         )
                     )
                                
-               
+    @api.onchange('stage_2_campign_name')
+    def _onchange_stage_2_campign_name(self):
+        if self.stage_2_campign_name:
+            campaign_dict = dict(self._fields['stage_2_campign_name'].selection)
+            campaign_name = campaign_dict.get(self.stage_2_campign_name)
+            self.campaign_notes = f"<p><b>Selected Campaign:</b> {campaign_name}</p>"          
     
                             
     @api.model
@@ -1256,6 +1261,7 @@ class CrmLead(models.Model):
         string="Disposition",
     )
     callback_date = fields.Datetime("Callback Date")
+    campaign_notes = fields.Html(string="Campaign Notes", readonly=True)
 
     # FIRST ENERGY FIELDS
     internal_dnc_checked = fields.Date(string="Internal DNC Checked")
@@ -2224,6 +2230,8 @@ class CrmLead(models.Model):
     momentum_energy_card_last_name = fields.Char(
         string="Last name of the contact person."
     )
+    momentum_transaction_id = fields.Char(string='Transaction ID')
+    is_momentum_submitted = fields.Boolean(default=False)
 
     # AMEX CREDIT CARD FIELDS
     cc_prefix = fields.Selection(
@@ -3415,9 +3423,12 @@ class CrmLead(models.Model):
                 data = response.json()
                 if data.get("success"):
                     tx_id = data["data"]["data"].get("salesTransactionId")
+                    self.momentum_transaction_id = tx_id
+                    self.is_momentum_submitted = True
                     msg = f"Momentum Success ✅\nTransaction ID: {tx_id}"
+                    return
                     # Show success notification to user
-                    raise UserError(msg)
+                    # raise UserError(msg)
 
             if not response.ok:
                 try:
@@ -3432,6 +3443,7 @@ class CrmLead(models.Model):
                     full_error = "\n".join(error_messages) or data.get(
                         "error", "Unknown Momentum API error"
                     )
+
                     _logger.error(
                         "Momentum API error for Lead %s: %s", self.id, full_error
                     )
