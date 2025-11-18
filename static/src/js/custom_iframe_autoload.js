@@ -110,8 +110,8 @@ async function showModalWithLeadData(leadId) {
       // default_description: lead.comments || "",
       // default_city: lead.city || "",
       // default_ref: lead.vendor_lead_code || "",
-      default_vicidial_lead_id: lead.id,
-      default_services: "false",
+      // default_vicidial_lead_id: lead.id,
+      // default_services: "false",
 
     };
 
