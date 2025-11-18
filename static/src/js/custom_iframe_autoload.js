@@ -111,7 +111,8 @@ async function showModalWithLeadData(leadId) {
 
     console.log("📝 [showModalWithLeadData] CRM lead creation data:", createData);
 
-    const crmLeadId = await orm.create("crm.lead", createData);
+    // FIX: Wrap the data in an array for ORM.create
+    const crmLeadId = await orm.create("crm.lead", [createData]);
 
     console.log("✅ [showModalWithLeadData] Created CRM lead with ID:", crmLeadId);
 
