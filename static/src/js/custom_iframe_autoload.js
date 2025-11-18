@@ -111,79 +111,6 @@ async function showModalWithLeadData(leadId) {
       default_vicidial_lead_id: lead.id, // custom field in crm.lead
       default_services: "false",
 
-      // --- Custom Forms Mapping ---
-      // Contact Card (cc_)
-      default_cc_first_name: lead.first_name || "",
-      default_cc_last_name: lead.last_name || "",
-      default_cc_job_title: lead.title || "",
-      default_cc_phone: lead.phone_number || "",
-      default_cc_email: lead.email || "",
-
-      // Home Moving (hm_)
-      default_hm_first_name: lead.first_name,
-      default_hm_last_name: lead.last_name,
-      default_hm_address: lead.address1,
-      default_hm_suburb: lead.city,
-      default_hm_state: lead.state,
-      default_hm_postcode: lead.postal_code,
-      default_hm_mobile: lead.phone_number,
-      default_hm_email: lead.email,
-
-      // Energy (en_)
-      default_en_name: lead.first_name || lead.last_name,
-      default_en_contact_number: lead.phone_number,
-      default_en_email: lead.email,
-
-      // Internet (in_)
-      default_in_name: lead.first_name || lead.last_name,
-      default_in_contact_number: lead.phone_number,
-      default_in_email: lead.email,
-
-      // Billing Services (bs_)
-      default_bs_first_name: lead.first_name,
-      default_bs_last_name: lead.last_name,
-      default_bs_email: lead.email,
-
-      // Housing Lead (hl_)
-      default_hl_first_name: lead.first_name || "",
-      default_hl_last_name: lead.last_name || "",
-      default_hl_contact: lead.phone_number || "",
-      default_hl_email: lead.email || "",
-
-      // Home Internet (hi_)
-      default_hi_full_name: lead.first_name || lead.last_name || "",
-
-      default_hi_contact_number: lead.phone_number || "",
-      default_hi_email: lead.email || "",
-
-      // Do (do_)
-      default_do_first_name: lead.first_name || "",
-      default_do_last_name: lead.last_name || "",
-      default_do_mobile_no: lead.phone_number || "",
-      default_do_installation_address: lead.address1 || "",
-      default_do_suburb: lead.city || "",
-      default_do_state: lead.state || "",
-      default_do_post_code: lead.postal_code || "",
-      default_do_closer_name: lead.agent_user || "",
-
-      // Other Plans (op_)
-      default_op_customer_name: lead.first_name || lead.last_name || "",
-
-      default_op_contact_number: lead.phone_number || "",
-      default_op_email: lead.email || "",
-      default_op_notes: lead.comments || "",
-
-      // FE (fe_)
-      default_fe_first_name: lead.first_name || "",
-      default_fe_last_name: lead.last_name || "",
-      default_fe_phone_mobile: lead.phone_number || "",
-      default_fe_email: lead.email || "",
-
-      // DP (dp_)
-      default_dp_first_name: lead.first_name || "",
-      default_dp_last_name: lead.last_name || "",
-      default_dp_contact_number: lead.phone_number || "",
-      default_dp_email_contact: lead.email || "",
     };
 
     console.log("Default values are ", defaultValues);
@@ -194,7 +121,7 @@ async function showModalWithLeadData(leadId) {
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
-      // context: defaultValues,
+      context: defaultValues,
     });
 
     console.log(
