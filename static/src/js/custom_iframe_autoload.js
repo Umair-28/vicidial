@@ -194,7 +194,7 @@ async function showModalWithLeadData(leadId) {
       views: [[false, "form"]],
       target: "new",
       fullscreen: true,
-      context: defaultValues,
+      // context: defaultValues,
     });
 
     console.log(
