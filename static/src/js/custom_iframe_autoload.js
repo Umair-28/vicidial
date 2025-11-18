@@ -100,7 +100,7 @@ async function showModalWithLeadData(leadId) {
     // Map defaults for CRM form
     const defaultValues = {
       // Standard CRM lead defaults
-      name:
+      contact_name:
         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
         "Unnamed Lead",
       phone: lead.phone_number || "",
