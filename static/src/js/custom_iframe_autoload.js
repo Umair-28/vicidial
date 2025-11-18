@@ -100,16 +100,16 @@ async function showModalWithLeadData(leadId) {
     // Map defaults for CRM form
     const defaultValues = {
       // Standard CRM lead defaults
-      default_name:
+      name:
         `${lead.first_name || ""} ${lead.last_name || ""}`.trim() ||
         "Unnamed Lead",
       phone: lead.phone_number || "",
       email_normalized: lead.email || "",
       // default_description: lead.comments || "",
       // default_city: lead.city || "",
-      default_ref: lead.vendor_lead_code || "",
-      default_vicidial_lead_id: lead.id, // custom field in crm.lead
-      default_services: "false",
+      // default_ref: lead.vendor_lead_code || "",
+      vicidial_lead_id: lead.id, // custom field in crm.lead
+      services: "false",
 
     };
 
