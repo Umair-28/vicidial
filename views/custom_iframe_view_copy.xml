@@ -65,6 +65,27 @@ action = {
         </field>
     </record>
 
+    <!-- HIDE FIELDS FROM QUICK CREATE FORM -->
+    <record id="crm_lead_view_form_quick_create_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick.create.hide.fields</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form"/>
+        <field name="arch" type="xml">
+            <!-- Hide Opportunity field -->
+            <xpath expr="//field[@name='name']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Hide Expected Revenue field -->
+            <xpath expr="//field[@name='expected_revenue']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='priority']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+        </field>
+    </record>
+
 
 
 
@@ -89,8 +110,15 @@ action = {
                 <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
                 <!-- <button name="action_export_energy_leads" type="object" string="Export First Energy Leads" class="btn-primary" icon="fa-download"/> -->
             </xpath>
-            <xpath expr="//page[@name='internal_notes']//field[@name='description']" position="before">
+            <!-- <xpath expr="//page[@name='internal_notes']//field[@name='description']" position="before">
                 <field name="campaign_notes" widget="html" nolabel="1" placeholder="Campaign information will appear here..."/>
+            </xpath> -->
+            <xpath expr="//notebook" position="inside">
+                <page name="scripts_tab" string="Scripts">
+                    <group>
+                        <field name="campaign_notes" widget="html" nolabel="1" placeholder="Campaign information will appear here..." />
+                    </group>
+                </page>
             </xpath>
 
 

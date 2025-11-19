@@ -924,7 +924,18 @@ class CrmLead(models.Model):
         if self.stage_2_campign_name:
             campaign_dict = dict(self._fields['stage_2_campign_name'].selection)
             campaign_name = campaign_dict.get(self.stage_2_campign_name)
-            self.campaign_notes = f"<p><b>Selected Campaign:</b> {campaign_name}</p>"          
+            dummy_text = """
+                <p style='margin-top:8px; line-height:1.6;'>
+                    <b>Selected Campaign:</b> {campaign_name}<br/><br/>
+                    This campaign is currently active and includes multiple engagement
+                    touchpoints such as calls, follow-ups, and automated messaging.
+                    Our goal is to ensure clear communication and deliver a seamless
+                    customer experience. Please review the script, guidelines, and
+                    communication flow carefully before proceeding with any interaction.
+                    Additional notes and instructions may be added by the team lead.
+                </p>
+                """
+            self.campaign_notes = dummy_text.format(campaign_name=campaign_name)          
     
                             
     @api.model

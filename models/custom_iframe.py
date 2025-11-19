@@ -21,13 +21,13 @@ class CustomIframe(models.Model):
         if 'user_id' in fields:
             defaults['user_id'] = user.id
         if 'sip_exten' in fields:
-            defaults['sip_exten'] = user.vicidial_extension or ''
+            defaults['sip_exten'] = user.vicidial_extension or user.x_studio_sip_extension or ''
         return defaults
 
     @api.onchange('user_id')
     def _onchange_user_id_set_extension(self):
         for rec in self:
-            rec.sip_exten = rec.user_id.vicidial_extension or ''
+            rec.sip_exten = rec.user_id.vicidial_extension or user.x_studio_sip_extension or ''
 
     lead_ids = fields.Many2many(
         'crm.lead',
@@ -38,7 +38,7 @@ class CustomIframe(models.Model):
     @api.depends('user_id')
     def _compute_sip_exten(self):
         for rec in self:
-            rec.sip_exten = rec.user_id.vicidial_extension or ''
+            rec.sip_exten = rec.user_id.vicidial_extension or user.x_studio_sip_extension or ''
 
     @api.depends('phone_number', 'user_id')
     def _compute_lead_ids(self):
@@ -55,11 +55,11 @@ class CustomIframe(models.Model):
         if not iframe:
             iframe = self.create({
                 'user_id': self.env.user.id,
-                'sip_exten': self.env.user.vicidial_extension or '',
+                'sip_exten': self.env.user.vicidial_extension or user.x_studio_sip_extension or '',
             })
         else:
             iframe.lead_ids = [(6, 0, [])]
-            iframe.sip_exten =self.env.user.vicidial_extension
+            iframe.sip_exten =self.env.user.vicidial_extension or self.env.user.x_studio_sip_extension or ''
         return {
             'type': 'ir.actions.act_window',
             'name': 'Vicidial',
