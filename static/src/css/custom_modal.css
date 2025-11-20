@@ -11,8 +11,8 @@
 
 .o_field_widget.o_field_many2one,
 .o_field_widget.o_field_selection {
-    background-color: #ffffff !important; /* ensure visible background */
-    border: 1px solid #ced4da !important;
+    /* background-color: #ffffff !important; */
+    border: 2px solid #3343b6;
     border-radius: 6px !important;
     color: #212529 !important;
     min-height: 36px;
@@ -25,7 +25,7 @@
 /* .o_field_widget.o_field_selection:hover, */
 .o_field_widget.o_field_many2one:focus-within,
 .o_field_widget.o_field_selection:focus-within {
-    border-color: #0d6efd !important; /* blue highlight */
+    border-color: #3343b6 !important; /* blue highlight */
     box-shadow: 0 0 3px rgba(13, 110, 253, 0.4);
 }
 
@@ -46,8 +46,8 @@
 /* .o_form_view .o_field_widget select, */
 .o_form_view .o_field_widget textarea {
     border: 2px solid #3343b6;
-    border-radius: 1px;
-    padding: 3px 7px;
+    border-radius: 4px;
+    padding: 5px 10px;
     background-color: #f9fafb;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
@@ -178,9 +178,7 @@
 .o_service_btn:active {
     transform: translateY(-1px) scale(0.98);
 }
-.o_field_widget.o_field_many2one, .o_field_widget.o_field_selection {
-    border: 2px solid #3343b6;
-}
+
 .o_field_widget.o_field_selection .o_input::after,
 .o_field_widget.o_field_many2one .o_input::after {
     opacity: 1 !important;          
