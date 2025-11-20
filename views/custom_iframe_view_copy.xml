@@ -185,13 +185,13 @@ action = {
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+
+                        </sheet>
                             <xpath expr="//group[@class='stage-section stage-1']/sheet" position="inside">
                                 <div class="o_form_buttons_view mt-2">
                                     <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1' or not unlock_stage_1"/>
                                 </div>
                             </xpath>
-
-                        </sheet>
                     </group>
                     <!-- ELECRTRICY AND GAS CALL CENTER STAGE 1 FORM END -->
 
@@ -259,13 +259,13 @@ action = {
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+
+                        </sheet>
                             <xpath expr="//group[@class='stage-section stage-1']/sheet" position="inside">
                                 <div class="o_form_buttons_view mt-2">
                                     <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1' or not unlock_stage_1"/>
                                 </div>
                             </xpath>
-
-                        </sheet>
                     </group>
                     <!-- Electricty and GAS Stage WEBSITE 1 Form END -->
 
