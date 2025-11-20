@@ -7,6 +7,8 @@
             <form string="Export Leads">
                 <group>
                     <field name="form_type" required="True"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
                 </group>
                 <footer>
                     <button name="action_export" type="object" string="Export" class="btn-primary"/>
@@ -16,3 +18,21 @@
         </field>
     </record>
 </odoo>
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_export_lead_wizard_form" model="ir.ui.view">
+        <field name="name">export.lead.wizard.form</field>
+        <field name="model">export.lead.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Leads">
+                <group>
+                    <field name="form_type" required="True"/>
+                </group>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo> -->
