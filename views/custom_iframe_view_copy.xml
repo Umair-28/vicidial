@@ -106,10 +106,9 @@ action = {
                 <attribute name="invisible">1</attribute>
             </xpath>
 
-            <xpath expr="//header" position="inside">
+            <!-- <xpath expr="//header" position="inside">
                 <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
-                <!-- <button name="action_export_energy_leads" type="object" string="Export First Energy Leads" class="btn-primary" icon="fa-download"/> -->
-            </xpath>
+            </xpath> -->
             <!-- <xpath expr="//page[@name='internal_notes']//field[@name='description']" position="before">
                 <field name="campaign_notes" widget="html" nolabel="1" placeholder="Campaign information will appear here..."/>
             </xpath> -->
@@ -186,6 +185,12 @@ action = {
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+                            <xpath expr="//group[@class='stage-section stage-1']/sheet" position="inside">
+                                <div class="o_form_buttons_view mt-2">
+                                    <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1' or not unlock_stage_1"/>
+                                </div>
+                            </xpath>
+
                         </sheet>
                     </group>
                     <!-- ELECRTRICY AND GAS CALL CENTER STAGE 1 FORM END -->
@@ -254,6 +259,12 @@ action = {
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+                            <xpath expr="//group[@class='stage-section stage-1']/sheet" position="inside">
+                                <div class="o_form_buttons_view mt-2">
+                                    <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1' or not unlock_stage_1"/>
+                                </div>
+                            </xpath>
+
                         </sheet>
                     </group>
                     <!-- Electricty and GAS Stage WEBSITE 1 Form END -->
