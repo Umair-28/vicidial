@@ -4,10 +4,9 @@
 
 .o_field_widget.o_field_many2one,
 .o_field_widget.o_field_selection {
-    /* background-color: #ffffff !important; */
+    background-color: #ffffff !important;
     border: 2px solid #ffffff;
     border-radius: 6px !important;
-    color: #212529 !important;
     min-height: 36px;
     padding: 4px 8px;
     transition: all 0.2s ease-in-out;
