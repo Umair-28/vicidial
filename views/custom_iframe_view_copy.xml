@@ -862,7 +862,7 @@ action = {
 
 
                     <!-- HOME MOVING FORM STAGE 1 -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'home_moving' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'home_moving' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -944,7 +944,7 @@ action = {
                     <!-- HOME MOVING SSTAGE 1 END -->
 
                     <!-- BUSINESS LOAN FORM START -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'business_loan' or lead_stage != '1'" class="o_form_sheet_bg_gray">
+                    <group string="Stage 1 FORM" nvisible="lead_for != 'home_moving' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>

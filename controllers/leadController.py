@@ -24,6 +24,8 @@ class WebsiteLeadsController(http.Controller):
             "credit_card_website": self._handle_credit_card_website,
             "energy_website": self._handle_energy_website,
             "optus_nbn_website": self._handle_optus_nbn_website,
+            "home_moving":self._handle_home_moving,
+            "business_loan":self._handle_business_loan
         }
 
         handler = handler_map.get(service)
@@ -32,7 +34,8 @@ class WebsiteLeadsController(http.Controller):
 
         return handler(data)
 
-    # --- Handlers ---
+    # --- Handlers --- #
+
     def _handle_credit_card_website(self, payload):
         stage = request.env["crm.stage"].sudo().search([("name", "=", "Lead Assigned")], limit=1)
         if not stage:
@@ -40,8 +43,6 @@ class WebsiteLeadsController(http.Controller):
         customer = payload.get("customer", {})
         revenue = payload.get("revenue", {})
         consents = payload.get("consents", {})
-
-        # 1) Create CRM Lead
         lead_vals = {
             "name": f"{customer.get('firstName','')} {customer.get('lastName','')}".strip() or "Credit Card Lead",
             "contact_name": f"{customer.get('firstName','')} {customer.get('lastName','')}".strip(),
@@ -54,13 +55,9 @@ class WebsiteLeadsController(http.Controller):
             "stage_id":stage.id
         }
         lead = request.env["crm.lead"].sudo().create(lead_vals)
-
-        # 2) Create Stage-1 Form Record
         form_vals = {
             "id": lead.id,
-            "lead_stage": "1",
-
-            # Customer Details
+            "lead_stage": "2",
             "cc_prefix": customer.get("prefix"),
             "cc_first_name": customer.get("firstName"),
             "cc_last_name": customer.get("lastName"),
@@ -68,19 +65,13 @@ class WebsiteLeadsController(http.Controller):
             "cc_phone": customer.get("phone"),
             "cc_email": customer.get("email"),
             "cc_address": customer.get("address"),
-
-            # Revenue Details
             "cc_annual_revenue": revenue.get("annualRevenue"),
             "cc_annual_spend": revenue.get("annualSpend"),
             "cc_existing_products": revenue.get("existingProducts"),
             "cc_expense_tools": revenue.get("expenseTools"),
-
-            # Consents
             "cc_consent_personal_info": consents.get("personalInfo"),
             "cc_consent_contact_method": consents.get("contactMethod"),
             "cc_contact_preference": consents.get("contactPreference"),
-
-            # Notes
             "lead_agent_notes": payload.get("notes"),
         }
         lead.sudo().write(form_vals)
@@ -95,7 +86,6 @@ class WebsiteLeadsController(http.Controller):
         stage = request.env["crm.stage"].sudo().search([("name", "=", "Lead Assigned")], limit=1)
         if not stage:
             return {"status": "error", "message": "Stage 'Lead Assigned' not found"}
-
         customer = payload.get("customer", {})  
         property = payload.get("property",{})
         currentProviders = payload.get("currentProviders",{})
@@ -112,15 +102,15 @@ class WebsiteLeadsController(http.Controller):
             ),
             "phone": customer.get("phone"),
             "email_from": customer.get("email"),
-            "services": "energy_website",  # change to "energy_website" if needed
-            "lead_for": "energy_website",  # same as above
+            "services": "energy_website", 
+            "lead_for": "energy_website",  
             "lead_stage": "2",
             "unlock_stage_1": False,
-            "stage_id": stage.id,                # ensure stage is fetched above
+            "stage_id": stage.id,                
         }
 
         lead = request.env["crm.lead"].sudo().create(lead_vals)
-        lead_vals = {
+        form_vals = {
             "en_name": customer.get("name"),
             "en_contact_number": customer.get("contactNumber"),
             "en_email": customer.get("email"),
@@ -141,19 +131,161 @@ class WebsiteLeadsController(http.Controller):
             "en_accpeting_terms": preferencesAndConsents.get("acceptingTerms"),
             "lead_agent_notes": payload.get("notes"),
         }
-        lead.sudo().write(lead_vals)
+        lead.sudo().write(form_vals)
 
         return {"status": "success", "lead_id": lead.id, "message": "Energy website lead created"}
 
+
     def _handle_optus_nbn_website(self, payload):
+        stage = request.env["crm.stage"].sudo().search([("name", "=", "Lead Assigned")], limit=1)
+        if not stage:
+            return {"status": "error", "message": "Stage 'Lead Assigned' not found"}
+
+        address = payload.get("address", {})
+        preferences = payload.get("preferences", {})
+        usage = payload.get("usageDetails", {})
+        contact = payload.get("contact", {})
+        agreement = payload.get("agreement", {})    
         lead_vals = {
-            "name": payload.get("name"),
-            "contact_name": payload.get("name"),
-            "phone": payload.get("phone"),
-            "email_from": payload.get("email"),
+            "name": (
+                f"{contact.get('firstName', '').strip()} {contact.get('lastName', '').strip()}" 
+                or contact.get('name', '').strip() 
+                or "Optus NBN Lead"
+            ),
+            "contact_name": f"{contact.get('firstName','')} {contact.get('lastName','')}".strip() or "",
+            "phone": contact.get("phone"),
+            "email_from": contact.get("email"),
             "services": "optus_nbn_website",
             "lead_for": "optus_nbn_website",
-            "lead_source": "website",
+            "lead_stage": "2",
+            "unlock_stage_1": False,
+            "stage_id":stage.id
         }
         lead = request.env["crm.lead"].sudo().create(lead_vals)
+        form_vals = {
+            "in_current_address": address.get("currentAddress"),
+            "in_important_feature": preferences.get("importantFeature"),
+            "in_speed_preference": preferences.get("speedPreference"),
+            "in_broadband_reason": preferences.get("broadbandReason"),
+            "in_when_to_connect_type": preferences.get("whenToConnectType"),
+            "in_when_to_connect_date": preferences.get("whenToConnectDate"),
+            "in_internet_users_count": usage.get("internetUsersCount"),
+            "in_internet_usage_type": usage.get("internetUsageType"),
+            "in_compare_plans": usage.get("comparePlans"),
+            "in_name": contact.get("name"),
+            "in_contact_number": contact.get("contactNumber"),
+            "in_email": contact.get("email"),
+            "in_accept_terms": agreement.get("acceptTerms"),
+            "lead_agent_notes": payload.get("notes"),
+        }
+        lead.sudo().write(form_vals)
         return {"status": "success", "lead_id": lead.id, "message": "NBN website lead created"}
+
+    def _handle_home_moving(self,payload):
+        stage = request.env["crm.stage"].sudo().search([("name", "=", "Lead Assigned")], limit=1)
+        if not stage:
+            return {"status": "error", "message": "Stage 'Lead Assigned' not found"}
+
+        moving = payload.get("movingInformation", {})
+        propertyContact = payload.get("propertyContact", {})
+        personal = payload.get("personalInformation", {})
+        contact = payload.get("contactInformation", {})
+        referral = payload.get("referralMarketing", {})
+        services = payload.get("servicesToConnect", {})    
+
+        lead_vals = {
+            "name": (
+                f"{personal.get('firstName', '').strip()} {personal.get('lastName', '').strip()}" 
+                or personal.get('name', '').strip() 
+                or "Home Moving Lead"
+            ),
+            "contact_name": f"{contact.get('firstName','')} {contact.get('lastName','')}".strip() or "",
+            "phone": contact.get("mobile"),
+            "email_from": contact.get("email"),
+            "services": "home_moving",
+            "lead_for": "home_moving",
+            "lead_stage": "2",
+            "unlock_stage_1": False,
+            "stage_id":stage.id
+        }
+        lead = request.env["crm.lead"].sudo().create(lead_vals)  
+        form_vals = {
+            "hm_moving_date": moving.get("movingDate"),
+            "hm_address": moving.get("address"),
+            "hm_property_type": moving.get("propertyType"),
+            "hm_ownership": moving.get("ownership"),
+            "hm_agency_name": propertyContact.get("agencyName"),
+            "hm_broker_name": propertyContact.get("brokerName"),
+            "hm_agency_contact_number": propertyContact.get("agencyContactNumber"),
+            "hm_status": personal.get("status"),
+            "hm_first_name": personal.get("firstName"),
+            "hm_last_name": personal.get("lastName"),
+            "hm_job_title": personal.get("jobTitle"),
+            "hm_dob": personal.get("dob"),
+            "hm_mobile": contact.get("mobile"),
+            "hm_work_phone": contact.get("workPhone"),
+            "hm_home_phone": contact.get("homePhone"),
+            "hm_email": contact.get("email"),
+            "hm_friend_code": referral.get("friendCode"),
+            "hm_how_heard": referral.get("howHeard"),
+            "hm_connect_electricity": services.get("electricity"),
+            "hm_connect_gas": services.get("gas"),
+            "hm_connect_internet": services.get("internet"),
+            "hm_connect_water": services.get("water"),
+            "hm_connect_tv": services.get("tv"),
+            "hm_connect_removalist": services.get("removalist"),
+            "lead_agent_notes": payload.get("notes"),
+        }
+        lead.sudo().write(form_vals)
+        return {"status": "success", "lead_id": lead.id, "message": "Home Moving website lead created"}
+
+
+
+    def _handle_business_loan(self,payload):
+            stage = request.env["crm.stage"].sudo().search([("name", "=", "Lead Assigned")], limit=1)
+            if not stage:
+                return {"status": "error", "message": "Stage 'Lead Assigned' not found"}
+
+            loan_info = payload.get("loanInformation",{})
+            business = payload.get("businessDetails",{})
+            applicant = payload.get("applicantInformation",{})
+            consent = payload.get("consent",{})
+
+            lead_vals = {
+                "name": (
+                    f"{applicant.get('firstName', '').strip()} {applicant.get('lastName', '').strip()}" 
+                    or applicant.get('name', '').strip() 
+                    or "Business Loan Lead"
+                ),
+                "contact_name": f"{applicant.get('firstName','')} {applicant.get('lastName','')}".strip() or "",
+                "phone": applicant.get("mobile"),
+                "email_from": applicant.get("email"),
+                "services": "business_loan",
+                "lead_for": "business_loan",
+                "lead_stage": "2",
+                "unlock_stage_1": False,
+                "stage_id":stage.id
+            }
+            lead = request.env["crm.lead"].sudo().create(lead_vals) 
+            form_vals = {
+                "bs_amount_to_borrow": loan_info.get("amountToBorrow"),
+                "bs_monthly_turnover": loan_info.get("monthlyTurnover"),
+                "bs_trading_duration": loan_info.get("tradingDuration"),
+
+                "bs_business_name": business.get("businessName"),
+
+                "bs_first_name": applicant.get("firstName"),
+                "bs_last_name": applicant.get("lastName"),
+                "bs_email": applicant.get("email"),
+                "bs_home_owner": applicant.get("homeOwner"),
+
+                "bs_accept_terms": consent.get("acceptedTerms"),
+
+                "lead_agent_notes": payload.get("notes"),
+            }
+            lead.sudo().write(form_vals)
+            return {"status": "success", "lead_id": lead.id, "message": "Business Loan website lead created"}
+
+
+
+  

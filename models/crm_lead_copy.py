@@ -2581,7 +2581,15 @@ class CrmLead(models.Model):
     hm_recaptcha_checked = fields.Boolean("I'm not a robot")
 
     # BUSINESS LOAN FORM FIELDS
-    bs_amount_to_borrow = fields.Integer(string="How much would you like to borrow?")
+    bs_amount_to_borrow = fields.Selection([
+        ("under_50k","Under $50k"),
+        ("50k_100k","$50k - $100k"),
+        ("100k_150k","$100k - $150k"),
+        ("200k_300k","$200k - $300k"),
+        ("300k_500k","$300k - $500k"),
+        ("above_500k","Above $500k"),
+
+    ],string="How much would you like to borrow?")
     bs_business_name = fields.Char(string="Name of your business")
     bs_trading_duration = fields.Selection(
         [
@@ -2592,7 +2600,7 @@ class CrmLead(models.Model):
         ],
         string="How long have you been trading",
     )
-    bs_monthly_turnover = fields.Integer(string="What is your monthly turnover")
+    bs_monthly_turnover = fields.Char(string="What is your monthly turnover")
     bs_first_name = fields.Char(string="First Name")
     bs_last_name = fields.Char(string="Last Name")
     bs_email = fields.Char(string="Email")
