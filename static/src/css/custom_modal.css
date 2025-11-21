@@ -1,32 +1,11 @@
 /* Improve dropdown and many2one field visibility in Odoo 18 */
 
-/* Fix radio buttons/toggle size in form view */
-.o_field_radio .o_radio_input,
-.o_field_radio .o_radio_input[type="radio"] {
-    width: 2rem;        /* increase width */
-    height: 2rem;       /* increase height */
-    border-radius: 50%; /* keep circular */
-    margin-right: 0.5rem;
-    vertical-align: middle;
-    cursor: pointer;
-}
 
-.o_field_radio .o_radio_input:checked {
-    background-color: #017e84;  /* your toggle color */
-    border-color: #017e84;
-}
-
-/* Adjust label spacing for better alignment */
-.o_field_radio .o_radio_item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0.5rem;
-}
 
 .o_field_widget.o_field_many2one,
 .o_field_widget.o_field_selection {
     /* background-color: #ffffff !important; */
-    border: 2px solid #3343b6;
+    border: 2px solid #ffffff;
     border-radius: 6px !important;
     color: #212529 !important;
     min-height: 36px;
@@ -39,7 +18,7 @@
 /* .o_field_widget.o_field_selection:hover, */
 .o_field_widget.o_field_many2one:focus-within,
 .o_field_widget.o_field_selection:focus-within {
-    border-color: #3343b6 !important; /* blue highlight */
+    border-color: #ffffff !important; /* blue highlight */
     box-shadow: 0 0 3px rgba(13, 110, 253, 0.4);
 }
 
@@ -59,7 +38,7 @@
 .o_form_view input,
 /* .o_form_view .o_field_widget select, */
 .o_form_view .o_field_widget textarea {
-    border: 4px solid #3343b6;
+    border: 4px solid #ffffff;
     border-radius: 4px;
     padding: 5px 10px;
     background-color: #f9fafb;
