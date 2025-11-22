@@ -2611,7 +2611,7 @@ class CrmLead(models.Model):
     hl_user_want_to = fields.Selection(
         [
             ("refinance", "I want to refinance"),
-            ("buy home", "I want to buy a home"),
+            ("buy_home", "I want to buy a home"),
         ],
         string="What would you like to do?",
     )
