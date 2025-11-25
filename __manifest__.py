@@ -10,6 +10,9 @@
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
         "views/export_lead_wizard_view.xml",
+        'views/crm_lead_target_views.xml',
+        'views/res_users_views.xml',
+        'views/menu_views.xml',
         'data/crm_stage_data.xml',
     ],
 'assets': {

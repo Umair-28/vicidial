@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Tree View -->
+    <record id="view_crm_lead_target_tree" model="ir.ui.view">
+        <field name="name">crm.lead.target.tree</field>
+        <field name="model">crm.lead.target</field>
+        <field name="arch" type="xml">
+            <tree string="Lead Targets" decoration-success="achievement_percentage &gt;= 100" 
+                  decoration-warning="achievement_percentage &gt;= 50 and achievement_percentage &lt; 100" 
+                  decoration-danger="achievement_percentage &lt; 50">
+                <field name="user_id"/>
+                <field name="period_type"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="target_leads"/>
+                <field name="achieved_leads"/>
+                <field name="achievement_percentage" widget="progressbar"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'" 
+                       decoration-info="state == 'draft'" decoration-muted="state == 'completed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_crm_lead_target_form" model="ir.ui.view">
+        <field name="name">crm.lead.target.form</field>
+        <field name="model">crm.lead.target</field>
+        <field name="arch" type="xml">
+            <form string="Lead Target">
+                <header>
+                    <button name="action_activate" string="Activate" type="object" 
+                            class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_complete" string="Complete" type="object" 
+                            invisible="state != 'active'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_leads" type="object" class="oe_stat_button" icon="fa-bullseye">
+                            <field name="achieved_leads" widget="statinfo" string="Leads Created"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id" options="{'no_create': True}"/>
+                            <field name="target_leads"/>
+                            <field name="period_type"/>
+                        </group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                        </group>
+                    </group>
+                    <group string="Progress">
+                        <group>
+                            <field name="achieved_leads"/>
+                            <field name="achievement_percentage" widget="progressbar"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban View -->
+    <record id="view_crm_lead_target_kanban" model="ir.ui.view">
+        <field name="name">crm.lead.target.kanban</field>
+        <field name="model">crm.lead.target</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="user_id"/>
+                <field name="target_leads"/>
+                <field name="achieved_leads"/>
+                <field name="achievement_percentage"/>
+                <field name="state"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="user_id"/>
+                                    </strong>
+                                    <span class="o_kanban_record_subtitle">
+                                        <field name="period_type"/>: 
+                                        <field name="date_start"/> - <field name="date_end"/>
+                                    </span>
+                                </div>
+                                <div class="o_kanban_record_top_right">
+                                    <field name="state" widget="label" 
+                                           decoration-success="state == 'active'" 
+                                           decoration-info="state == 'draft'" 
+                                           decoration-muted="state == 'completed'"/>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <span>Target: <field name="target_leads"/></span>
+                                    </div>
+                                    <div class="col-6">
+                                        <span>Achieved: <field name="achieved_leads"/></span>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <field name="achievement_percentage" widget="progressbar"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record id="view_crm_lead_target_search" model="ir.ui.view">
+        <field name="name">crm.lead.target.search</field>
+        <field name="model">crm.lead.target</field>
+        <field name="arch" type="xml">
+            <search string="Lead Targets">
+                <field name="user_id"/>
+                <field name="period_type"/>
+                <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
+                <separator/>
+                <filter string="This Month" name="this_month" 
+                        domain="[('date_start', '&lt;=', context_today().strftime('%Y-%m-%d')), 
+                                 ('date_end', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Salesperson" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Period Type" name="group_period" context="{'group_by': 'period_type'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_crm_lead_target" model="ir.actions.act_window">
+        <field name="name">Lead Targets</field>
+        <field name="res_model">crm.lead.target</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="search_view_id" ref="view_crm_lead_target_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a Lead Target
+            </p>
+            <p>
+                Set individual lead targets for your salespeople and track their progress.
+            </p>
+        </field>
+    </record>
+
+</odoo>

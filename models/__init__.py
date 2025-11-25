@@ -1,5 +1,6 @@
 from . import custom_iframe
 from . import res_users
+from . import crm_lead_target
 from . import crm_lead_copy
 from . import credit_card_form
 from . import home_moving_form
