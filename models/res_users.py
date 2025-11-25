@@ -9,7 +9,7 @@ from odoo import models, fields, api
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
-    vicidial_extension = fields.Char("Vicidial Extension")
+    # vicidial_extension = fields.Char("Vicidial Extension")
 
     lead_target_ids = fields.One2many('crm.lead.target', 'user_id', string='Lead Targets')
     lead_target_count = fields.Integer(string='Number of Targets', compute='_compute_lead_target_count')
