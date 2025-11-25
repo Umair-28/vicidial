@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+        
+        <!-- Link XML ID to existing group by searching for it -->
+        <function model="ir.model.data" name="_update_xmlids">
+            <value eval="[{
+                'xml_id': 'restrict_agent_chat.group_sales_agents',
+                'record': ref('base.main_company', raise_if_not_found=False) and env['res.groups'].search([('name', '=', 'Only Agent Access'), ('category_id.name', '=', 'Sales')], limit=1),
+                'noupdate': True,
+            }]"/>
+        </function>
+        
+    </data>
+</odoo>

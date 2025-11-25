@@ -5,7 +5,7 @@
         <!-- Update existing Sales/Agents group to add XML ID -->
         <record id="group_sales_agents" model="res.groups">
             <!-- This will update the existing group with ID 73 -->
-            <field name="name">Agents</field>
+            <field name="name">Only Agent Access</field>
         </record>
         
     </data>

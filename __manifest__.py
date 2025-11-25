@@ -1,12 +1,13 @@
 {
     'name': 'Vicidial Iframe Integration',
     'version': '1.0',
-    'depends': ['base', 'crm', 'web','mail'],
+    'depends': ['base', 'crm', 'web','mail','sales_team'],
     'author': 'Tejaswi Dev',
     'installable': True,
     'application': True,
     'data': [
         'security/ir.model.access.csv',
+        'data/res_groups.xml',  # Load this first
         'security/ir_rule.xml',
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
