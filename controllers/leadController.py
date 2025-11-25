@@ -173,6 +173,7 @@ class WebsiteLeadsController(http.Controller):
             "cc_consent_personal_info": consents.get("personalInfo"),
             "cc_consent_contact_method": consents.get("contactMethod"),
             "cc_contact_preference": consents.get("contactPreference"),
+            "username":payload.get("username"),
             "lead_agent_notes": payload.get("notes"),
         }
 

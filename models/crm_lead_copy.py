@@ -39,6 +39,8 @@ class CrmLead(models.Model):
     unlock_stage_3 = fields.Boolean(default=False)
     unlock_stage_4 = fields.Boolean(default=False)
 
+    username = fields.Char(string="Username")
+
     unlock_previous_stage = fields.Boolean(
             string="Unlock Previous Stage",
             default=True,
