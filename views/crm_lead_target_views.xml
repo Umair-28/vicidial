@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     
-    <!-- Tree View -->
-    <record id="view_crm_lead_target_tree" model="ir.ui.view">
-        <field name="name">crm.lead.target.tree</field>
+    <!-- List View -->
+    <record id="view_crm_lead_target_list" model="ir.ui.view">
+        <field name="name">crm.lead.target.list</field>
         <field name="model">crm.lead.target</field>
         <field name="arch" type="xml">
-            <tree string="Lead Targets" decoration-success="achievement_percentage &gt;= 100" 
+            <list string="Lead Targets" decoration-success="achievement_percentage &gt;= 100" 
                   decoration-warning="achievement_percentage &gt;= 50 and achievement_percentage &lt; 100" 
                   decoration-danger="achievement_percentage &lt; 50">
                 <field name="user_id"/>
@@ -18,7 +18,7 @@
                 <field name="achievement_percentage" widget="progressbar"/>
                 <field name="state" widget="badge" decoration-success="state == 'active'" 
                        decoration-info="state == 'draft'" decoration-muted="state == 'completed'"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -146,7 +146,7 @@
     <record id="action_crm_lead_target" model="ir.actions.act_window">
         <field name="name">Lead Targets</field>
         <field name="res_model">crm.lead.target</field>
-        <field name="view_mode">tree,form,kanban</field>
+        <field name="view_mode">list,form,kanban</field>
         <field name="search_view_id" ref="view_crm_lead_target_search"/>
         <field name="context">{'search_default_active': 1}</field>
         <field name="help" type="html">

@@ -27,7 +27,7 @@
                     </group>
                     <group string="All Targets">
                         <field name="lead_target_ids" nolabel="1">
-                            <tree>
+                            <list>
                                 <field name="period_type"/>
                                 <field name="date_start"/>
                                 <field name="date_end"/>
@@ -35,7 +35,7 @@
                                 <field name="achieved_leads"/>
                                 <field name="achievement_percentage" widget="progressbar"/>
                                 <field name="state" widget="badge"/>
-                            </tree>
+                            </list>
                         </field>
                     </group>
                 </page>

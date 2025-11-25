@@ -96,7 +96,7 @@ class CrmLeadTarget(models.Model):
             'name': f'Leads for {self.user_id.name}',
             'type': 'ir.actions.act_window',
             'res_model': 'crm.lead',
-            'view_mode': 'tree,form,kanban',
+            'view_mode': 'list,form,kanban',
             'domain': [
                 ('user_id', '=', self.user_id.id),
                 ('create_date', '>=', fields.Datetime.to_datetime(self.date_start)),

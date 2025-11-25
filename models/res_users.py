@@ -19,8 +19,6 @@ class ResUsers(models.Model):
     current_achievement_percentage = fields.Float(string='Current Achievement %', 
                                                    related='current_lead_target_id.achievement_percentage')
 
-    vicidial_extension = fields.Char("Vicidial Extension")
-
     @api.depends('lead_target_ids')
     def _compute_lead_target_count(self):
         for user in self:
@@ -45,7 +43,7 @@ class ResUsers(models.Model):
             'name': f'Lead Targets - {self.name}',
             'type': 'ir.actions.act_window',
             'res_model': 'crm.lead.target',
-            'view_mode': 'tree,form,kanban',
+            'view_mode': 'list,form,kanban',
             'domain': [('user_id', '=', self.id)],
             'context': {'default_user_id': self.id}
         }
