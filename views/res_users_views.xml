@@ -44,3 +44,49 @@
     </record>
 
 </odoo>
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    
+    <record id="view_users_form_inherit_lead_target" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.lead.target</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_lead_targets" type="object" 
+                        class="oe_stat_button" icon="fa-bullseye" 
+                        groups="sales_team.group_sale_manager">
+                    <field name="lead_target_count" widget="statinfo" string="Lead Targets"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='preferences']" position="after">
+                <page string="Lead Target Performance" groups="sales_team.group_sale_manager">
+                    <group string="Current Target">
+                        <group>
+                            <field name="current_target_leads" readonly="1"/>
+                            <field name="current_achieved_leads" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="current_achievement_percentage" widget="progressbar" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="All Targets">
+                        <field name="lead_target_ids" nolabel="1">
+                            <list>
+                                <field name="period_type"/>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="target_leads"/>
+                                <field name="achieved_leads"/>
+                                <field name="achievement_percentage" widget="progressbar"/>
+                                <field name="state" widget="badge"/>
+                            </list>
+                        </field>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo> -->
