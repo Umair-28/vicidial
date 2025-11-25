@@ -1,12 +1,13 @@
 {
     'name': 'Vicidial Iframe Integration',
     'version': '1.0',
-    'depends': ['base', 'crm', 'web'],
+    'depends': ['base', 'crm', 'web','mail'],
     'author': 'Tejaswi Dev',
     'installable': True,
     'application': True,
     'data': [
         'security/ir.model.access.csv',
+        'security/ir_rule.xml',
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
         "views/export_lead_wizard_view.xml",

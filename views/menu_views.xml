@@ -5,8 +5,7 @@
     <menuitem id="menu_crm_lead_targets_root"
               name="Lead Targets"
               parent="crm.crm_menu_config"
-              sequence="10"
-              groups="sales_team.group_sale_manager"/>
+              sequence="10"/>
 
     <menuitem id="menu_crm_lead_targets"
               name="Lead Targets"
