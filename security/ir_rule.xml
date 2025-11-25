@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
         
-        <!-- Assign XML ID to existing Sales/Agents group -->
+        <!-- Update existing Sales/Agents group to add XML ID -->
         <record id="group_sales_agents" model="res.groups">
+            <!-- This will update the existing group with ID 73 -->
             <field name="name">Agents</field>
-            <!-- Category should match Sales -->
-            <field name="category_id" ref="base.module_category_sales_sales"/>
         </record>
+        
+    </data>
+    
+    <data noupdate="1">
         
         <!-- Record rule to restrict agents from seeing channels with other agents -->
         <record id="discuss_channel_agents_restrict_rule" model="ir.rule">
