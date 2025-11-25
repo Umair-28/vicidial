@@ -7,8 +7,8 @@
     'application': True,
     'data': [
         'security/ir.model.access.csv',
-        'data/res_groups.xml',  # Load this first
-        'security/ir_rule.xml',
+        # 'data/res_groups.xml',
+        # 'security/ir_rule.xml',
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
         "views/export_lead_wizard_view.xml",
