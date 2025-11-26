@@ -2,8 +2,8 @@
 <odoo>
     
     <!-- List View -->
-    <record id="view_crm_lead_target_list" model="ir.ui.view">
-        <field name="name">crm.lead.target.list</field>
+    <record id="view_crm_lead_target_tree" model="ir.ui.view">
+        <field name="name">crm.lead.target.tree</field>
         <field name="model">crm.lead.target</field>
         <field name="arch" type="xml">
             <list string="Lead Targets" decoration-success="achievement_percentage &gt;= 100" 
@@ -177,7 +177,6 @@
 <!-- <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     
-   
     <record id="view_crm_lead_target_list" model="ir.ui.view">
         <field name="name">crm.lead.target.list</field>
         <field name="model">crm.lead.target</field>
@@ -198,7 +197,6 @@
         </field>
     </record>
 
-  
     <record id="view_crm_lead_target_form" model="ir.ui.view">
         <field name="name">crm.lead.target.form</field>
         <field name="model">crm.lead.target</field>
@@ -213,8 +211,8 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_view_leads" type="object" class="oe_stat_button" icon="fa-bullseye">
-                            <field name="achieved_leads" widget="statinfo" string="Leads Created"/>
+                        <button name="action_view_leads" type="object" class="oe_stat_button" icon="fa-trophy">
+                            <field name="achieved_leads" widget="statinfo" string="Won Leads"/>
                         </button>
                     </div>
                     <group>
@@ -234,12 +232,25 @@
                             <field name="achievement_percentage" widget="progressbar"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page string="Won Leads">
+                            <field name="won_lead_ids" nolabel="1" readonly="1">
+                                <list create="false" edit="false" delete="false">
+                                    <field name="name" string="Lead/Opportunity"/>
+                                    <field name="partner_id" string="Customer"/>
+                                    <field name="expected_revenue" string="Expected Revenue"/>
+                                    <field name="probability" string="Probability"/>
+                                    <field name="stage_id" string="Stage"/>
+                                    <field name="date_closed" string="Closed Date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
- 
     <record id="view_crm_lead_target_kanban" model="ir.ui.view">
         <field name="name">crm.lead.target.kanban</field>
         <field name="model">crm.lead.target</field>
@@ -294,7 +305,6 @@
         </field>
     </record>
 
- 
     <record id="view_crm_lead_target_search" model="ir.ui.view">
         <field name="name">crm.lead.target.search</field>
         <field name="model">crm.lead.target</field>

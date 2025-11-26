@@ -16,6 +16,12 @@
             </xpath>
             <xpath expr="//page[@name='preferences']" position="after">
                 <page string="Lead Target Performance" groups="sales_team.group_sale_manager">
+                    <group string="Auto-Create Settings">
+                        <group>
+                            <field name="auto_create_lead_target"/>
+                            <field name="default_lead_target" invisible="auto_create_lead_target == False"/>
+                        </group>
+                    </group>
                     <group string="Current Target">
                         <group>
                             <field name="current_target_leads" readonly="1"/>
@@ -46,7 +52,6 @@
 </odoo>
 <!-- <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    
     
     <record id="view_users_form_inherit_lead_target" model="ir.ui.view">
         <field name="name">res.users.form.inherit.lead.target</field>
