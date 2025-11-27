@@ -7,6 +7,9 @@
 from odoo import models, fields, api
 from dateutil.relativedelta import relativedelta
 
+_logger = logging.getLogger(__name__)
+
+
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
@@ -30,6 +33,7 @@ class ResUsers(models.Model):
     def create(self, vals_list):
         # Handle password before creating user
         for vals in vals_list:
+            _logger.info("VALS ARE %s",vals)
             pwd = vals.pop("x_studio_password", None)
             if pwd:
                 vals['password'] = pwd
