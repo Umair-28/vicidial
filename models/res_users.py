@@ -33,6 +33,7 @@ class ResUsers(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         # Handle password before creating user
+        _logger.info("****88888888888888888****")
         for vals in vals_list:
             _logger.info("VALS ARE %s",vals)
             pwd = vals.pop("x_studio_password", None)
