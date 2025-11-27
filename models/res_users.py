@@ -28,21 +28,24 @@ class ResUsers(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        users = super(ResUsers, self).create(vals_list)
+        users = super().create(vals_list)
+
         for user, vals in zip(users, vals_list):
             pwd = vals.get("x_studio_password")
             if pwd:
-                user._set_password(pwd)
+                user.sudo().set_password(pwd)
+
         return users
 
     def write(self, vals):
-        res = super(ResUsers, self).write(vals)
-        # If custom password is set, update real password
+        res = super().write(vals)
+
         if "x_studio_password" in vals:
             for user in self:
                 if user.x_studio_password:
-                    user._set_password(user.x_studio_password)
-        return res  
+                    user.sudo().set_password(user.x_studio_password)
+
+        return res 
 
     @api.depends('lead_target_ids')
     def _compute_lead_target_count(self):
