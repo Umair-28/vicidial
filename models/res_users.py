@@ -5,6 +5,7 @@
 
 #     vicidial_extension = fields.Char("Vicidial Extension")
 from odoo import models, fields, api
+import logging
 from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
