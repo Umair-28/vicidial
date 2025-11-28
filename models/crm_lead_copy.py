@@ -1100,12 +1100,13 @@ class CrmLead(models.Model):
         "in_stage2_dnc",
         "disposition",
         "lead_for",
-        "lead_stage",
+        # "lead_stage",
     )
     def _check_stage2_required_fields(self):
         for rec in self:
             # Only validate for Stage 2
-            if str(rec.lead_stage) != "2":
+            _logger.info("Current lead stage is >>>>>>>  %s",rec.lead_stage)
+            if rec.lead_stage != "2":
                 continue
 
             # -----------------------------------
@@ -3270,6 +3271,8 @@ class CrmLead(models.Model):
         # Stage 3 → Stage 4
 
         elif lead.lead_stage == "3":
+            if not lead.stage_3_dispostion:
+                raise ValidationError("Lead Disposition by QA is required")
             if lead.stage_3_dispostion == "closed":
                 vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
                 vals_to_write["lead_stage"] = "4"
@@ -3279,6 +3282,8 @@ class CrmLead(models.Model):
                 vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
 
         elif lead.lead_stage == "2":
+            if not lead.disposition:
+                raise ValidationError("Lead Disposition is required")
             if lead.disposition == "callback":
                 vals_to_write["stage_id"] = stages_cache["Call Back"].id
             elif lead.disposition == "lost":

@@ -6,18 +6,38 @@
         <field name="arch" type="xml">
             <form string="Export Leads">
                 <group>
-                    <field name="form_type" required="True"/>
+                    <field name="form_type" required="1"/>
                     <field name="start_date"/>
                     <field name="end_date"/>
                 </group>
+
+                <!-- Use invisible attribute instead of attrs in Odoo 18 -->
+                <group invisible="form_type == False">
+                    <field name="available_field_ids" invisible="1"/>
+                    
+                    <field name="export_fields"
+                           widget="many2many_tags"
+                           placeholder="Select fields to export..."
+                           domain="[('id', 'in', available_field_ids)]"
+                           options="{'no_create': True}"/>
+                </group>
+
                 <footer>
-                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    <button name="action_export"
+                            type="object"
+                            string="Export"
+                            class="btn-primary"/>
+
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
                 </footer>
             </form>
         </field>
     </record>
 </odoo>
+
+
 <!-- <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_export_lead_wizard_form" model="ir.ui.view">
@@ -27,6 +47,34 @@
             <form string="Export Leads">
                 <group>
                     <field name="form_type" required="True"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <group>
+                <field name="export_fields" 
+                           widget="many2many_tags"
+                           placeholder="Select fields to export..."
+                           options="{'no_create': True, 'color_field': 'name'}"/>
+                </group>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo> -->
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_export_lead_wizard_form" model="ir.ui.view">
+        <field name="name">export.lead.wizard.form</field>
+        <field name="model">export.lead.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export Leads">
+                <group>
+                    <field name="form_type" required="True"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
                 </group>
                 <footer>
                     <button name="action_export" type="object" string="Export" class="btn-primary"/>
