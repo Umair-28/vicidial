@@ -1306,7 +1306,7 @@ class CrmLead(models.Model):
         ],
         "Who is your current gas provider",
     )
-    en_name = fields.Char("Name", related="contact_name", readonly=False)
+    en_name = fields.Char("Name", related="partner_name", readonly=False)
     en_contact_number = fields.Char("Contact Number", related="phone", readonly=False)
     en_customer_alt_phone = fields.Char(string="Customer Alt. Number")
     en_email = fields.Char("Email", related="email_normalized", readonly=False)
@@ -1513,7 +1513,7 @@ class CrmLead(models.Model):
     )
     customer_title = fields.Char(string="Title")
     first_name = fields.Char(
-        string="First Name", related="contact_name", readonly=False
+        string="First Name", related="partner_name", readonly=False
     )
     last_name = fields.Char(string="Last Name")
     phone_landline = fields.Char(string="Phone Landline")
@@ -1742,7 +1742,7 @@ class CrmLead(models.Model):
     )
     dp_customer_salutation = fields.Char(string="Customer Salutation")
     dp_first_name = fields.Char(
-        string="First Name", related="contact_name", readonly=False
+        string="First Name", related="partner_name", readonly=False
     )
     dp_last_name = fields.Char(string="Last Name")
     dp_date_of_birth = fields.Date(
@@ -1925,7 +1925,7 @@ class CrmLead(models.Model):
         string="Salutation",
     )
     momentum_energy_primary_first_name = fields.Char(
-        "First Name", related="contact_name", readonly=False
+        "First Name", related="partner_name", readonly=False
     )
     momentum_energy_primary_middle_name = fields.Char("Middle Name")
     momentum_energy_primary_last_name = fields.Char("Last Name")
@@ -2723,10 +2723,10 @@ class CrmLead(models.Model):
         string="Prefix",
     )
     cc_customer_name = fields.Char(
-        "Customer Name", related="contact_name", readonly=False
+        "Customer Name", related="partner_name", readonly=False
     )
-    cc_first_name = fields.Char("First Name", related="contact_name", readonly=False)
-    cc_last_name = fields.Char("Last Name", related="contact_name", readonly=False)
+    cc_first_name = fields.Char("First Name", related="partner_name", readonly=False)
+    cc_last_name = fields.Char("Last Name", related="partner_name", readonly=False)
     cc_job_title = fields.Char("Job Title")
     cc_phone = fields.Char("Phone", related="phone", readonly=False)
     cc_email = fields.Char("Email", related="email_normalized", readonly=False)
@@ -2809,7 +2809,7 @@ class CrmLead(models.Model):
         default="mr",
     )
     amex_first_name = fields.Char(
-        string="First Name", related="contact_name", readonly=False
+        string="First Name", related="partner_name", readonly=False
     )
     amex_last_name = fields.Char(string="Last Name")
     amex_position = fields.Char(string="Position in Business")
@@ -2887,7 +2887,7 @@ class CrmLead(models.Model):
         string="Would you also like to comapre your energy plans to see if you could save?",
     )
     in_name = fields.Char(
-        string="Customer Name", related="contact_name", readonly=False
+        string="Customer Name", related="partner_name", readonly=False
     )
     in_contact_number = fields.Char(
         string="Mobile Number", related="phone", readonly=False
@@ -2940,7 +2940,7 @@ class CrmLead(models.Model):
         default="mr",
     )
     do_first_name = fields.Char(
-        string="First Name", related="contact_name", readonly=False
+        string="First Name", related="partner_name", readonly=False
     )
     do_last_name = fields.Char(string="Last Name")
     do_mobile_no = fields.Char(string="Mobile No", related="phone", readonly=False)
@@ -2965,7 +2965,7 @@ class CrmLead(models.Model):
     optus_activation = fields.Date(string="Activation Date")
     optus_order = fields.Char(string="Order Number")
     optus_customer = fields.Char(
-        string="Customer Name", related="contact_name", readonly=False
+        string="Customer Name", related="partner_name", readonly=False
     )
     optus_address = fields.Char(
         string="Service Address", related="in_supply_address", readonly=False
