@@ -187,7 +187,11 @@ class ResUsers(models.Model):
                 'Access denied for user "%s" (ID: %s) from IP %s. Allowed IPs: %s',
                 self.login, self.id, client_ip, ', '.join(allowed_ips_list)
             )
-            raise AccessDenied(_('Access denied: Your IP address (%s) is not authorized to access this account.') % client_ip)
+            raise AccessDenied(
+                _('Access denied: Your IP address (%s) is not authorized to access this account. '
+                'Please contact the system administrator for assistance.') % client_ip
+            )
+
         
         _logger.info('User "%s" logged in successfully from IP %s', self.login, client_ip)
         return True
