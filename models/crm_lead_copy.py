@@ -1105,7 +1105,7 @@ class CrmLead(models.Model):
     def _check_stage2_required_fields(self):
         for rec in self:
             # Only validate for Stage 2
-            if rec.lead_stage != "2":
+            if str(rec.lead_stage) != "2":
                 continue
 
             # -----------------------------------
