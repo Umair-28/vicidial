@@ -42,13 +42,13 @@ class CrmLead(models.Model):
     username = fields.Char(string="Username")
 
     unlock_previous_stage = fields.Boolean(
-            string="Unlock Previous Stage",
-            default=True,
-            help="Allows editing of previous stage fields.",
-            store=True
-        )
+        string="Unlock Previous Stage",
+        default=True,
+        help="Allows editing of previous stage fields.",
+        store=True,
+    )
 
-    @api.onchange('stage_id')
+    @api.onchange("stage_id")
     def _onchange_stage_id(self):
         """Lock all stages again when moving forward"""
         for rec in self:
@@ -56,7 +56,6 @@ class CrmLead(models.Model):
             rec.unlock_stage_2 = False
             rec.unlock_stage_3 = False
             rec.unlock_stage_4 = False
-
 
     def action_toggle_stage_lock(self):
         stage_number = self.env.context.get("stage_number")
@@ -73,11 +72,8 @@ class CrmLead(models.Model):
             "params": {
                 "stage_number": stage_number,
                 "unlock": unlock,  # Pass unlock parameter
-            }
+            },
         }
-
-
-
 
     services = fields.Selection(
         [
@@ -357,43 +353,44 @@ class CrmLead(models.Model):
         }
         required_fields = {
             "momentum_energy_transaction_reference": "Sale Reference Number is required.",
-            "momentum_energy_transaction_channel":"Transactional Channel name is required",
-            "momentum_energy_transaction_date":"Transaction Date is required",
-            "momentum_energy_customer_type":"Customer Type is required",
+            "momentum_energy_transaction_channel": "Transactional Channel name is required",
+            "momentum_energy_transaction_date": "Transaction Date is required",
+            "momentum_energy_customer_type": "Customer Type is required",
             "momentum_energy_primary_first_name": "Primary First Name is required.",
             "momentum_energy_primary_last_name": "Primary Last Name is required.",
-            "momentum_energy_primary_phone_home":"Home phone number is required",
-            "momentum_energy_primary_unit_number":"Primary Contact Address Unit Number is required",
-            "momentum_energy_primary_street_number":"Primary Contact Address Street Number is required",
-            "momentum_energy_primary_street_name":"Primary Contact Address Street Name is required",
-            "momentum_energy_primary_suburb":"Primary Contact Address Suburb is required",
-            "momentum_energy_primary_state":"Primary Contact Address State is required",
-            "momentum_energy_primary_post_code":"Primary Contact Address Post Code is required",
-            "momentum_energy_service_type":"Service Type is required",
-            "momentum_energy_service_sub_type":"Service Sub Type is required",
-            "momentum_energy_service_connection_id":"Service Connection ID is required, NMI / MIRN of the site, depending on the type of the service if service is POWER, it must be NMI and MIRN for GAS",
-            "momentum_energy_estimated_annual_kwhs":"Site's estimated annual consumption is required",
-            "momentum_energy_service_street_number":"Service Address Street Number is required",
-            "momentum_energy_service_street_name":"Service Street Address Name is required",
-            "momentum_energy_service_street_type_code":"Service Address Street Code Type is required",
-            "momentum_energy_service_suburb":"Service Address Suburb is required",
-            "momentum_energy_service_state":"Service Address State is required",
-            "momentum_energy_service_post_code":"Service Address Post Code is required",
-            "momentum_energy_offer_quote_date":"Offer Quote Date is required",
-            "momentum_energy_service_offer_code":"Service Offer Code is required",
-            "momentum_energy_service_plan_code":"Service Plan Code is required",
-            "momentum_energy_contract_term_code":"Contract Term Code is required",
-            "momentum_energy_contract_date":"Contract Date is required",
-            "momentum_energy_payment_method":"Payment Method is required",
-            "momentum_energy_bill_cycle_code":"Bill Cycle Code is required",
-            "momentum_energy_bill_delivery_method":"Bill Delivery Method is required",
-
-
+            "momentum_energy_primary_phone_home": "Home phone number is required",
+            "momentum_energy_primary_unit_number": "Primary Contact Address Unit Number is required",
+            "momentum_energy_primary_street_number": "Primary Contact Address Street Number is required",
+            "momentum_energy_primary_street_name": "Primary Contact Address Street Name is required",
+            "momentum_energy_primary_suburb": "Primary Contact Address Suburb is required",
+            "momentum_energy_primary_state": "Primary Contact Address State is required",
+            "momentum_energy_primary_post_code": "Primary Contact Address Post Code is required",
+            "momentum_energy_service_type": "Service Type is required",
+            "momentum_energy_service_sub_type": "Service Sub Type is required",
+            "momentum_energy_service_connection_id": "Service Connection ID is required, NMI / MIRN of the site, depending on the type of the service if service is POWER, it must be NMI and MIRN for GAS",
+            "momentum_energy_estimated_annual_kwhs": "Site's estimated annual consumption is required",
+            "momentum_energy_service_street_number": "Service Address Street Number is required",
+            "momentum_energy_service_street_name": "Service Street Address Name is required",
+            "momentum_energy_service_street_type_code": "Service Address Street Code Type is required",
+            "momentum_energy_service_suburb": "Service Address Suburb is required",
+            "momentum_energy_service_state": "Service Address State is required",
+            "momentum_energy_service_post_code": "Service Address Post Code is required",
+            "momentum_energy_offer_quote_date": "Offer Quote Date is required",
+            "momentum_energy_service_offer_code": "Service Offer Code is required",
+            "momentum_energy_service_plan_code": "Service Plan Code is required",
+            "momentum_energy_contract_term_code": "Contract Term Code is required",
+            "momentum_energy_contract_date": "Contract Date is required",
+            "momentum_energy_payment_method": "Payment Method is required",
+            "momentum_energy_bill_cycle_code": "Bill Cycle Code is required",
+            "momentum_energy_bill_delivery_method": "Bill Delivery Method is required",
         }
 
         for rec in self:
             # ✅ Run validation only when lead is in Stage 4
-            if str(rec.lead_stage) == "4" and (rec.stage_2_campign_name or "").lower() == "momentum":
+            if (
+                str(rec.lead_stage) == "4"
+                and (rec.stage_2_campign_name or "").lower() == "momentum"
+            ):
                 _logger.info("************************************")
                 for field, (pattern, msg) in patterns.items():
                     if hasattr(rec, field):
@@ -412,20 +409,22 @@ class CrmLead(models.Model):
                             if not re.fullmatch(pattern, value):
                                 raise ValidationError(_(msg))
 
-
-    @api.constrains("momentum_energy_customer_type", "momentum_energy_customer_sub_type")
+    @api.constrains(
+        "momentum_energy_customer_type", "momentum_energy_customer_sub_type"
+    )
     def _check_customer_sub_type(self):
         for rec in self:
             # ✅ Validate only on Stage 4 and Momentum campaign
             if (
-                (str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4)
-                and (rec.stage_2_campign_name or "").lower() == "momentum"
-            ):
+                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+            ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 # 🏠 Rule for Resident customers
                 if rec.momentum_energy_customer_type == "RESIDENT":
                     if rec.momentum_energy_customer_sub_type != "RESIDENT":
                         raise ValidationError(
-                            _("For a Resident customer, the Sub Type must be 'Resident'.")
+                            _(
+                                "For a Resident customer, the Sub Type must be 'Resident'."
+                            )
                         )
 
                 # 🏢 Rule for Company customers
@@ -445,68 +444,69 @@ class CrmLead(models.Model):
                             _("ABN Number is required for Company customers.")
                         )
 
-
     @api.constrains(
-    "momentum_energy_passport_id",
-    "momentum_energy_passport_expiry",
-    "momentum_energy_primary_country_of_birth",
+        "momentum_energy_passport_id",
+        "momentum_energy_passport_expiry",
+        "momentum_energy_primary_country_of_birth",
     )
     def _check_country_of_birth_required(self):
         for rec in self:
             # ✅ Only validate when on Stage 4 and campaign is 'momentum'
             if (
-                (str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4)
-                and (rec.stage_2_campign_name or "").lower() == "momentum"
-            ):
+                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+            ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 has_passport = bool(
-                    rec.momentum_energy_passport_id or rec.momentum_energy_passport_expiry
+                    rec.momentum_energy_passport_id
+                    or rec.momentum_energy_passport_expiry
                 )
 
                 if has_passport and not rec.momentum_energy_primary_country_of_birth:
                     raise ValidationError(
-                        _("Country of Birth is required when passport details are provided.")
+                        _(
+                            "Country of Birth is required when passport details are provided."
+                        )
                     )
- 
 
-    @api.constrains("momentum_energy_service_sub_type", "momentum_energy_service_start_date")
+    @api.constrains(
+        "momentum_energy_service_sub_type", "momentum_energy_service_start_date"
+    )
     def _check_service_start_date_required(self):
         for rec in self:
             # ✅ Validate only on Stage 4 and Momentum campaign
             if (
-                (str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4)
-                and (rec.stage_2_campign_name or "").lower() == "momentum"
-            ):
+                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+            ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 if (
                     rec.momentum_energy_service_sub_type
                     in ["MOVE IN", "NEW INSTALLATION"]
                     and not rec.momentum_energy_service_start_date
                 ):
-                    raise ValidationError(_(
-                        "Service Start Date is required when Service Sub Type is 'Move In' or 'New Installation'."
-                    ))
-
+                    raise ValidationError(
+                        _(
+                            "Service Start Date is required when Service Sub Type is 'Move In' or 'New Installation'."
+                        )
+                    )
 
     @api.constrains(
-    "en_concesion_card_holder",
-    "momentum_energy_conc_card_type_code",
-    "momentum_energy_conc_card_code",
-    "momentum_energy_conc_card_number",
-    "momentum_energy_conc_card_exp_date",
-    "momentum_energy_card_first_name",
-    "momentum_energy_card_last_name",
-    "momentum_energy_conc_start_date",
-    "momentum_energy_conc_end_date",
-    "momentum_energy_concession_obtained",
-    "momentum_energy_conc_has_ms",
-    "momentum_energy_conc_in_grp_home",
+        "en_concesion_card_holder",
+        "momentum_energy_conc_card_type_code",
+        "momentum_energy_conc_card_code",
+        "momentum_energy_conc_card_number",
+        "momentum_energy_conc_card_exp_date",
+        "momentum_energy_card_first_name",
+        "momentum_energy_card_last_name",
+        "momentum_energy_conc_start_date",
+        "momentum_energy_conc_end_date",
+        "momentum_energy_concession_obtained",
+        "momentum_energy_conc_has_ms",
+        "momentum_energy_conc_in_grp_home",
     )
     def _check_concession_card_fields(self):
         for rec in self:
             # ✅ Run validation only for Stage 4 and Momentum campaign
             if (
-                (str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4)
-                and (rec.stage_2_campign_name or "").lower() == "momentum"
-            ):
+                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+            ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 if rec.en_concesion_card_holder == "yes":
                     required_fields = {
                         "momentum_energy_conc_card_type_code": "Card Type Code",
@@ -530,45 +530,47 @@ class CrmLead(models.Model):
                     ]
 
                     if missing:
-                        raise ValidationError(_(
-                            "The following fields are required when 'Concession Card Holder' is 'Yes':\n- %s"
-                            % "\n- ".join(missing)
-                        ))
-                                    
-
+                        raise ValidationError(
+                            _(
+                                "The following fields are required when 'Concession Card Holder' is 'Yes':\n- %s"
+                                % "\n- ".join(missing)
+                            )
+                        )
 
     @api.constrains(
-    "momentum_energy_customer_sub_type",
-    "momentum_energy_passport_id",
-    "momentum_energy_driving_license_id",
-    "momentum_energy_medicare_id",
+        "momentum_energy_customer_sub_type",
+        "momentum_energy_passport_id",
+        "momentum_energy_driving_license_id",
+        "momentum_energy_medicare_id",
     )
     def _check_document_requirement(self):
         for rec in self:
             # ✅ Run validation only for Stage 4 and Momentum campaign
             if (
-                (str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4)
-                and (rec.stage_2_campign_name or "").strip().lower() == "momentum"
-            ):
+                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+            ) and (rec.stage_2_campign_name or "").strip().lower() == "momentum":
                 # 🧩 Apply validation only for SME or RESIDENT customer subtypes
-                if (rec.momentum_energy_customer_sub_type or "").upper() in ["SME", "RESIDENT"]:
+                if (rec.momentum_energy_customer_sub_type or "").upper() in [
+                    "SME",
+                    "RESIDENT",
+                ]:
                     has_passport = bool(rec.momentum_energy_passport_id)
                     has_license = bool(rec.momentum_energy_driving_license_id)
                     has_medicare = bool(rec.momentum_energy_medicare_id)
 
                     # 🚨 Raise error if no document is provided
                     if not (has_passport or has_license or has_medicare):
-                        raise ValidationError(_(
-                            "The following requirement must be met for SME and Resident customers "
-                            "when Stage is 4 and Campaign is 'Momentum':\n\n"
-                            "- At least one of the following must be provided:\n"
-                            "  • Driving License Details\n"
-                            "  • Passport Details\n"
-                            "  • Medicare Card Details"
-                        ))
+                        raise ValidationError(
+                            _(
+                                "The following requirement must be met for SME and Resident customers "
+                                "when Stage is 4 and Campaign is 'Momentum':\n\n"
+                                "- At least one of the following must be provided:\n"
+                                "  • Driving License Details\n"
+                                "  • Passport Details\n"
+                                "  • Medicare Card Details"
+                            )
+                        )
 
-
-               
     @api.constrains("stage_1_state", "nmi", "mirn")
     def _check_stage_1_energy_fields(self):
         """
@@ -581,7 +583,6 @@ class CrmLead(models.Model):
             if rec.lead_for != "energy_call_center" and rec.lead_stage != "1":
                 continue
 
-
             state = rec.stage_1_state
             nmi = (rec.nmi or "").strip().upper()
             mirn = (rec.mirn or "").strip()
@@ -590,32 +591,41 @@ class CrmLead(models.Model):
             # 🧩 NMI Validation
             # --------------------------
 
-
             # VIC: Starts with 6, alphanumeric 11 chars
             if state == "VIC":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("NMI for state VIC must be 11 alphanumeric characters."))
+                    raise ValidationError(
+                        _("NMI for state VIC must be 11 alphanumeric characters.")
+                    )
                 if not nmi.startswith("6"):
                     raise ValidationError(_("NMI for state VIC must start with 6."))
 
             # NSW: Starts with 4, alphanumeric 11 chars
             elif state == "NSW":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("NMI for state NSW must be 11 alphanumeric characters."))
+                    raise ValidationError(
+                        _("NMI for state NSW must be 11 alphanumeric characters.")
+                    )
                 if not nmi.startswith("4"):
                     raise ValidationError(_("NMI for state NSW must start with 4."))
 
             # QLD: Starts with 3 or QB
             elif state == "QLD":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("NMI for state QLD must be 11 alphanumeric characters."))
+                    raise ValidationError(
+                        _("NMI for state QLD must be 11 alphanumeric characters.")
+                    )
                 if not (nmi.startswith("3") or nmi.startswith("QB")):
-                    raise ValidationError(_("NMI for state QLD must start with 3 or QB."))
+                    raise ValidationError(
+                        _("NMI for state QLD must start with 3 or QB.")
+                    )
 
             # SA: Starts with 2
             elif state == "SA":
                 if not re.match(r"^[A-Z0-9]{11}$", nmi):
-                    raise ValidationError(_("NMI for state SA must be 11 alphanumeric characters."))
+                    raise ValidationError(
+                        _("NMI for state SA must be 11 alphanumeric characters.")
+                    )
                 if not nmi.startswith("2"):
                     raise ValidationError(_("NMI for state SA must start with 2."))
 
@@ -629,14 +639,13 @@ class CrmLead(models.Model):
                 if not mirn.startswith("5"):
                     raise ValidationError(_("MIRN must start with 5."))
 
-    
     @api.constrains(
-    "stage_2_state",
-    "stage_2_concession_type",
-    "stage_2_card_number",
-    "stage_2_card_start_date",
-    "stage_2_card_expiry_date",
-    "lead_for",
+        "stage_2_state",
+        "stage_2_concession_type",
+        "stage_2_card_number",
+        "stage_2_card_start_date",
+        "stage_2_card_expiry_date",
+        "lead_for",
     )
     def _check_stage_2_concession_card(self):
         """Validate concession card details for Stage 2 (Energy Call Center only)."""
@@ -663,18 +672,30 @@ class CrmLead(models.Model):
                     msg = "It must be 9 digits followed by 1 letter (e.g. 123456789A)."
                 elif state == "SA":
                     pattern = r"^\d{10}[A-Z]$"
-                    msg = "It must be 10 digits followed by 1 letter (e.g. 1234567890A)."
+                    msg = (
+                        "It must be 10 digits followed by 1 letter (e.g. 1234567890A)."
+                    )
                 else:
                     continue  # Unknown state → skip
 
                 if not re.match(pattern, card_no):
-                    raise ValidationError(_(f"Invalid {card_type} card number for State : {state}. {msg}"))
+                    raise ValidationError(
+                        _(f"Invalid {card_type} card number for State : {state}. {msg}")
+                    )
 
                 # ✅ Start and Expiry Dates required
                 if not rec.stage_2_card_start_date:
-                    raise ValidationError(_(f"{card_type} Card Start Date is required for State : {state}."))
+                    raise ValidationError(
+                        _(
+                            f"{card_type} Card Start Date is required for State : {state}."
+                        )
+                    )
                 if not rec.stage_2_card_expiry_date:
-                    raise ValidationError(_(f"{card_type} Card Expiry Date is required for State : {state}."))
+                    raise ValidationError(
+                        _(
+                            f"{card_type} Card Expiry Date is required for State : {state}."
+                        )
+                    )
 
             # ---------------------------
             # 🟨 2. DVA (Gold Card)
@@ -682,10 +703,16 @@ class CrmLead(models.Model):
             elif card_type == "DVA Gold Card":
                 # Card format: 3 letters + 5 digits (e.g. ABC12345)
                 if not re.match(r"^[A-Z]{3}\d{5}$", card_no):
-                    raise ValidationError(_("DVA card number must be 3 letters followed by 5 digits (e.g. ABC12345)."))
+                    raise ValidationError(
+                        _(
+                            "DVA card number must be 3 letters followed by 5 digits (e.g. ABC12345)."
+                        )
+                    )
 
                 if not rec.stage_2_card_expiry_date:
-                    raise ValidationError(_("DVA card expiry date is required (format: MM/YY)."))
+                    raise ValidationError(
+                        _("DVA card expiry date is required (format: MM/YY).")
+                    )
 
             # ---------------------------
             # 🟩 3. Others — skip validation
@@ -754,14 +781,16 @@ class CrmLead(models.Model):
                     raise ValidationError(_(f"Licence Number is required for {state}."))
 
                 if not re.match(state_rule["pattern"], licence_no):
-                    raise ValidationError(_(
-                        f"Invalid Driver Licence Number for {state}. {state_rule['hint']}"
-                    ))
+                    raise ValidationError(
+                        _(
+                            f"Invalid Driver Licence Number for {state}. {state_rule['hint']}"
+                        )
+                    )
 
                 if not rec.stage_2_id_expiry_date:
-                    raise ValidationError(_(
-                        f"Driver Licence Expiry Date is required for {state}."
-                    ))
+                    raise ValidationError(
+                        _(f"Driver Licence Expiry Date is required for {state}.")
+                    )
 
             # -------------------------------------------------------
             # 🟩 MEDICARE CARD VALIDATION
@@ -776,44 +805,66 @@ class CrmLead(models.Model):
                     raise ValidationError(_("Medicare Card Number is required."))
 
                 if not re.match(r"^\d{10}$", card_no):
-                    raise ValidationError(_("Invalid Medicare Card Number. Must be exactly 10 digits."))
+                    raise ValidationError(
+                        _("Invalid Medicare Card Number. Must be exactly 10 digits.")
+                    )
 
                 if color not in ("Green", "Blue", "Yellow"):
-                    raise ValidationError(_("Invalid Medicare Card Colour. Allowed values: Green, Blue, Yellow."))
+                    raise ValidationError(
+                        _(
+                            "Invalid Medicare Card Colour. Allowed values: Green, Blue, Yellow."
+                        )
+                    )
 
                 if not irn:
-                    raise ValidationError(_("IRN (Individual Reference Number) is required for Medicare Card."))
+                    raise ValidationError(
+                        _(
+                            "IRN (Individual Reference Number) is required for Medicare Card."
+                        )
+                    )
 
                 if not rec.stage_2_id_expiry_date:
-                    raise ValidationError(_("Medicare Card Expiry Date (MM/YY) is required."))
+                    raise ValidationError(
+                        _("Medicare Card Expiry Date (MM/YY) is required.")
+                    )
 
             # -------------------------------------------------------
             # 🟨 PASSPORT VALIDATION
             # -------------------------------------------------------
             elif id_type == "passport":
                 passport_no = (rec.stage_2_passport_number or "").strip().upper()
-                issued_country = (rec.stage_2_passport_issued_country or "").strip().upper()
+                issued_country = (
+                    (rec.stage_2_passport_issued_country or "").strip().upper()
+                )
 
                 if not passport_no:
                     raise ValidationError(_("Passport Number is required."))
 
                 if not re.match(r"^[A-Z0-9]{6,9}$", passport_no):
-                    raise ValidationError(_("Invalid Passport Number. Must be 6–9 alphanumeric characters."))
+                    raise ValidationError(
+                        _(
+                            "Invalid Passport Number. Must be 6–9 alphanumeric characters."
+                        )
+                    )
 
                 if not issued_country:
                     raise ValidationError(_("Passport Issued Country is required."))
 
                 if not rec.stage_2_id_start_date:
-                    raise ValidationError(_("Passport Start Date (DD/MM/YYYY) is required."))
+                    raise ValidationError(
+                        _("Passport Start Date (DD/MM/YYYY) is required.")
+                    )
 
                 if not rec.stage_2_id_expiry_date:
-                    raise ValidationError(_("Passport Expiry Date (DD/MM/YYYY) is required."))
+                    raise ValidationError(
+                        _("Passport Expiry Date (DD/MM/YYYY) is required.")
+                    )
 
             # -------------------------------------------------------
             # 🟧 UNKNOWN ID TYPE — skip validation
             # -------------------------------------------------------
             else:
-                continue  
+                continue
 
     @api.constrains(
         "stage_2_dob",
@@ -832,11 +883,17 @@ class CrmLead(models.Model):
                 age_in_years = (today - rec.stage_2_dob).days / 365.25
 
                 if age_in_years < 18:
-                    raise ValidationError(_(
-                        f"Applicant must be at least 18 years old. Current age: {int(age_in_years)} years."
-                    ))
+                    raise ValidationError(
+                        _(
+                            f"Applicant must be at least 18 years old. Current age: {int(age_in_years)} years."
+                        )
+                    )
             else:
-                raise ValidationError(_("Date of Birth (DOB) is required for Stage 2 ID proof validation."))            
+                raise ValidationError(
+                    _(
+                        "Date of Birth (DOB) is required for Stage 2 ID proof validation."
+                    )
+                )
 
     @api.constrains(
         "momentum_energy_service_state",
@@ -884,7 +941,7 @@ class CrmLead(models.Model):
                         f"Invalid Mobile Number '{mobile}'. "
                         "It must start with '04' and contain 10 digits (e.g., 0412345678)."
                     )
-                )  
+                )
 
     @api.constrains(
         "momentum_energy_service_state",
@@ -920,11 +977,11 @@ class CrmLead(models.Model):
                             f"Expected format: starts with {pattern[1]} and must be 4 digits."
                         )
                     )
-                               
-    @api.onchange('stage_2_campign_name')
+
+    @api.onchange("stage_2_campign_name")
     def _onchange_stage_2_campign_name(self):
         if self.stage_2_campign_name:
-            campaign_dict = dict(self._fields['stage_2_campign_name'].selection)
+            campaign_dict = dict(self._fields["stage_2_campign_name"].selection)
             campaign_name = campaign_dict.get(self.stage_2_campign_name)
             dummy_text = """
                 <p style='margin-top:8px; line-height:1.6;'>
@@ -937,9 +994,8 @@ class CrmLead(models.Model):
                     Additional notes and instructions may be added by the team lead.
                 </p>
                 """
-            self.campaign_notes = dummy_text.format(campaign_name=campaign_name)          
-    
-                            
+            self.campaign_notes = dummy_text.format(campaign_name=campaign_name)
+
     @api.model
     def _get_stage_sequence(self):
         """Return the ordered stages for the wizard navigation."""
@@ -970,7 +1026,6 @@ class CrmLead(models.Model):
                 result = {"success": True, "new_stage": new_stage}
 
         return result
-
 
     def action_next_stage(self):
         _logger.info("self is %s ", self)
@@ -1035,6 +1090,83 @@ class CrmLead(models.Model):
 
         return result
 
+    @api.constrains(
+        "cc_stage2_business",
+        "cc_stage2_closer",
+        "stage_2_dnc",
+        "stage_2_sale_date",
+        "stage_2_id_issuance_state",
+        "in_stage2_date",
+        "in_stage2_dnc",
+        "disposition",
+        "lead_for",
+        "lead_stage",
+    )
+    def _check_stage2_required_fields(self):
+        for rec in self:
+            # Only validate for Stage 2
+            if rec.lead_stage != "2":
+                continue
+
+            # -----------------------------------
+            # CREDIT CARD (Call Center / Website)
+            # -----------------------------------
+            if rec.lead_for in ["credit_card_call_center", "credit_card_website"]:
+                missing = []
+
+                if not rec.cc_stage2_business:
+                    missing.append("Business Name")
+                if not rec.cc_stage2_closer:
+                    missing.append("Closer Name")
+                if not rec.disposition:
+                    missing.append("Disposition")
+
+                if missing:
+                    raise ValidationError(
+                        "The following fields are required for Stage 2 (Credit Card Leads):\n- "
+                        + "\n- ".join(missing)
+                    )
+
+            # -----------------------------------
+            # ENERGY (Call Center / Website)
+            # -----------------------------------
+            elif rec.lead_for in ["energy_call_center", "energy_website"]:
+                missing = []
+
+                if not rec.stage_2_dnc:
+                    missing.append("DNC")
+                if not rec.stage_2_sale_date:
+                    missing.append("Sale Date")
+                if not rec.stage_2_id_issuance_state:
+                    missing.append("ID Issuance State")
+                if not rec.disposition:
+                    missing.append("Disposition")
+
+                if missing:
+                    raise ValidationError(
+                        "The following fields are required for Stage 2 (Energy Leads):\n- "
+                        + "\n- ".join(missing)
+                    )
+
+            # -----------------------------------
+            # BROADBAND (Optus NBN)
+            # -----------------------------------
+            elif rec.lead_for in ["optus_nbn_call_center", "optus_nbn_website"]:
+                missing = []
+
+                if not rec.in_stage2_date:
+                    missing.append("Sale Date")
+                if not rec.in_stage2_dnc:
+                    missing.append("DNC")
+                if not rec.disposition:
+                    missing.append("Disposition")
+
+                if missing:
+                    raise ValidationError(
+                        "The following fields are required for Stage 2 (Broadband Leads):\n- "
+                        + "\n- ".join(missing)
+                    )
+
     @api.depends("services")
     def _compute_lead_for(self):
         for record in self:
@@ -1063,8 +1195,6 @@ class CrmLead(models.Model):
         store=True,
         readonly=True,
     )
-
-
 
     en_current_address = fields.Char(string="Current Address")
     en_what_to_compare = fields.Selection(
@@ -1187,14 +1317,20 @@ class CrmLead(models.Model):
         string="By submitting your details you agree that you have read and agreed to the Terms and Conditions and Privacy Policy."
     )
     stage_1_state = fields.Selection(
-        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD","QLD"), ("SA","SA")], string="State"
+        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD", "QLD"), ("SA", "SA")], string="State"
     )
     nmi = fields.Char(string="NMI")
     mirn = fields.Char(string="MIRN")
     frmp = fields.Char(string="FRMP")
-    
+
     type_of_concession = fields.Selection(
-        [("PCC", "PCC"), ("HCC", "HCC"), ("VCC", "VCC"),("DVA Gold Card", "DVA Gold Card"), ("others", "Others")],
+        [
+            ("PCC", "PCC"),
+            ("HCC", "HCC"),
+            ("VCC", "VCC"),
+            ("DVA Gold Card", "DVA Gold Card"),
+            ("others", "Others"),
+        ],
         string="Type of Concession",
     )
     lead_agent_notes = fields.Text(string="Notes By Lead Agent")
@@ -1202,7 +1338,8 @@ class CrmLead(models.Model):
     # Stage 2 fields
     stage_2_dob = fields.Date(string="Date of Birth")
     stage_2_id_issuance_state = fields.Selection(
-        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD","QLD"), ("SA","SA")], string="ID Issuance State"
+        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD", "QLD"), ("SA", "SA")],
+        string="ID Issuance State",
     )
     stage_2_id_proof_type = fields.Selection(
         [
@@ -1215,7 +1352,9 @@ class CrmLead(models.Model):
     )
     stage_2_licence_number = fields.Char(string="License Number")
     stage_2_medicard_number = fields.Char(string="Card Number")
-    stage_2_medicard_color = fields.Selection([("Green","Green"),("Blue","Blue"),("Yellow","Yellow")],string="Colour")
+    stage_2_medicard_color = fields.Selection(
+        [("Green", "Green"), ("Blue", "Blue"), ("Yellow", "Yellow")], string="Colour"
+    )
     stage_2_medicard_irn = fields.Char(string="IRN")
     stage_2_passport_number = fields.Char(string="Passport Number")
     stage_2_passport_issued_country = fields.Char(string="Issued Country")
@@ -1224,13 +1363,17 @@ class CrmLead(models.Model):
     stage_2_id_start_date = fields.Date(string="ID Start Date")
     stage_2_id_expiry_date = fields.Date(string="ID Expire date")
 
-
-
     stage_2_state = fields.Selection(
-        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD","QLD"), ("SA","SA")], string="State"
+        [("VIC", "VIC"), ("NSW", "NSW"), ("QLD", "QLD"), ("SA", "SA")], string="State"
     )
     stage_2_concession_type = fields.Selection(
-        [("PCC", "PCC"), ("HCC", "HCC"), ("VCC", "VCC"), ("DVA Gold Card", "DVA Gold Card"),("others", "Others")],
+        [
+            ("PCC", "PCC"),
+            ("HCC", "HCC"),
+            ("VCC", "VCC"),
+            ("DVA Gold Card", "DVA Gold Card"),
+            ("others", "Others"),
+        ],
         string="Type of Concession",
         related="type_of_concession",
         readonly=False,
@@ -1667,15 +1810,9 @@ class CrmLead(models.Model):
     dp_welcome_call = fields.Boolean(string="Welcome Call")
 
     # MOMENTUM ENERGY FORM
-    momentum_energy_transaction_reference = fields.Char(
-        "Sale Ref Number"
-    )
-    momentum_energy_transaction_channel = fields.Char(
-        "Transaction Channel"
-    )
-    momentum_energy_transaction_date = fields.Datetime(
-        "Transaction Date"
-    )
+    momentum_energy_transaction_reference = fields.Char("Sale Ref Number")
+    momentum_energy_transaction_channel = fields.Char("Transaction Channel")
+    momentum_energy_transaction_date = fields.Datetime("Transaction Date")
     momentum_energy_transaction_verification_code = fields.Char(
         "Transaction Verification Code"
     )
@@ -1712,15 +1849,9 @@ class CrmLead(models.Model):
     )
     momentum_energy_passport_id = fields.Char("Passport Number")
     momentum_energy_passport_expiry = fields.Date("Passport Expiry Date")
-    momentum_energy_passport_country = fields.Char(
-        "Passport Issuing Country"
-    )
-    momentum_energy_driving_license_id = fields.Char(
-        "Driving License Number"
-    )
-    momentum_energy_driving_license_expiry = fields.Date(
-        "Driving License Expiry Date"
-    )
+    momentum_energy_passport_country = fields.Char("Passport Issuing Country")
+    momentum_energy_driving_license_id = fields.Char("Driving License Number")
+    momentum_energy_driving_license_expiry = fields.Date("Driving License Expiry Date")
     momentum_energy_driving_license_state = fields.Selection(
         [
             ("NSW", "NSW"),
@@ -1735,9 +1866,7 @@ class CrmLead(models.Model):
         string="Issuing State",
     )
     momentum_energy_medicare_id = fields.Char("Medicare Number")
-    momentum_energy_medicare_number = fields.Char(
-        "Medicare Document Number"
-    )
+    momentum_energy_medicare_number = fields.Char("Medicare Document Number")
     momentum_energy_medicare_expiry = fields.Date("Medicare Expiry Date")
     momentum_energy_industry = fields.Selection(
         [
@@ -1783,7 +1912,7 @@ class CrmLead(models.Model):
     momentum_energy_abn_document_id = fields.Char("ABN Document ID")
     momentum_energy_acn_document_id = fields.Char("ACN Document ID")
     momentum_energy_primary_contact_type = fields.Char(
-        "Contact Type", default="PRIMARY",readonly=True
+        "Contact Type", default="PRIMARY", readonly=True
     )
     momentum_energy_primary_salutation = fields.Selection(
         [
@@ -1800,84 +1929,272 @@ class CrmLead(models.Model):
     )
     momentum_energy_primary_middle_name = fields.Char("Middle Name")
     momentum_energy_primary_last_name = fields.Char("Last Name")
-    momentum_energy_primary_country_of_birth = fields.Selection([
-        ("AFG", "AFG"), ("ALA", "ALA"), ("ALB", "ALB"), ("DZA", "DZA"),
-        ("ASM", "ASM"), ("AND", "AND"), ("AGO", "AGO"), ("AIA", "AIA"),
-        ("ATA", "ATA"), ("ATG", "ATG"), ("ARG", "ARG"), ("ARM", "ARM"),
-        ("ABW", "ABW"), ("AUS", "AUS"), ("AUT", "AUT"), ("AZE", "AZE"),
-        ("BHS", "BHS"), ("BHR", "BHR"), ("BGD", "BGD"), ("BRB", "BRB"),
-        ("BLR", "BLR"), ("BEL", "BEL"), ("BLZ", "BLZ"), ("BEN", "BEN"),
-        ("BMU", "BMU"), ("BTN", "BTN"), ("BOL", "BOL"), ("BES", "BES"),
-        ("BIH", "BIH"), ("BWA", "BWA"), ("BVT", "BVT"), ("BRA", "BRA"),
-        ("IOT", "IOT"), ("UMI", "UMI"), ("VGB", "VGB"), ("VIR", "VIR"),
-        ("BRN", "BRN"), ("BGR", "BGR"), ("BFA", "BFA"), ("BDI", "BDI"),
-        ("KHM", "KHM"), ("CMR", "CMR"), ("CAN", "CAN"), ("CPV", "CPV"),
-        ("CYM", "CYM"), ("CAF", "CAF"), ("TCD", "TCD"), ("CHL", "CHL"),
-        ("CHN", "CHN"), ("CXR", "CXR"), ("CCK", "CCK"), ("COL", "COL"),
-        ("COM", "COM"), ("COG", "COG"), ("COD", "COD"), ("COK", "COK"),
-        ("CRI", "CRI"), ("HRV", "HRV"), ("CUB", "CUB"), ("CUW", "CUW"),
-        ("CYP", "CYP"), ("CZE", "CZE"), ("DNK", "DNK"), ("DJI", "DJI"),
-        ("DMA", "DMA"), ("DOM", "DOM"), ("ECU", "ECU"), ("EGY", "EGY"),
-        ("SLV", "SLV"), ("GNQ", "GNQ"), ("ERI", "ERI"), ("EST", "EST"),
-        ("ETH", "ETH"), ("FLK", "FLK"), ("FRO", "FRO"), ("FJI", "FJI"),
-        ("FIN", "FIN"), ("FRA", "FRA"), ("GUF", "GUF"), ("PYF", "PYF"),
-        ("ATF", "ATF"), ("GAB", "GAB"), ("GMB", "GMB"), ("GEO", "GEO"),
-        ("DEU", "DEU"), ("GHA", "GHA"), ("GIB", "GIB"), ("GRC", "GRC"),
-        ("GRL", "GRL"), ("GRD", "GRD"), ("GLP", "GLP"), ("GUM", "GUM"),
-        ("GTM", "GTM"), ("GGY", "GGY"), ("GIN", "GIN"), ("GNB", "GNB"),
-        ("GUY", "GUY"), ("HTI", "HTI"), ("HMD", "HMD"), ("VAT", "VAT"),
-        ("HND", "HND"), ("HKG", "HKG"), ("HUN", "HUN"), ("ISL", "ISL"),
-        ("IND", "IND"), ("IDN", "IDN"), ("CIV", "CIV"), ("IRN", "IRN"),
-        ("IRQ", "IRQ"), ("IRL", "IRL"), ("IMN", "IMN"), ("ISR", "ISR"),
-        ("ITA", "ITA"), ("JAM", "JAM"), ("JPN", "JPN"), ("JEY", "JEY"),
-        ("JOR", "JOR"), ("KAZ", "KAZ"), ("KEN", "KEN"), ("KIR", "KIR"),
-        ("KWT", "KWT"), ("KGZ", "KGZ"), ("LAO", "LAO"), ("LVA", "LVA"),
-        ("LBN", "LBN"), ("LSO", "LSO"), ("LBR", "LBR"), ("LBY", "LBY"),
-        ("LIE", "LIE"), ("LTU", "LTU"), ("LUX", "LUX"), ("MAC", "MAC"),
-        ("MKD", "MKD"), ("MDG", "MDG"), ("MWI", "MWI"), ("MYS", "MYS"),
-        ("MDV", "MDV"), ("MLI", "MLI"), ("MLT", "MLT"), ("MHL", "MHL"),
-        ("MTQ", "MTQ"), ("MRT", "MRT"), ("MUS", "MUS"), ("MYT", "MYT"),
-        ("MEX", "MEX"), ("FSM", "FSM"), ("MDA", "MDA"), ("MCO", "MCO"),
-        ("MNG", "MNG"), ("MNE", "MNE"), ("MSR", "MSR"), ("MAR", "MAR"),
-        ("MOZ", "MOZ"), ("MMR", "MMR"), ("NAM", "NAM"), ("NRU", "NRU"),
-        ("NPL", "NPL"), ("NLD", "NLD"), ("NCL", "NCL"), ("NZL", "NZL"),
-        ("NIC", "NIC"), ("NER", "NER"), ("NGA", "NGA"), ("NIU", "NIU"),
-        ("NFK", "NFK"), ("PRK", "PRK"), ("MNP", "MNP"), ("NOR", "NOR"),
-        ("OMN", "OMN"), ("PAK", "PAK"), ("PLW", "PLW"), ("PSE", "PSE"),
-        ("PAN", "PAN"), ("PNG", "PNG"), ("PRY", "PRY"), ("PER", "PER"),
-        ("PHL", "PHL"), ("PCN", "PCN"), ("POL", "POL"), ("PRT", "PRT"),
-        ("PRI", "PRI"), ("QAT", "QAT"), ("UNK", "UNK"), ("REU", "REU"),
-        ("ROU", "ROU"), ("RUS", "RUS"), ("RWA", "RWA"), ("BLM", "BLM"),
-        ("SHN", "SHN"), ("KNA", "KNA"), ("LCA", "LCA"), ("MAF", "MAF"),
-        ("SPM", "SPM"), ("VCT", "VCT"), ("WSM", "WSM"), ("SMR", "SMR"),
-        ("STP", "STP"), ("SAU", "SAU"), ("SEN", "SEN"), ("SRB", "SRB"),
-        ("SYC", "SYC"), ("SLE", "SLE"), ("SGP", "SGP"), ("SXM", "SXM"),
-        ("SVK", "SVK"), ("SVN", "SVN"), ("SLB", "SLB"), ("SOM", "SOM"),
-        ("ZAF", "ZAF"), ("SGS", "SGS"), ("KOR", "KOR"), ("SSD", "SSD"),
-        ("ESP", "ESP"), ("LKA", "LKA"), ("SDN", "SDN"), ("SUR", "SUR"),
-        ("SJM", "SJM"), ("SWZ", "SWZ"), ("SWE", "SWE"), ("CHE", "CHE"),
-        ("SYR", "SYR"), ("TWN", "TWN"), ("TJK", "TJK"), ("TZA", "TZA"),
-        ("THA", "THA"), ("TLS", "TLS"), ("TGO", "TGO"), ("TKL", "TKL"),
-        ("TON", "TON"), ("TTO", "TTO"), ("TUN", "TUN"), ("TUR", "TUR"),
-        ("TKM", "TKM"), ("TCA", "TCA"), ("TUV", "TUV"), ("UGA", "UGA"),
-        ("UKR", "UKR"), ("ARE", "ARE"), ("GBR", "GBR"), ("USA", "USA"),
-        ("URY", "URY"), ("UZB", "UZB"), ("VUT", "VUT"), ("VEN", "VEN"),
-        ("VNM", "VNM"), ("WLF", "WLF"), ("ESH", "ESH"), ("YEM", "YEM"),
-        ("ZMB", "ZMB"), ("ZWE", "ZWE"),
-    ],string="Country of Birth")
+    momentum_energy_primary_country_of_birth = fields.Selection(
+        [
+            ("AFG", "AFG"),
+            ("ALA", "ALA"),
+            ("ALB", "ALB"),
+            ("DZA", "DZA"),
+            ("ASM", "ASM"),
+            ("AND", "AND"),
+            ("AGO", "AGO"),
+            ("AIA", "AIA"),
+            ("ATA", "ATA"),
+            ("ATG", "ATG"),
+            ("ARG", "ARG"),
+            ("ARM", "ARM"),
+            ("ABW", "ABW"),
+            ("AUS", "AUS"),
+            ("AUT", "AUT"),
+            ("AZE", "AZE"),
+            ("BHS", "BHS"),
+            ("BHR", "BHR"),
+            ("BGD", "BGD"),
+            ("BRB", "BRB"),
+            ("BLR", "BLR"),
+            ("BEL", "BEL"),
+            ("BLZ", "BLZ"),
+            ("BEN", "BEN"),
+            ("BMU", "BMU"),
+            ("BTN", "BTN"),
+            ("BOL", "BOL"),
+            ("BES", "BES"),
+            ("BIH", "BIH"),
+            ("BWA", "BWA"),
+            ("BVT", "BVT"),
+            ("BRA", "BRA"),
+            ("IOT", "IOT"),
+            ("UMI", "UMI"),
+            ("VGB", "VGB"),
+            ("VIR", "VIR"),
+            ("BRN", "BRN"),
+            ("BGR", "BGR"),
+            ("BFA", "BFA"),
+            ("BDI", "BDI"),
+            ("KHM", "KHM"),
+            ("CMR", "CMR"),
+            ("CAN", "CAN"),
+            ("CPV", "CPV"),
+            ("CYM", "CYM"),
+            ("CAF", "CAF"),
+            ("TCD", "TCD"),
+            ("CHL", "CHL"),
+            ("CHN", "CHN"),
+            ("CXR", "CXR"),
+            ("CCK", "CCK"),
+            ("COL", "COL"),
+            ("COM", "COM"),
+            ("COG", "COG"),
+            ("COD", "COD"),
+            ("COK", "COK"),
+            ("CRI", "CRI"),
+            ("HRV", "HRV"),
+            ("CUB", "CUB"),
+            ("CUW", "CUW"),
+            ("CYP", "CYP"),
+            ("CZE", "CZE"),
+            ("DNK", "DNK"),
+            ("DJI", "DJI"),
+            ("DMA", "DMA"),
+            ("DOM", "DOM"),
+            ("ECU", "ECU"),
+            ("EGY", "EGY"),
+            ("SLV", "SLV"),
+            ("GNQ", "GNQ"),
+            ("ERI", "ERI"),
+            ("EST", "EST"),
+            ("ETH", "ETH"),
+            ("FLK", "FLK"),
+            ("FRO", "FRO"),
+            ("FJI", "FJI"),
+            ("FIN", "FIN"),
+            ("FRA", "FRA"),
+            ("GUF", "GUF"),
+            ("PYF", "PYF"),
+            ("ATF", "ATF"),
+            ("GAB", "GAB"),
+            ("GMB", "GMB"),
+            ("GEO", "GEO"),
+            ("DEU", "DEU"),
+            ("GHA", "GHA"),
+            ("GIB", "GIB"),
+            ("GRC", "GRC"),
+            ("GRL", "GRL"),
+            ("GRD", "GRD"),
+            ("GLP", "GLP"),
+            ("GUM", "GUM"),
+            ("GTM", "GTM"),
+            ("GGY", "GGY"),
+            ("GIN", "GIN"),
+            ("GNB", "GNB"),
+            ("GUY", "GUY"),
+            ("HTI", "HTI"),
+            ("HMD", "HMD"),
+            ("VAT", "VAT"),
+            ("HND", "HND"),
+            ("HKG", "HKG"),
+            ("HUN", "HUN"),
+            ("ISL", "ISL"),
+            ("IND", "IND"),
+            ("IDN", "IDN"),
+            ("CIV", "CIV"),
+            ("IRN", "IRN"),
+            ("IRQ", "IRQ"),
+            ("IRL", "IRL"),
+            ("IMN", "IMN"),
+            ("ISR", "ISR"),
+            ("ITA", "ITA"),
+            ("JAM", "JAM"),
+            ("JPN", "JPN"),
+            ("JEY", "JEY"),
+            ("JOR", "JOR"),
+            ("KAZ", "KAZ"),
+            ("KEN", "KEN"),
+            ("KIR", "KIR"),
+            ("KWT", "KWT"),
+            ("KGZ", "KGZ"),
+            ("LAO", "LAO"),
+            ("LVA", "LVA"),
+            ("LBN", "LBN"),
+            ("LSO", "LSO"),
+            ("LBR", "LBR"),
+            ("LBY", "LBY"),
+            ("LIE", "LIE"),
+            ("LTU", "LTU"),
+            ("LUX", "LUX"),
+            ("MAC", "MAC"),
+            ("MKD", "MKD"),
+            ("MDG", "MDG"),
+            ("MWI", "MWI"),
+            ("MYS", "MYS"),
+            ("MDV", "MDV"),
+            ("MLI", "MLI"),
+            ("MLT", "MLT"),
+            ("MHL", "MHL"),
+            ("MTQ", "MTQ"),
+            ("MRT", "MRT"),
+            ("MUS", "MUS"),
+            ("MYT", "MYT"),
+            ("MEX", "MEX"),
+            ("FSM", "FSM"),
+            ("MDA", "MDA"),
+            ("MCO", "MCO"),
+            ("MNG", "MNG"),
+            ("MNE", "MNE"),
+            ("MSR", "MSR"),
+            ("MAR", "MAR"),
+            ("MOZ", "MOZ"),
+            ("MMR", "MMR"),
+            ("NAM", "NAM"),
+            ("NRU", "NRU"),
+            ("NPL", "NPL"),
+            ("NLD", "NLD"),
+            ("NCL", "NCL"),
+            ("NZL", "NZL"),
+            ("NIC", "NIC"),
+            ("NER", "NER"),
+            ("NGA", "NGA"),
+            ("NIU", "NIU"),
+            ("NFK", "NFK"),
+            ("PRK", "PRK"),
+            ("MNP", "MNP"),
+            ("NOR", "NOR"),
+            ("OMN", "OMN"),
+            ("PAK", "PAK"),
+            ("PLW", "PLW"),
+            ("PSE", "PSE"),
+            ("PAN", "PAN"),
+            ("PNG", "PNG"),
+            ("PRY", "PRY"),
+            ("PER", "PER"),
+            ("PHL", "PHL"),
+            ("PCN", "PCN"),
+            ("POL", "POL"),
+            ("PRT", "PRT"),
+            ("PRI", "PRI"),
+            ("QAT", "QAT"),
+            ("UNK", "UNK"),
+            ("REU", "REU"),
+            ("ROU", "ROU"),
+            ("RUS", "RUS"),
+            ("RWA", "RWA"),
+            ("BLM", "BLM"),
+            ("SHN", "SHN"),
+            ("KNA", "KNA"),
+            ("LCA", "LCA"),
+            ("MAF", "MAF"),
+            ("SPM", "SPM"),
+            ("VCT", "VCT"),
+            ("WSM", "WSM"),
+            ("SMR", "SMR"),
+            ("STP", "STP"),
+            ("SAU", "SAU"),
+            ("SEN", "SEN"),
+            ("SRB", "SRB"),
+            ("SYC", "SYC"),
+            ("SLE", "SLE"),
+            ("SGP", "SGP"),
+            ("SXM", "SXM"),
+            ("SVK", "SVK"),
+            ("SVN", "SVN"),
+            ("SLB", "SLB"),
+            ("SOM", "SOM"),
+            ("ZAF", "ZAF"),
+            ("SGS", "SGS"),
+            ("KOR", "KOR"),
+            ("SSD", "SSD"),
+            ("ESP", "ESP"),
+            ("LKA", "LKA"),
+            ("SDN", "SDN"),
+            ("SUR", "SUR"),
+            ("SJM", "SJM"),
+            ("SWZ", "SWZ"),
+            ("SWE", "SWE"),
+            ("CHE", "CHE"),
+            ("SYR", "SYR"),
+            ("TWN", "TWN"),
+            ("TJK", "TJK"),
+            ("TZA", "TZA"),
+            ("THA", "THA"),
+            ("TLS", "TLS"),
+            ("TGO", "TGO"),
+            ("TKL", "TKL"),
+            ("TON", "TON"),
+            ("TTO", "TTO"),
+            ("TUN", "TUN"),
+            ("TUR", "TUR"),
+            ("TKM", "TKM"),
+            ("TCA", "TCA"),
+            ("TUV", "TUV"),
+            ("UGA", "UGA"),
+            ("UKR", "UKR"),
+            ("ARE", "ARE"),
+            ("GBR", "GBR"),
+            ("USA", "USA"),
+            ("URY", "URY"),
+            ("UZB", "UZB"),
+            ("VUT", "VUT"),
+            ("VEN", "VEN"),
+            ("VNM", "VNM"),
+            ("WLF", "WLF"),
+            ("ESH", "ESH"),
+            ("YEM", "YEM"),
+            ("ZMB", "ZMB"),
+            ("ZWE", "ZWE"),
+        ],
+        string="Country of Birth",
+    )
     momentum_energy_primary_date_of_birth = fields.Date(
         "Date of Birth", related="stage_2_dob", readonly=False
     )
     momentum_energy_primary_email = fields.Char(
         "Email", related="email_normalized", readonly=False
     )
-    momentum_energy_primary_address_type = fields.Char("Address Type", default="POSTAL", readonly=True)
-    momentum_energy_primary_street_number = fields.Char(
-        "Street Number"
+    momentum_energy_primary_address_type = fields.Char(
+        "Address Type", default="POSTAL", readonly=True
     )
-    momentum_energy_primary_street_name = fields.Char(
-        "Street Name"
-    )
+    momentum_energy_primary_street_number = fields.Char("Street Number")
+    momentum_energy_primary_street_name = fields.Char("Street Name")
     momentum_energy_primary_unit_number = fields.Char("Unit Number")
     momentum_energy_primary_suburb = fields.Char("Suburb")
     momentum_energy_primary_state = fields.Selection(
@@ -1894,15 +2211,9 @@ class CrmLead(models.Model):
         string="State",
     )
     momentum_energy_primary_post_code = fields.Char("Post Code")
-    momentum_energy_primary_phone_work = fields.Char(
-        "Primary Work Phone"
-    )
-    momentum_energy_primary_phone_home = fields.Char(
-        "Primary Home Phone"
-    )
-    momentum_energy_primary_phone_mobile = fields.Char(
-        "Primary Mobile Phone"
-    )
+    momentum_energy_primary_phone_work = fields.Char("Primary Work Phone")
+    momentum_energy_primary_phone_home = fields.Char("Primary Home Phone")
+    momentum_energy_primary_phone_mobile = fields.Char("Primary Mobile Phone")
     momentum_energy_secondary_contact_type = fields.Char(
         "Secondary Contact Type", default="SECONDARY", readonly=True
     )
@@ -2029,88 +2340,241 @@ class CrmLead(models.Model):
     momentum_energy_service_street_name = fields.Char("Service Street Name")
     momentum_energy_service_street_type_code = fields.Selection(
         [
-            ("ACCS", "ACCS"),("ACRE", "ACRE"),("ALLY", "ALLY"),
-            ("ALWY", "ALWY"),("AMBL", "AMBL"),("ANCG", "ANCG"),
-            ("APP", "APP"),("ARC", "ARC"),("ART", "ART"),
-            ("ARTL", "ARTL"),("AVE", "AVE"),("BA", "BA"),
-            ("BASN", "BASN"),("BAY", "BAY"),("BCH", "BCH"),
-            ("BDGE", "BDGE"),("BDWY", "BDWY"),("BEND", "BEND"),
-            ("BLK", "BLK"),("BOWL", "BOWL"),("BRAE", "BRAE"),
-            ("BRAN", "BRAN"),("BRCE", "BRCE"),("BRET", "BRET"),
-            ("BRK", "BRK"),("BROW", "BROW"),("BVD", "BVD"),
-            ("BVDE", "BVDE"),("BWLK", "BWLK"),("BYPA", "BYPA"),
-            ("CAUS", "CAUS"),("CCT", "CCT"),("CDS", "CDS"),
-            ("CH", "CH"),("CIR", "CIR"),("CL", "CL"),
-            ("CLDE", "CLDE"),("CLR", "CLR"),("CMMN", "CMMN"),
-            ("CNN", "CNN"),("CNWY", "CNWY"),("CON", "CON"),
-            ("COVE", "COVE"),("COWY", "COWY"),("CPS", "CPS"),
-            ("CRCS", "CRCS"),("CRD", "CRD"),("CRES", "CRES"),
-            ("CRF", "CRF"),("CRK", "CRK"),("CRSE", "CRSE"),
-            ("CRSS", "CRSS"),("CRST", "CRST"),("CSO", "CSO"),
-            ("CT", "CT"),("CTR", "CTR"),("CTTG", "CTTG"),
-            ("CTYD", "CTYD"),("CUT", "CUT"),("DALE", "DALE"),
-            ("DASH", "DASH"),("DELL", "DELL"),("DEVN", "DEVN"),
-            ("DIP", "DIP"),("DIV", "DIV"),("DOCK", "DOCK"),
-            ("DR", "DR"),("DRWY", "DRWY"),("DWNS", "DWNS"),
-            ("EDGE", "EDGE"),("ELB", "ELB"),("END", "END"),
-            ("ENT", "ENT"),("ESP", "ESP"),("EST", "EST"),
-            ("EXP", "EXP"),("EXTN", "EXTN"),("FAWY", "FAWY"),
-            ("FBRK", "FBRK"),("FITR", "FITR"),("FK", "FK"),
-            ("FLTS", "FLTS"),("FOLW", "FOLW"),("FORD", "FORD"),
-            ("FORM", "FORM"),("FRNT", "FRNT"),("FRTG", "FRTG"),
-            ("FSHR", "FSHR"),("FTWY", "FTWY"),("FWY", "FWY"),
-            ("GAP", "GAP"),("GATE", "GATE"),("GDN", "GDN"),
-            ("GDNS", "GDNS"),("GLD", "GLD"),("GLEN", "GLEN"),
-            ("GLY", "GLY"),("GR", "GR"),("GRA", "GRA"),
-            ("GRN", "GRN"),("GRND", "GRND"),("GTE", "GTE"),
-            ("GTES", "GTES"),("GTWY", "GTWY"),("HETH", "HETH"),
-            ("HILL", "HILL"),("HLLW", "HLLW"),("HRBR", "HRBR"),
-            ("HRD", "HRD"),("HTS", "HTS"),("HUB", "HUB"),
-            ("HVN", "HVN"),("HWY", "HWY"),("INLT", "INLT"),
-            ("INTG", "INTG"),("INTN", "INTN"),("ISLD", "ISLD"),
-            ("JNC", "JNC"),("KEY", "KEY"),("KEYS", "KEYS"),
-            ("LADR", "LADR"),("LANE", "LANE"),("LEDR", "LEDR"),
-            ("LINE", "LINE"),("LINK", "LINK"),("LKT", "LKT"),
-            ("LNWY", "LNWY"),("LOOP", "LOOP"),("LWR", "LWR"),
-            ("MALL", "MALL"),("MANR", "MANR"),("MART", "MART"),
-            ("MEAD", "MEAD"),("MEW", "MEW"),("MEWS", "MEWS"),
-            ("MT", "MT"),("MWY", "MWY"),("NOOK", "NOOK"),
-            ("NTH", "NTH"),("NULL", "NULL"),("OTLT", "OTLT"),
-            ("OVAL", "OVAL"),("PARK", "PARK"),("PART", "PART"),
-            ("PASS", "PASS"),("PATH", "PATH"),("PDE", "PDE"),
-            ("PHWY", "PHWY"),("PKLD", "PKLD"),("PKT", "PKT"),
-            ("PKWY", "PKWY"),("PL", "PL"),("PLAT", "PLAT"),
-            ("PLM", "PLM"),("PLMS", "PLMS"),("PLZA", "PLZA"),
-            ("PNT", "PNT"),("PORT", "PORT"),("PRDS", "PRDS"),
-            ("PREC", "PREC"),("PROM", "PROM"),("PRST", "PRST"),
-            ("PSGE", "PSGE"),("PSLA", "PSLA"),("QDRT", "QDRT"),
-            ("QY", "QY"),("QYS", "QYS"),("RAMP", "RAMP"),
-            ("RCH", "RCH"),("RD", "RD"),("RDGE", "RDGE"),
-            ("RDS", "RDS"),("RDWY", "RDWY"),("REEF", "REEF"),
-            ("RES", "RES"),("REST", "REST"),("RGWY", "RGWY"),
-            ("RIDE", "RIDE"),("RING", "RING"),("RISE", "RISE"),
-            ("RMBL", "RMBL"),("RND", "RND"),("RNDE", "RNDE"),
-            ("RNGE", "RNGE"),("ROW", "ROW"),("ROWY", "ROWY"),
-            ("RSNG", "RSNG"),("RTRN", "RTRN"),("RTT", "RTT"),
-            ("RTY", "RTY"),("RUE", "RUE"),("RUN", "RUN"),
-            ("RVR", "RVR"),("RVRA", "RVRA"),("SBWY", "SBWY"),
-            ("SDNG", "SDNG"),("SHWY", "SHWY"),("SKLN", "SKLN"),
-            ("SLPE", "SLPE"),("SND", "SND"),("SQ", "SQ"),
-            ("ST", "ST"),("STPS", "STPS"),("STRA", "STRA"),
-            ("STRP", "STRP"),("STRS", "STRS"),("STRT", "STRT"),
-            ("SWY", "SWY"),("TARN", "TARN"),("TCE", "TCE"),
-            ("THOR", "THOR"),("TMWY", "TMWY"),("TOP", "TOP"),
-            ("TOR", "TOR"),("TRI", "TRI"),("TRK", "TRK"),
-            ("TRLR", "TRLR"),("TUNL", "TUNL"),("TURN", "TURN"),
-            ("TVSE", "TVSE"),("UPAS", "UPAS"),("UPR", "UPR"),
-            ("VALE", "VALE"),("VDCT", "VDCT"),("VIEW", "VIEW"),
-            ("VLGE", "VLGE"),("VLL", "VLL"),("VLLY", "VLLY"),
-            ("VSTA", "VSTA"),("VUE", "VUE"),("VWS", "VWS"),
+            ("ACCS", "ACCS"),
+            ("ACRE", "ACRE"),
+            ("ALLY", "ALLY"),
+            ("ALWY", "ALWY"),
+            ("AMBL", "AMBL"),
+            ("ANCG", "ANCG"),
+            ("APP", "APP"),
+            ("ARC", "ARC"),
+            ("ART", "ART"),
+            ("ARTL", "ARTL"),
+            ("AVE", "AVE"),
+            ("BA", "BA"),
+            ("BASN", "BASN"),
+            ("BAY", "BAY"),
+            ("BCH", "BCH"),
+            ("BDGE", "BDGE"),
+            ("BDWY", "BDWY"),
+            ("BEND", "BEND"),
+            ("BLK", "BLK"),
+            ("BOWL", "BOWL"),
+            ("BRAE", "BRAE"),
+            ("BRAN", "BRAN"),
+            ("BRCE", "BRCE"),
+            ("BRET", "BRET"),
+            ("BRK", "BRK"),
+            ("BROW", "BROW"),
+            ("BVD", "BVD"),
+            ("BVDE", "BVDE"),
+            ("BWLK", "BWLK"),
+            ("BYPA", "BYPA"),
+            ("CAUS", "CAUS"),
+            ("CCT", "CCT"),
+            ("CDS", "CDS"),
+            ("CH", "CH"),
+            ("CIR", "CIR"),
+            ("CL", "CL"),
+            ("CLDE", "CLDE"),
+            ("CLR", "CLR"),
+            ("CMMN", "CMMN"),
+            ("CNN", "CNN"),
+            ("CNWY", "CNWY"),
+            ("CON", "CON"),
+            ("COVE", "COVE"),
+            ("COWY", "COWY"),
+            ("CPS", "CPS"),
+            ("CRCS", "CRCS"),
+            ("CRD", "CRD"),
+            ("CRES", "CRES"),
+            ("CRF", "CRF"),
+            ("CRK", "CRK"),
+            ("CRSE", "CRSE"),
+            ("CRSS", "CRSS"),
+            ("CRST", "CRST"),
+            ("CSO", "CSO"),
+            ("CT", "CT"),
+            ("CTR", "CTR"),
+            ("CTTG", "CTTG"),
+            ("CTYD", "CTYD"),
+            ("CUT", "CUT"),
+            ("DALE", "DALE"),
+            ("DASH", "DASH"),
+            ("DELL", "DELL"),
+            ("DEVN", "DEVN"),
+            ("DIP", "DIP"),
+            ("DIV", "DIV"),
+            ("DOCK", "DOCK"),
+            ("DR", "DR"),
+            ("DRWY", "DRWY"),
+            ("DWNS", "DWNS"),
+            ("EDGE", "EDGE"),
+            ("ELB", "ELB"),
+            ("END", "END"),
+            ("ENT", "ENT"),
+            ("ESP", "ESP"),
+            ("EST", "EST"),
+            ("EXP", "EXP"),
+            ("EXTN", "EXTN"),
+            ("FAWY", "FAWY"),
+            ("FBRK", "FBRK"),
+            ("FITR", "FITR"),
+            ("FK", "FK"),
+            ("FLTS", "FLTS"),
+            ("FOLW", "FOLW"),
+            ("FORD", "FORD"),
+            ("FORM", "FORM"),
+            ("FRNT", "FRNT"),
+            ("FRTG", "FRTG"),
+            ("FSHR", "FSHR"),
+            ("FTWY", "FTWY"),
+            ("FWY", "FWY"),
+            ("GAP", "GAP"),
+            ("GATE", "GATE"),
+            ("GDN", "GDN"),
+            ("GDNS", "GDNS"),
+            ("GLD", "GLD"),
+            ("GLEN", "GLEN"),
+            ("GLY", "GLY"),
+            ("GR", "GR"),
+            ("GRA", "GRA"),
+            ("GRN", "GRN"),
+            ("GRND", "GRND"),
+            ("GTE", "GTE"),
+            ("GTES", "GTES"),
+            ("GTWY", "GTWY"),
+            ("HETH", "HETH"),
+            ("HILL", "HILL"),
+            ("HLLW", "HLLW"),
+            ("HRBR", "HRBR"),
+            ("HRD", "HRD"),
+            ("HTS", "HTS"),
+            ("HUB", "HUB"),
+            ("HVN", "HVN"),
+            ("HWY", "HWY"),
+            ("INLT", "INLT"),
+            ("INTG", "INTG"),
+            ("INTN", "INTN"),
+            ("ISLD", "ISLD"),
+            ("JNC", "JNC"),
+            ("KEY", "KEY"),
+            ("KEYS", "KEYS"),
+            ("LADR", "LADR"),
+            ("LANE", "LANE"),
+            ("LEDR", "LEDR"),
+            ("LINE", "LINE"),
+            ("LINK", "LINK"),
+            ("LKT", "LKT"),
+            ("LNWY", "LNWY"),
+            ("LOOP", "LOOP"),
+            ("LWR", "LWR"),
+            ("MALL", "MALL"),
+            ("MANR", "MANR"),
+            ("MART", "MART"),
+            ("MEAD", "MEAD"),
+            ("MEW", "MEW"),
+            ("MEWS", "MEWS"),
+            ("MT", "MT"),
+            ("MWY", "MWY"),
+            ("NOOK", "NOOK"),
+            ("NTH", "NTH"),
+            ("NULL", "NULL"),
+            ("OTLT", "OTLT"),
+            ("OVAL", "OVAL"),
+            ("PARK", "PARK"),
+            ("PART", "PART"),
+            ("PASS", "PASS"),
+            ("PATH", "PATH"),
+            ("PDE", "PDE"),
+            ("PHWY", "PHWY"),
+            ("PKLD", "PKLD"),
+            ("PKT", "PKT"),
+            ("PKWY", "PKWY"),
+            ("PL", "PL"),
+            ("PLAT", "PLAT"),
+            ("PLM", "PLM"),
+            ("PLMS", "PLMS"),
+            ("PLZA", "PLZA"),
+            ("PNT", "PNT"),
+            ("PORT", "PORT"),
+            ("PRDS", "PRDS"),
+            ("PREC", "PREC"),
+            ("PROM", "PROM"),
+            ("PRST", "PRST"),
+            ("PSGE", "PSGE"),
+            ("PSLA", "PSLA"),
+            ("QDRT", "QDRT"),
+            ("QY", "QY"),
+            ("QYS", "QYS"),
+            ("RAMP", "RAMP"),
+            ("RCH", "RCH"),
+            ("RD", "RD"),
+            ("RDGE", "RDGE"),
+            ("RDS", "RDS"),
+            ("RDWY", "RDWY"),
+            ("REEF", "REEF"),
+            ("RES", "RES"),
+            ("REST", "REST"),
+            ("RGWY", "RGWY"),
+            ("RIDE", "RIDE"),
+            ("RING", "RING"),
+            ("RISE", "RISE"),
+            ("RMBL", "RMBL"),
+            ("RND", "RND"),
+            ("RNDE", "RNDE"),
+            ("RNGE", "RNGE"),
+            ("ROW", "ROW"),
+            ("ROWY", "ROWY"),
+            ("RSNG", "RSNG"),
+            ("RTRN", "RTRN"),
+            ("RTT", "RTT"),
+            ("RTY", "RTY"),
+            ("RUE", "RUE"),
+            ("RUN", "RUN"),
+            ("RVR", "RVR"),
+            ("RVRA", "RVRA"),
+            ("SBWY", "SBWY"),
+            ("SDNG", "SDNG"),
+            ("SHWY", "SHWY"),
+            ("SKLN", "SKLN"),
+            ("SLPE", "SLPE"),
+            ("SND", "SND"),
+            ("SQ", "SQ"),
+            ("ST", "ST"),
+            ("STPS", "STPS"),
+            ("STRA", "STRA"),
+            ("STRP", "STRP"),
+            ("STRS", "STRS"),
+            ("STRT", "STRT"),
+            ("SWY", "SWY"),
+            ("TARN", "TARN"),
+            ("TCE", "TCE"),
+            ("THOR", "THOR"),
+            ("TMWY", "TMWY"),
+            ("TOP", "TOP"),
+            ("TOR", "TOR"),
+            ("TRI", "TRI"),
+            ("TRK", "TRK"),
+            ("TRLR", "TRLR"),
+            ("TUNL", "TUNL"),
+            ("TURN", "TURN"),
+            ("TVSE", "TVSE"),
+            ("UPAS", "UPAS"),
+            ("UPR", "UPR"),
+            ("VALE", "VALE"),
+            ("VDCT", "VDCT"),
+            ("VIEW", "VIEW"),
+            ("VLGE", "VLGE"),
+            ("VLL", "VLL"),
+            ("VLLY", "VLLY"),
+            ("VSTA", "VSTA"),
+            ("VUE", "VUE"),
+            ("VWS", "VWS"),
             ("WALK", "WALK"),
         ],
         string="Service Street Type Code",
     )
-
 
     momentum_energy_service_suburb = fields.Char("Service Suburb")
     momentum_energy_service_state = fields.Selection(
@@ -2188,11 +2652,11 @@ class CrmLead(models.Model):
         [("EMAIL", "Email"), ("POST", "Post")],
         string="Bill Delivery Method",
     )
-    momentum_energy_concession = fields.Boolean(
-        string="Concession"
+    momentum_energy_concession = fields.Boolean(string="Concession")
+
+    momentum_energy_concession_obtained = fields.Boolean(
+        string="Concession Consent Obtained"
     )
-    
-    momentum_energy_concession_obtained = fields.Boolean(string="Concession Consent Obtained")
     momentum_energy_conc_has_ms = fields.Boolean(
         string="Whether the concession is for someone with MS(Multiple sclerosis)",
     )
@@ -2243,7 +2707,7 @@ class CrmLead(models.Model):
     momentum_energy_card_last_name = fields.Char(
         string="Last name of the contact person."
     )
-    momentum_transaction_id = fields.Char(string='Transaction ID')
+    momentum_transaction_id = fields.Char(string="Transaction ID")
     is_momentum_submitted = fields.Boolean(default=False)
 
     # AMEX CREDIT CARD FIELDS
@@ -2503,10 +2967,10 @@ class CrmLead(models.Model):
     optus_customer = fields.Char(
         string="Customer Name", related="contact_name", readonly=False
     )
-    optus_address = fields.Char(string="Service Address", related="in_supply_address", readonly=False)
-    optus_service = fields.Char(
-        string="Service"
+    optus_address = fields.Char(
+        string="Service Address", related="in_supply_address", readonly=False
     )
+    optus_service = fields.Char(string="Service")
     optus_plan = fields.Char(string="Plan")
     optus_per_month = fields.Char(string="Cost Per Month")
     optus_center = fields.Char(string="Center", default="Utility Hub")
@@ -2583,15 +3047,17 @@ class CrmLead(models.Model):
     hm_recaptcha_checked = fields.Boolean("I'm not a robot")
 
     # BUSINESS LOAN FORM FIELDS
-    bs_amount_to_borrow = fields.Selection([
-        ("under_50k","Under $50k"),
-        ("50k_100k","$50k - $100k"),
-        ("100k_150k","$100k - $150k"),
-        ("200k_300k","$200k - $300k"),
-        ("300k_500k","$300k - $500k"),
-        ("above_500k","Above $500k"),
-
-    ],string="How much would you like to borrow?")
+    bs_amount_to_borrow = fields.Selection(
+        [
+            ("under_50k", "Under $50k"),
+            ("50k_100k", "$50k - $100k"),
+            ("100k_150k", "$100k - $150k"),
+            ("200k_300k", "$200k - $300k"),
+            ("300k_500k", "$300k - $500k"),
+            ("above_500k", "Above $500k"),
+        ],
+        string="How much would you like to borrow?",
+    )
     bs_business_name = fields.Char(string="Name of your business")
     bs_trading_duration = fields.Selection(
         [
@@ -2727,8 +3193,6 @@ class CrmLead(models.Model):
         string="By submitting your details you agree that you have read and agreed to the terms and conditions and privacy policy",
         default=False,
     )
-
-
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -3105,21 +3569,37 @@ class CrmLead(models.Model):
             },
         }
 
-        if (self.momentum_energy_primary_middle_name):
-            contacts["primaryContact"]["middleName"] = self.momentum_energy_primary_middle_name
+        if self.momentum_energy_primary_middle_name:
+            contacts["primaryContact"][
+                "middleName"
+            ] = self.momentum_energy_primary_middle_name
 
         # 🧩 Dynamically include only non-empty phone numbers for primary contact
         primary_phones = []
         if self.momentum_energy_primary_phone_work:
-            primary_phones.append({"contactPhoneType": "WORK", "phone": self.momentum_energy_primary_phone_work})
+            primary_phones.append(
+                {
+                    "contactPhoneType": "WORK",
+                    "phone": self.momentum_energy_primary_phone_work,
+                }
+            )
         if self.momentum_energy_primary_phone_home:
-            primary_phones.append({"contactPhoneType": "HOME", "phone": self.momentum_energy_primary_phone_home})
+            primary_phones.append(
+                {
+                    "contactPhoneType": "HOME",
+                    "phone": self.momentum_energy_primary_phone_home,
+                }
+            )
         if self.momentum_energy_primary_phone_mobile:
-            primary_phones.append({"contactPhoneType": "MOBILE", "phone": self.momentum_energy_primary_phone_mobile})
+            primary_phones.append(
+                {
+                    "contactPhoneType": "MOBILE",
+                    "phone": self.momentum_energy_primary_phone_mobile,
+                }
+            )
 
         if primary_phones:
             contacts["primaryContact"]["contactPhones"] = primary_phones
-
 
         # 🧠 Build secondary contact only if it has data
         secondary_fields = [
@@ -3167,16 +3647,29 @@ class CrmLead(models.Model):
             # 📞 Add only non-empty phones for secondary contact
             secondary_phones = []
             if self.momentum_energy_secondary_phone_work:
-                secondary_phones.append({"contactPhoneType": "WORK", "phone": self.momentum_energy_secondary_phone_work})
+                secondary_phones.append(
+                    {
+                        "contactPhoneType": "WORK",
+                        "phone": self.momentum_energy_secondary_phone_work,
+                    }
+                )
             if self.momentum_energy_secondary_phone_home:
-                secondary_phones.append({"contactPhoneType": "HOME", "phone": self.momentum_energy_secondary_phone_home})
+                secondary_phones.append(
+                    {
+                        "contactPhoneType": "HOME",
+                        "phone": self.momentum_energy_secondary_phone_home,
+                    }
+                )
             if self.momentum_energy_secondary_phone_mobile:
-                secondary_phones.append({"contactPhoneType": "MOBILE", "phone": self.momentum_energy_secondary_phone_mobile})
+                secondary_phones.append(
+                    {
+                        "contactPhoneType": "MOBILE",
+                        "phone": self.momentum_energy_secondary_phone_mobile,
+                    }
+                )
 
             if secondary_phones:
                 contacts["secondaryContact"]["contactPhones"] = secondary_phones
-
-
 
         # -------------------------------
         # Customer block
@@ -3186,7 +3679,9 @@ class CrmLead(models.Model):
             customer = {
                 "customerType": "RESIDENT",
                 "customerSubType": self.momentum_energy_customer_sub_type,
-                "communicationPreference": (self.momentum_energy_communication_preference or "").upper(),
+                "communicationPreference": (
+                    self.momentum_energy_communication_preference or ""
+                ).upper(),
                 "promotionAllowed": self.momentum_energy_promotion_allowed,
                 "contacts": contacts,
             }
@@ -3250,7 +3745,9 @@ class CrmLead(models.Model):
             customer = {
                 "customerType": "COMPANY",
                 "customerSubType": self.momentum_energy_customer_sub_type,
-                "communicationPreference": (self.momentum_energy_communication_preference or "").upper(),
+                "communicationPreference": (
+                    self.momentum_energy_communication_preference or ""
+                ).upper(),
                 "promotionAllowed": self.momentum_energy_promotion_allowed,
                 "companyIdentity": {
                     "industry": self.momentum_energy_industry,
@@ -3268,8 +3765,6 @@ class CrmLead(models.Model):
                     "documentId": self.momentum_energy_acn_document_id
                 }
 
-
-
         # -------------------------------
         # Service block
         # -------------------------------
@@ -3280,10 +3775,10 @@ class CrmLead(models.Model):
             "estimatedAnnualKwhs": self.momentum_energy_estimated_annual_kwhs,
         }
 
-        if (self.momentum_energy_lot_number):
+        if self.momentum_energy_lot_number:
             service["lotNumber"] = self.momentum_energy_lot_number
-        if (self.momentum_energy_service_meter_id):
-            service["serviceMeterId"] = self.momentum_energy_service_meter_id    
+        if self.momentum_energy_service_meter_id:
+            service["serviceMeterId"] = self.momentum_energy_service_meter_id
 
         # ✅ Conditionally include serviceStartDate only when subtype is not TRANSFER or MOVE IN
         if (
@@ -3304,7 +3799,6 @@ class CrmLead(models.Model):
             if dt:
                 service["serviceStartDate"] = dt.strftime("%Y-%m-%d")
 
-
         # ✅ Build servicedAddress dynamically (skip empty optional fields)
         serviced_address = {
             "streetNumber": self.momentum_energy_service_street_number,
@@ -3316,13 +3810,17 @@ class CrmLead(models.Model):
         }
 
         if self.momentum_energy_unit_type:
-            serviced_address["unitType"]=self.momentum_energy_unit_type
+            serviced_address["unitType"] = self.momentum_energy_unit_type
 
         if self.momentum_energy_service_access_instructions:
-            serviced_address["accessInstructions"] = self.momentum_energy_service_access_instructions
+            serviced_address["accessInstructions"] = (
+                self.momentum_energy_service_access_instructions
+            )
 
         if self.momentum_energy_service_safety_instructions:
-            serviced_address["safetyInstructions"] = self.momentum_energy_service_safety_instructions
+            serviced_address["safetyInstructions"] = (
+                self.momentum_energy_service_safety_instructions
+            )
 
         service["servicedAddress"] = serviced_address
 
@@ -3347,7 +3845,9 @@ class CrmLead(models.Model):
             ),
             "paymentMethod": (self.momentum_energy_payment_method or ""),
             "billCycleCode": self.momentum_energy_bill_cycle_code,
-            "billDeliveryMethod": (self.momentum_energy_bill_delivery_method or "").upper(),
+            "billDeliveryMethod": (
+                self.momentum_energy_bill_delivery_method or ""
+            ).upper(),
         }
         # 🟩 Add concession details only when applicable
         if str(self.en_concesion_card_holder or "").strip().lower() == "yes":
@@ -3380,8 +3880,10 @@ class CrmLead(models.Model):
         #  ✅ Add serviceStartDate only when sub type is not TRANSFER or MOVE IN
         if self.momentum_energy_service_sub_type not in ("TRANSFER", "MOVE IN"):
             if self.momentum_energy_service_start_date:
-                service["serviceStartDate"] = (
-                    self.momentum_energy_service_start_date.isoformat().replace("+00:00", "Z")
+                service[
+                    "serviceStartDate"
+                ] = self.momentum_energy_service_start_date.isoformat().replace(
+                    "+00:00", "Z"
                 )
 
         # -------------------------------
