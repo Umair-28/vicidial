@@ -982,6 +982,16 @@ class CrmLead(models.Model):
     def _compute_campaign_notes(self):
         for record in self:
 
+            iframe_html = """
+                    <div style='margin-top:20px;'>
+                        <h4>Training Script Viewer:</h4>
+                        <iframe src="https://demo.engagenreap.co/odoo/documents/PI1R_FZwQH-ZydSkljTgcAo45"
+                                style="width:100%; height:600px; border:1px solid #ccc; border-radius:8px;"
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                """
+
             buttons_html = """
                 <div style='margin-top:8px; line-height:1.6;'>
                     <div style='margin-top:10px;display:flex; flex-wrap: wrap;align-items:center;gap:6px;'>
@@ -1085,9 +1095,19 @@ class CrmLead(models.Model):
                                 Momentum energy – compare energy plane
                             </a>
                         </div>
+
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://www.dodo.com/energy' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                DODO Energy
+                            </a>
+                        </div>
                     </div>
                 </div>
                 """
+            buttons_html += iframe_html
             record.campaign_notes = buttons_html
 
     @api.model
@@ -1416,7 +1436,44 @@ class CrmLead(models.Model):
     )
     nmi = fields.Char(string="NMI")
     mirn = fields.Char(string="MIRN")
-    frmp = fields.Char(string="FRMP")
+    frmp = fields.Selection(
+        [
+            ("1st Energy", "1st Energy"),
+            ("AGL", "AGL"),
+            ("Alinta Energy", "Alinta Energy"),
+            ("Amber Electric", "Amber Electric"),
+            ("Arcline by RACV - Energy", "Arcline by RACV - Energy"),
+            ("Blue NRG", "Blue NRG"),
+            ("CovaU", "CovaU"),
+            ("Diamond Energy", "Diamond Energy"),
+            ("Dodo Power & Gas", "Dodo Power & Gas"),
+            ("Energy Locals", "Energy Locals"),
+            ("EnergyAustralia", "EnergyAustralia"),
+            ("ENGIE / Simply Energy", "ENGIE / Simply Energy"),
+            ("Flow Power", "Flow Power"),
+            ("GloBird Energy", "GloBird Energy"),
+            ("Indigo Power", "Indigo Power"),
+            ("Kogan Energy", "Kogan Energy"),
+            ("Lumo Energy", "Lumo Energy"),
+            ("Momentum Energy", "Momentum Energy"),
+            ("MYOB powered by OVO", "MYOB powered by OVO"),
+            ("Nectr Energy", "Nectr Energy"),
+            ("Next Business Energy", "Next Business Energy"),
+            ("Origin Energy", "Origin Energy"),
+            ("OVO Energy", "OVO Energy"),
+            ("Pacific Blue Retail", "Pacific Blue Retail"),
+            ("Perpetual Energy", "Perpetual Energy"),
+            ("Powershop", "Powershop"),
+            ("Real Utilities", "Real Utilities"),
+            ("Red Energy", "Red Energy"),
+            ("Smartest Energy", "Smartest Energy"),
+            ("Solstice Energy", "Solstice Energy"),
+            ("Sumo", "Sumo"),
+            ("Tango Energy", "Tango Energy"),
+        ],
+        string="FRMP",
+        default="",
+    )
 
     type_of_concession = fields.Selection(
         [
@@ -1769,6 +1826,18 @@ class CrmLead(models.Model):
     dnc_ref_no = fields.Char("DNC Ref No")
     audit_2 = fields.Char("Audit-2")
     welcome_call = fields.Boolean("Welcome Call")
+
+    stage_3_new_dnc = fields.Char(string="New DNC Ref No")
+    listen_gen_call = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Listen to Lead gen call"
+    )
+    listen_full_call = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Listen to full call"
+    )
+    data_check = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Date Entry Check"
+    )
+
     stage_3_dispostion = fields.Selection(
         [
             ("closed", "Sale Closed"),

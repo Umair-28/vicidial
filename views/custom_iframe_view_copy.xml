@@ -916,6 +916,15 @@ action = {
                                 <button type="object" name="action_toggle_stage_lock" string="Lock Stage 3 Fields" context="{'stage_number': 3, 'unlock': False}" class="btn btn-primary"/>
                             </div>
 
+                            <group string="">
+                                <field name="stage_3_new_dnc" readonly="lead_stage != '3' and not unlock_stage_3"/>
+                                <field name="listen_gen_call" widget="radio"   readonly="lead_stage != '3' and not unlock_stage_3"/>
+                                <field name="listen_full_call" widget="radio"   readonly="lead_stage != '3' and not unlock_stage_3"/>
+                                <field name="data_check" widget="radio"   readonly="lead_stage != '3' and not unlock_stage_3"/>
+
+
+                            </group>
+
                             <group string="Disposition">
                                 <field name="stage_3_dispostion" readonly="lead_stage != '3' and not unlock_stage_3"/>
                                 <field name="lost_reason" invisible="stage_3_dispostion != 'failed'" required="stage_3_dispostion == 'failed'" readonly="lead_stage != '3' and not unlock_stage_3"/>
