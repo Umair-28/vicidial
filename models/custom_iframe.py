@@ -55,7 +55,7 @@ class CustomIframe(models.Model):
         if not iframe:
             iframe = self.create({
                 'user_id': self.env.user.id,
-                'sip_exten': self.env.user.vicidial_extension or user.x_studio_sip_extension or '',
+                'sip_exten': self.env.user.vicidial_extension or self.env.user.x_studio_sip_extension or '',
             })
         else:
             iframe.lead_ids = [(6, 0, [])]
@@ -153,5 +153,4 @@ class CrmLead(models.Model):
 #     _inherit = 'crm.lead'
 
 #     iframe_id = fields.Many2one('custom.iframe', string="Vicidial Iframe Session")
-
 

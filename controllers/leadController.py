@@ -146,7 +146,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": customer.get("email"),
             "services": "credit_card_website",
             "lead_for": "credit_card_website",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id,
         }
@@ -178,6 +178,7 @@ class WebsiteLeadsController(http.Controller):
         }
 
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
@@ -274,7 +275,6 @@ class WebsiteLeadsController(http.Controller):
         return errors
     
 
-
     def _handle_energy_website(self, payload):
         # -------- 1. VALIDATE PAYLOAD --------
         errors = self._validate_energy_payload(payload)
@@ -297,7 +297,7 @@ class WebsiteLeadsController(http.Controller):
         usageInformation = payload.get("usageInformation", {})
         preferencesAndConsents = payload.get("preferencesAndConsents", {})
 
-        # -------- 3. CREATE LEAD --------
+        # -------- 3. CREATE LEAD IN STAGE 1 FIRST --------
         lead_vals = {
             "name": (
                 f"{customer.get('name','').strip()}"
@@ -307,7 +307,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": customer.get("email"),
             "services": "energy_website",
             "lead_for": "energy_website",
-            "lead_stage": "2",
+            "lead_stage": "1",  # Changed to Stage 1
             "unlock_stage_1": False,
             "stage_id": stage.id,
         }
@@ -335,15 +335,20 @@ class WebsiteLeadsController(http.Controller):
             "en_request_callback": preferencesAndConsents.get("requestCallback"),
             "en_accpeting_terms": preferencesAndConsents.get("acceptingTerms"),
             "lead_agent_notes": payload.get("notes"),
+            "username": payload.get("username"),
         }
 
         lead.sudo().write(form_vals)
+        
+        # -------- 5. NOW MOVE TO STAGE 2 --------
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
             "lead_id": lead.id,
             "message": "Energy website lead created",
         }
+
 
 
 
@@ -448,7 +453,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": contact.get("email"),
             "services": "optus_nbn_website",
             "lead_for": "optus_nbn_website",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id,
         }
@@ -476,6 +481,7 @@ class WebsiteLeadsController(http.Controller):
         }
 
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
@@ -556,7 +562,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": contact.get("email"),
             "services": "home_moving",
             "lead_for": "home_moving",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id
         }
@@ -595,6 +601,7 @@ class WebsiteLeadsController(http.Controller):
         }
 
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
@@ -659,7 +666,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": applicant.get("email"),
             "services": "business_loan",
             "lead_for": "business_loan",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id
         }
@@ -681,6 +688,7 @@ class WebsiteLeadsController(http.Controller):
             "lead_agent_notes": payload.get("notes"),
         }
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
@@ -761,11 +769,12 @@ class WebsiteLeadsController(http.Controller):
             "email_from": applicant.get("email"),
             "services": "home_loan",
             "lead_for": "home_loan",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id
         }
         lead = request.env["crm.lead"].sudo().create(lead_vals)
+        
 
         # -------------------------
         # WRITE FORM VALUES
@@ -788,6 +797,7 @@ class WebsiteLeadsController(http.Controller):
             "lead_agent_notes": payload.get("notes"),
         }
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {
             "status": "success",
@@ -867,7 +877,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": personal_info.get("email"),
             "services": "insurance",
             "lead_for": "insurance",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id
         }
@@ -889,6 +899,7 @@ class WebsiteLeadsController(http.Controller):
             "lead_agent_notes": payload.get("notes"),
         }
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {"status": "success", "lead_id": lead.id, "message": "Health Insurance website lead created"}
 
@@ -951,7 +962,7 @@ class WebsiteLeadsController(http.Controller):
             "email_from": applicant_info.get("email"),
             "services": "veu",
             "lead_for": "veu",
-            "lead_stage": "2",
+            "lead_stage": "1",
             "unlock_stage_1": False,
             "stage_id": stage.id
         }
@@ -972,6 +983,7 @@ class WebsiteLeadsController(http.Controller):
             "lead_agent_notes": payload.get("notes"),
         }
         lead.sudo().write(form_vals)
+        lead.sudo().write({"lead_stage": "2"})
 
         return {"status": "success", "lead_id": lead.id, "message": "Victorian Energy Upgrade Website lead created"}
 

@@ -978,23 +978,117 @@ class CrmLead(models.Model):
                         )
                     )
 
-    @api.onchange("stage_2_campign_name")
-    def _onchange_stage_2_campign_name(self):
-        if self.stage_2_campign_name:
-            campaign_dict = dict(self._fields["stage_2_campign_name"].selection)
-            campaign_name = campaign_dict.get(self.stage_2_campign_name)
-            dummy_text = """
-                <p style='margin-top:8px; line-height:1.6;'>
-                    <b>Selected Campaign:</b> {campaign_name}<br/><br/>
-                    This campaign is currently active and includes multiple engagement
-                    touchpoints such as calls, follow-ups, and automated messaging.
-                    Our goal is to ensure clear communication and deliver a seamless
-                    customer experience. Please review the script, guidelines, and
-                    communication flow carefully before proceeding with any interaction.
-                    Additional notes and instructions may be added by the team lead.
-                </p>
+    @api.depends()  # No dependencies means it computes once when record loads
+    def _compute_campaign_notes(self):
+        for record in self:
+
+            buttons_html = """
+                <div style='margin-top:8px; line-height:1.6;'>
+                    <div style='margin-top:10px;display:flex; flex-wrap: wrap;align-items:center;gap:6px;'>
+                        <h4 style='margin-bottom:15px;'>Quick Access Links:</h4>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://www.donotcall.gov.au/Identity/Login?ReturnUrl=%2Findustry%2Fquick-check' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                Do Not Call
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://join.1stenergy.com.au/' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                1st Energy Rates
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://join.1stenergy.com.au/agent-login' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                1st Energy Digilink
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://firstenergy.uconx.com.au/agent/address-search/address-lookup' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                1st Energy NMI Discovery with MFA Authentication
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://signup.dodo.com/dealer/home' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                DODO Dealer Portal
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://www.optus.com.au/fixed/dnav/4g-home-internet?employeeID=CLS31' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                OPTUS Dealer Portal
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://checkout.iprimus.com.au/dealer/plans' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                IPRIMUS Dealer Portal
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://identity.bluenrg.cd8.cloud/account/login?ReturnUrl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dbrokerportal%26redirect_uri%3Dhttps%253A%252F%252Fbrokerportal.bluenrg.cd8.cloud%252Fsignin-oidc%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520openid%2520profile%2520email%2520offline_access%2520api.brokerportal%26response_mode%3Dform_post%26nonce%3D638998111097659806.MWQxZDFhYWItZmM0Yi00NWU0LWFiZjYtMDMyOTAwOTc5M2NkMDRjNGFkOTYtNmJmMS00MDZmLTllZTYtNzUxN2RjZmM4NWYx%26acr_values%3Didp%253Alocal%26state%3DCfDJ8KObC3n7uwdJm6WKdPVfs_kSx-y1aQV9vNvMT2ilhtoC88GGVY6hy1cBMS2TdAzNHsn31pTS-FwD7g8VXtDtIVMGamkFuD9wDkE1wp-9y2mxa2Lk1INMbJJxRCdE3FrWvfNXv4-KB1ex1vQ4out6r0ss3AqInK0d-7obsMR89Zff2WkXOHPTDN7SB2tNJ6NEvlaRKhohj3jIoragxPoGfcBAFFaSUE0NXh1QbzniyKAKWOJHVWAHEve6JeYFwqkWKRCwoq622xwcQPOtPrbdkTRB5kOWWbsWI8EQSoKxg_M0BSfLf-PSu28LBWFqmMqqtC05JsFY3_s-M-n1d6UcGi4%26x-client-SKU%3DID_NET8_0%26x-client-ver%3D7.5.0.0' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                BluEnergy Dealer Portal
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://wattever.com.au/compare-red-energy-electricity-rates/#energex' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                Wattever for multiple Retailer Residential Rates
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://abr.business.gov.au/' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                ABN Lookup for Bus Customer
+                            </a>
+                        </div>
+                        
+                        <div style='margin-bottom:6px;'>
+                            <a href='https://www.momentumenergy.com.au/energy-plans' 
+                            target='_blank' 
+                            style='display:inline-block; padding:6px 10px; background-color:#6565f2; color:#efeaea; 
+                                    text-decoration:none; border-radius:5px; font-weight:bold; margin-right:10px; margin-bottom:10px;'>
+                                Momentum energy – compare energy plane
+                            </a>
+                        </div>
+                    </div>
+                </div>
                 """
-            self.campaign_notes = dummy_text.format(campaign_name=campaign_name)
+            record.campaign_notes = buttons_html
 
     @api.model
     def _get_stage_sequence(self):
@@ -1105,7 +1199,7 @@ class CrmLead(models.Model):
     def _check_stage2_required_fields(self):
         for rec in self:
             # Only validate for Stage 2
-            _logger.info("Current lead stage is >>>>>>>  %s",rec.lead_stage)
+            _logger.info("Current lead stage is >>>>>>>  %s", rec.lead_stage)
             if rec.lead_stage != "2":
                 continue
 
@@ -1418,7 +1512,9 @@ class CrmLead(models.Model):
         string="Disposition",
     )
     callback_date = fields.Datetime("Callback Date")
-    campaign_notes = fields.Html(string="Campaign Notes", readonly=True)
+    campaign_notes = fields.Html(
+        string="Campaign Notes", compute="_compute_campaign_notes", store=False
+    )
 
     # FIRST ENERGY FIELDS
     internal_dnc_checked = fields.Date(string="Internal DNC Checked")
