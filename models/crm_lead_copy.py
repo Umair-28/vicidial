@@ -978,19 +978,28 @@ class CrmLead(models.Model):
                         )
                     )
 
+    campaign_script_iframe = fields.Html(
+        string="Campaign Script Frame",
+        compute="_compute_campaign_script_iframe",
+        sanitize=False,
+        )
+
+    @api.depends()
+    def _compute_campaign_script_iframe(self):
+        for rec in self:
+            rec.campaign_script_iframe = """
+                <div style='margin-top:10px;'>
+                    <iframe src="https://demo.engagenreap.co/odoo/documents/PI1R_FZwQH-ZydSkljTgcAo45"
+                            style="width:100%; height:600px; border:1px solid #ccc; border-radius:10px;"
+                            allowfullscreen>
+                    </iframe>
+                </div>
+            """            
+
     @api.depends()  # No dependencies means it computes once when record loads
     def _compute_campaign_notes(self):
         for record in self:
 
-            iframe_html = """
-                    <div style='margin-top:20px;'>
-                        <h4>Training Script Viewer:</h4>
-                        <iframe src="https://demo.engagenreap.co/odoo/documents/PI1R_FZwQH-ZydSkljTgcAo45"
-                                style="width:100%; height:600px; border:1px solid #ccc; border-radius:8px;"
-                                allowfullscreen>
-                        </iframe>
-                    </div>
-                """
 
             buttons_html = """
                 <div style='margin-top:8px; line-height:1.6;'>
@@ -1107,7 +1116,7 @@ class CrmLead(models.Model):
                     </div>
                 </div>
                 """
-            buttons_html += iframe_html
+
             record.campaign_notes = buttons_html
 
     @api.model
