@@ -16,4 +16,10 @@ access_upgrades_user,Stage-wise Upgrades Form Data,model_custom_upgrades_form,ba
 access_export_lead_wizard_user,Export Leads Wizard,model_export_lead_wizard,base.group_user,1,1,1,0
 access_crm_lead_target_manager,crm.lead.target.manager,model_crm_lead_target,sales_team.group_sale_manager,1,1,1,1
 access_crm_lead_target_user,crm.lead.target.user,model_crm_lead_target,sales_team.group_sale_salesman,1,0,0,0
-
+access_crm_lead_agent,crm.lead.agent,crm.model_crm_lead,vicidial.group_sales_agents,1,1,1,0
+access_crm_stage_agent,crm.stage.agent,crm.model_crm_stage,vicidial.group_sales_agents,1,0,0,0
+access_crm_team_agent,crm.team.agent,crm.model_crm_team,vicidial.group_sales_agents,1,0,0,0
+access_res_partner_agent,res.partner.agent,base.model_res_partner,vicidial.group_sales_agents,1,1,1,0
+access_res_country_agent,res.country.agent,base.model_res_country,vicidial.group_sales_agents,1,0,0,0
+access_res_country_state_agent,res.country.state.agent,base.model_res_country_state,vicidial.group_sales_agents,1,0,0,0
+access_assign_leads_wizard,access.assign.leads.wizard,model_assign_leads_wizard,base.group_user,1,1,1,1

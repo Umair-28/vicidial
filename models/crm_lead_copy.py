@@ -4,14 +4,17 @@ from datetime import timezone, date
 import logging
 import json
 import requests
+import traceback
 from odoo.exceptions import UserError
 from odoo.exceptions import ValidationError
 from lxml import etree
 import base64
 import io
 import xlsxwriter
+from datetime import timedelta
 from datetime import datetime
 from odoo.tools.safe_eval import safe_eval
+from odoo.exceptions import AccessError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -24,6 +27,20 @@ class CrmLead(models.Model):
     partner_latitude = fields.Float(
         string="Latitude", related="partner_id.partner_latitude", store=True
     )
+
+    def action_open_assign_wizard(self):
+        """Open wizard to assign selected leads to a user"""
+        return {
+            'name': 'Assign Leads',
+            'type': 'ir.actions.act_window',
+            'res_model': 'assign.leads.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_lead_ids': self.ids,
+            }
+        }
+    
 
     partner_longitude = fields.Float(
         string="Longitude", related="partner_id.partner_longitude", store=True
@@ -38,6 +55,8 @@ class CrmLead(models.Model):
     unlock_stage_2 = fields.Boolean(default=False)
     unlock_stage_3 = fields.Boolean(default=False)
     unlock_stage_4 = fields.Boolean(default=False)
+    unlock_stage_5 = fields.Boolean(default=False)
+
 
     username = fields.Char(string="Username")
 
@@ -56,6 +75,8 @@ class CrmLead(models.Model):
             rec.unlock_stage_2 = False
             rec.unlock_stage_3 = False
             rec.unlock_stage_4 = False
+            rec.unlock_stage_5 = False
+
 
     def action_toggle_stage_lock(self):
         stage_number = self.env.context.get("stage_number")
@@ -388,7 +409,7 @@ class CrmLead(models.Model):
         for rec in self:
             # ✅ Run validation only when lead is in Stage 4
             if (
-                str(rec.lead_stage) == "4"
+                str(rec.lead_stage) == "5"
                 and (rec.stage_2_campign_name or "").lower() == "momentum"
             ):
                 _logger.info("************************************")
@@ -414,9 +435,9 @@ class CrmLead(models.Model):
     )
     def _check_customer_sub_type(self):
         for rec in self:
-            # ✅ Validate only on Stage 4 and Momentum campaign
+            # ✅ Validate only on Stage 5 and Momentum campaign
             if (
-                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+                str(rec.lead_stage) == "5" or getattr(rec.lead_stage, "id", None) == 5
             ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 # 🏠 Rule for Resident customers
                 if rec.momentum_energy_customer_type == "RESIDENT":
@@ -453,7 +474,7 @@ class CrmLead(models.Model):
         for rec in self:
             # ✅ Only validate when on Stage 4 and campaign is 'momentum'
             if (
-                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+                str(rec.lead_stage) == "5" or getattr(rec.lead_stage, "id", None) == 5
             ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 has_passport = bool(
                     rec.momentum_energy_passport_id
@@ -474,7 +495,7 @@ class CrmLead(models.Model):
         for rec in self:
             # ✅ Validate only on Stage 4 and Momentum campaign
             if (
-                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+                str(rec.lead_stage) == "5" or getattr(rec.lead_stage, "id", None) == 5
             ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 if (
                     rec.momentum_energy_service_sub_type
@@ -505,7 +526,7 @@ class CrmLead(models.Model):
         for rec in self:
             # ✅ Run validation only for Stage 4 and Momentum campaign
             if (
-                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+                str(rec.lead_stage) == "5" or getattr(rec.lead_stage, "id", None) == 5
             ) and (rec.stage_2_campign_name or "").lower() == "momentum":
                 if rec.en_concesion_card_holder == "yes":
                     required_fields = {
@@ -547,7 +568,7 @@ class CrmLead(models.Model):
         for rec in self:
             # ✅ Run validation only for Stage 4 and Momentum campaign
             if (
-                str(rec.lead_stage) == "4" or getattr(rec.lead_stage, "id", None) == 4
+                str(rec.lead_stage) == "5" or getattr(rec.lead_stage, "id", None) == 5
             ) and (rec.stage_2_campign_name or "").strip().lower() == "momentum":
                 # 🧩 Apply validation only for SME or RESIDENT customer subtypes
                 if (rec.momentum_energy_customer_sub_type or "").upper() in [
@@ -593,18 +614,18 @@ class CrmLead(models.Model):
 
             # VIC: Starts with 6, alphanumeric 11 chars
             if state == "VIC":
-                if not re.match(r"^[A-Z0-9]{11}$", nmi):
+                if not re.match(r"^\d{11}$", nmi):
                     raise ValidationError(
-                        _("NMI for state VIC must be 11 alphanumeric characters.")
+                        _("NMI for state VIC must be exactly 11 digits (numbers only).")
                     )
                 if not nmi.startswith("6"):
                     raise ValidationError(_("NMI for state VIC must start with 6."))
 
             # NSW: Starts with 4, alphanumeric 11 chars
             elif state == "NSW":
-                if not re.match(r"^[A-Z0-9]{11}$", nmi):
+                if not re.match(r"^\d{11}$", nmi):
                     raise ValidationError(
-                        _("NMI for state NSW must be 11 alphanumeric characters.")
+                        _("NMI for state NSW must be exactly 11 digits (numbers only).")
                     )
                 if not nmi.startswith("4"):
                     raise ValidationError(_("NMI for state NSW must start with 4."))
@@ -622,9 +643,9 @@ class CrmLead(models.Model):
 
             # SA: Starts with 2
             elif state == "SA":
-                if not re.match(r"^[A-Z0-9]{11}$", nmi):
+                if not re.match(r"^\d{11}$", nmi):
                     raise ValidationError(
-                        _("NMI for state SA must be 11 alphanumeric characters.")
+                        _("NMI for state SA must be exactly 11 digits (numbers only).")
                     )
                 if not nmi.startswith("2"):
                     raise ValidationError(_("NMI for state SA must start with 2."))
@@ -907,7 +928,7 @@ class CrmLead(models.Model):
     def _check_momentum_primary_details(self):
         for rec in self:
             # ✅ Apply validation only when stage=4 and campaign=momentum
-            if rec.lead_stage != "4" or rec.stage_2_campign_name != "momentum":
+            if rec.lead_stage != "5" or rec.stage_2_campign_name != "momentum":
                 continue
 
             state = rec.momentum_energy_primary_state
@@ -952,7 +973,7 @@ class CrmLead(models.Model):
     def _check_momentum_primary_details(self):
         for rec in self:
             # ✅ Apply validation only when stage=4 and campaign=momentum
-            if rec.lead_stage != "4" or rec.stage_2_campign_name != "momentum":
+            if rec.lead_stage != "5" or rec.stage_2_campign_name != "momentum":
                 continue
 
             state = rec.momentum_energy_service_state
@@ -983,20 +1004,52 @@ class CrmLead(models.Model):
         compute="_compute_campaign_script_iframe",
         sanitize=False,
         )
-
-    @api.depends()
+    selected_script = fields.Selection([
+        ('first_energy','1st Energy'),
+        ('dodo_power_gas','DODO Power and Gas'),
+        ('dodo','DODO NBN'),
+        ('optus','Optus NBN'),
+        ('iprimus','IPRIMUS')
+        ],string="Select Script")
+    
+    @api.depends('stage_2_campign_name', 'in_stage2_provider','selected_script')
     def _compute_campaign_script_iframe(self):
-        for rec in self:
-            rec.campaign_script_iframe = """
-                <div style='margin-top:10px;'>
-                    <iframe src="https://demo.engagenreap.co/odoo/documents/PI1R_FZwQH-ZydSkljTgcAo45"
-                            style="width:100%; height:600px; border:1px solid #ccc; border-radius:10px;"
-                            allowfullscreen>
-                    </iframe>
-                </div>
-            """            
+        # Mapping for all campaigns
+        url_map = {
+            # Energy Form
+            "first_energy": "https://enrtech-utilityhub.odoo.com/odoo/documents/k_Vj-BHFTYqG1vSYsHQZcQoc",
+            "dodo_power_gas": "https://enrtech-utilityhub.odoo.com/odoo/documents/rZMdp7ZhT86dyoXdN3F1HAo1c",
+            # Broadband Form
+            "dodo": "https://enrtech-utilityhub.odoo.com/odoo/documents/ZTxShZSWTo6gvsGEJhgp6go23",
+            "optus": "https://enrtech-utilityhub.odoo.com/odoo/documents/Cdqq-hxnTP6VUmm80ZUyBQo2c",
+            "iprimus": "https://enrtech-utilityhub.odoo.com/odoo/documents/mJVolwzlT--lg4yZBJnbFQo28",
+        }
 
-    @api.depends()  # No dependencies means it computes once when record loads
+        for rec in self:
+            # Priority: stage_2_campign_name first, then in_stage2_provider
+            campaign_key = rec.stage_2_campign_name or rec.in_stage2_provider or rec.selected_script
+            
+            _logger.info(f"[Campaign Script] Record {rec.id} - Campaign Key: {campaign_key}")
+            
+            if campaign_key and campaign_key in url_map:
+                selected_url = url_map[campaign_key]
+                _logger.info(f"[Campaign Script] Setting URL: {selected_url}")
+                rec.campaign_script_iframe = f"""
+                    <div style='margin-top:10px;'>
+                        <a href="{selected_url}" 
+                        target="_blank"
+                        style='display:inline-block; padding:8px 12px; background-color:#6565f2; color:#fff; 
+                                text-decoration:none; border-radius:6px; font-weight:bold;'>
+                            Open Campaign Script
+                        </a>
+                    </div>
+                """
+            else:
+                _logger.info(f"[Campaign Script] No valid campaign key or URL not found")
+                rec.campaign_script_iframe = ""  # Explicitly clear it
+      
+
+    @api.depends('lead_for')
     def _compute_campaign_notes(self):
         for record in self:
 
@@ -1004,7 +1057,6 @@ class CrmLead(models.Model):
             buttons_html = """
                 <div style='margin-top:8px; line-height:1.6;'>
                     <div style='margin-top:10px;display:flex; flex-wrap: wrap;align-items:center;gap:6px;'>
-                        <h4 style='margin-bottom:15px;'>Quick Access Links:</h4>
                         
                         <div style='margin-bottom:6px;'>
                             <a href='https://www.donotcall.gov.au/Identity/Login?ReturnUrl=%2Findustry%2Fquick-check' 
@@ -1291,6 +1343,117 @@ class CrmLead(models.Model):
                         + "\n- ".join(missing)
                     )
 
+    @api.constrains(
+        'stage_2_id_start_date',
+        'stage_2_id_expiry_date',
+        'stage_2_card_start_date',
+        'stage_2_card_expiry_date',
+        'lead_for'
+    )
+    def _check_stage_2_dates(self):
+
+        for rec in self:
+
+            today = date.today()
+
+            _logger.info("➡️ Running Stage 2 Date Validations for Lead ID: %s", rec.id)
+            _logger.info(
+                "Current Values => lead_stage: %s, lead_for: %s, "
+                "ID Start: %s, ID Expiry: %s, Card Start: %s, Card Expiry: %s",
+                rec.lead_stage,
+                rec.lead_for,
+                rec.stage_2_id_start_date,
+                rec.stage_2_id_expiry_date,
+                rec.stage_2_card_start_date,
+                rec.stage_2_card_expiry_date,
+            )
+
+            # Only validate in stage 2 + energy_call_center
+            if not (rec.lead_stage == "2" and rec.lead_for == "energy_call_center"):
+                _logger.info("❌ Validation skipped because stage/lead_for does not match.")
+                continue
+
+            # ======================================================
+            #   ID CARD VALIDATIONS
+            # ======================================================
+
+            if rec.stage_2_id_start_date and rec.stage_2_id_expiry_date:
+
+                # Start < Expiry
+                if rec.stage_2_id_start_date > rec.stage_2_id_expiry_date:
+                    _logger.error("❗ ID Start Date > ID Expiry Date for lead %s", rec.id)
+                    raise ValidationError("ID Start Date cannot be later than ID Expiry Date.")
+
+                # Start must be a past date
+                if rec.stage_2_id_start_date >= today:
+                    _logger.error("❗ ID Start Date (%s) is not a past date for lead %s",
+                                  rec.stage_2_id_start_date, rec.id)
+                    raise ValidationError("ID Start Date must be a past date.")
+
+                # Expiry must be a future date
+                if rec.stage_2_id_expiry_date <= today:
+                    _logger.error("❗ ID Expiry Date (%s) is not a future date for lead %s",
+                                  rec.stage_2_id_expiry_date, rec.id)
+                    raise ValidationError("ID Expiry Date must be a future date.")
+
+            elif rec.stage_2_id_start_date or rec.stage_2_id_expiry_date:
+                _logger.error("❗ Missing ID date pair for lead %s", rec.id)
+                raise ValidationError("Both ID Start Date and ID Expiry Date are required.")
+
+            # ======================================================
+            #   CONCESSION CARD VALIDATIONS
+            # ======================================================
+
+            if rec.stage_2_card_start_date and rec.stage_2_card_expiry_date:
+
+                # Start < Expiry
+                if rec.stage_2_card_start_date > rec.stage_2_card_expiry_date:
+                    _logger.error("❗ Card Start Date > Card Expiry Date for lead %s", rec.id)
+                    raise ValidationError("Concession Card Start Date cannot be later than Concession Card Expiry Date.")
+
+                # Start must be a past date
+                if rec.stage_2_card_start_date >= today:
+                    _logger.error("❗ Card Start Date (%s) is not a past date for lead %s",
+                                  rec.stage_2_card_start_date, rec.id)
+                    raise ValidationError("Concession Card Start Date must be a past date.")
+
+                # Expiry must be a future date
+                if rec.stage_2_card_expiry_date <= today:
+                    _logger.error("❗ Card Expiry Date (%s) is not a future date for lead %s",
+                                  rec.stage_2_card_expiry_date, rec.id)
+                    raise ValidationError("Concession Card Expiry Date must be a future date.")
+
+            elif rec.stage_2_card_start_date or rec.stage_2_card_expiry_date:
+                _logger.error("❗ Missing Concession Card date pair for lead %s", rec.id)
+                raise ValidationError("Both Concession Card Start Date and Concession Card Expiry Date are required.")
+
+            _logger.info("✅ Stage 2 Date Validation Passed for Lead %s", rec.id)
+
+
+    @api.constrains('stage_2_medicard_number',
+        'lead_for')
+    def _check_medicare_number(self):
+        for rec in self:
+
+
+            # Only run in Stage 2 + Energy Call Center
+            if not (rec.lead_stage == "2" and rec.lead_for == "energy_call_center" and rec.stage_2_id_proof_type == "medicare_card"):
+                _logger.info("❌ Medicare validation skipped (stage/lead_for mismatch).")
+                continue
+
+            # No validation if field is empty
+            if not rec.stage_2_medicard_number:
+                _logger.info("⏭ No medicare number entered. Skipping.")
+                raise ValidationError("Enter medicard number")
+                
+
+            medicare = rec.stage_2_medicard_number.strip()
+
+            # Validation: must be exactly 10 digits
+            if not re.fullmatch(r"\d{10}", medicare):
+                raise ValidationError("Medicare Card Number must be exactly 10 digits.")
+
+
     @api.depends("services")
     def _compute_lead_for(self):
         for record in self:
@@ -1298,6 +1461,65 @@ class CrmLead(models.Model):
                 record.lead_for = record.services
             else:
                 record.lead_for = False
+
+    stage1_disposition = fields.Selection([
+        ("new", "New"),
+        ("qualified", "Qualified"),
+        ("proposition", "Proposition"),
+        ("lead_assigned", "Lead Assigned"),
+        ("lost", "Lost"),
+        ("sold_pending_quality", "Sold-Pending Quality"),
+        ("agent_follow_up", "Agent Follow Up"),
+        ("agent_call_back", "Agent Call Back"),
+        ("on_hold", "On Hold"),
+        ("failed", "Failed"),
+        ("won", "Won"),
+        # ("sale_closed", "Sale Closed"),
+        # ("sale_qa_hold", "Sale QA Hold"),
+        # ("sale_qa_failed", "Sale QA Failed"),
+
+        # Vicidial dispositions
+        ("answering_machine", "Answering Machine"),
+        ("busy", "Busy"),
+        # ("call_back2", "Call Back"),
+        ("call_congestion", "Call Congestion"),
+        ("disconnected", "Disconnected"),
+        ("dead_air", "Dead Air"),
+        ("declined_sale", "Declined Sale"),
+        ("dnc", "DO NOT CALL"),
+        ("dont_change", "Don't want to change"),
+        ("existing_customer", "Existing Customer"),
+        ("foreign_language", "Foreign Language"),
+        ("hung_up", "Hung Up"),
+        ("hung_after_intro", "Hung up after intro"),
+        ("hung_before_intro", "Hung up before intro"),
+        ("no_answer", "No Answer"),
+        ("not_authorized", "Not Authorized"),
+        ("not_eligible", "Not Eligible"),
+        ("not_interested", "Not Interested"),
+        ("not_available", "Not Available"),
+        ("no_pitch_price", "No Pitch No Price"),
+        ("over_age", "Over Age"),
+        ("rates_compared", "Rates compared couldn't beat"),
+        ("sale_made", "Sale Made"),
+        ("on_solar", "On Solar with Better Rates"),
+        ("call_back", "Scheduled Callback"),
+        ("wrong_address", "Wrong Address"),
+        ("wrong_info", "Wrong Info"),
+        ("wrong_name", "Wrong Name"),
+        ("call_transferred", "Call Transferred"),
+    ], string="Disposition")
+
+    # stage1_disposition = fields.Selection(
+    #     [
+    #         ("follow up", "Follow Up"),
+    #         ("callback", "Schedule Callback"),
+
+    #     ],
+    #     string="Disposition",
+    # )
+    stage1_callback_date = fields.Datetime("Callback Date")  
+    # stage1_lead_notes = fields.Text(string="Lead Notes")          
 
     # Core fields that trigger stage computation
     customer_name = fields.Char(string="Customer Name")
@@ -1313,6 +1535,7 @@ class CrmLead(models.Model):
             ("2", "Stage 2"),
             ("3", "Stage 3"),
             ("4", "Stage 4"),
+            ("5", "Stage 5")
         ],
         string="Lead Current Stage : ",
         default="1",
@@ -1565,21 +1788,37 @@ class CrmLead(models.Model):
             ("momentum", "Momentum"),
         ],
         string="Campign Name",
-        default="dodo_power_gas",
     )
     stage_2_lead_source = fields.Char(string="Lead Source")
     stage_2_lead_agent_notes = fields.Text(string="Notes By Lead Agent")
     disposition = fields.Selection(
         [
-            ("callback", "Callback"),
+            ("callback2", "Callback"),
             ("lost", "Lost"),
             ("sold_pending_quality", "Sold – Pending Quality"),
+            ("expert_follow_up", "Expert Follow Up"),
+            ("expert_call_back", "Expert Call Back"),
+
+            # Additional dispositions
+            ("could_not_beat_rates", "Could not beat rates"),
+            ("do_want_to_change", "Do want to change"),
+            ("will_speak_to_retailer", "Will speak to his retailer"),
+            ("do_want_to_give_id_proof", "Do want to give ID proof"),
+            ("overage", "Overage"),
+            ("will_wait_next_bill", "Will wait for his next bill"),
+            ("foreign_language", "Foreign Language"),
+            ("not_eligible", "Not Eligible"),
+            ("not_authorized", "Not Authorized"),
+            ("not_interested", "Not Interested"),
+            ("follow_up", "Follow Up"),
         ],
         string="Disposition",
     )
+
+    
     callback_date = fields.Datetime("Callback Date")
     campaign_notes = fields.Html(
-        string="Campaign Notes", compute="_compute_campaign_notes", store=False
+        string="Campaign Notes", compute="_compute_campaign_notes",  compute_sudo=True, store=False
     )
 
     # FIRST ENERGY FIELDS
@@ -1836,6 +2075,7 @@ class CrmLead(models.Model):
     audit_2 = fields.Char("Audit-2")
     welcome_call = fields.Boolean("Welcome Call")
 
+    stage_3_auditor_name = fields.Char(string="QA Auditor Name")
     stage_3_new_dnc = fields.Char(string="New DNC Ref No")
     listen_gen_call = fields.Selection(
         [("yes", "Yes"), ("no", "No")], string="Listen to Lead gen call"
@@ -1849,14 +2089,41 @@ class CrmLead(models.Model):
 
     stage_3_dispostion = fields.Selection(
         [
-            ("closed", "Sale Closed"),
-            ("on_hold", "Sale QA Hold"),
-            ("failed", "Sale QA Failed"),
+            # ("closed", "Sale Closed"),
+            ("approved_audit1", "Sale QA Approved - Audit 1"),
+
+            ("on_hold_audit1", "Sale QA Hold - Audit 1"),
+            ("failed_audit1", "Sale QA Failed - Audit 1"),
         ],
         string="Disposition by QA Team",
     )
     lost_reason = fields.Char(string="Remarks")
     qa_notes = fields.Char("Notes by QA")
+
+    stage_4_auditor_name = fields.Char(string="QA Auditor-2 Name")
+    stage_4_new_dnc = fields.Char(string="New DNC Ref No")
+    listen_gen_call_2 = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Listen to Lead gen call"
+    )
+    listen_full_call_2 = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Listen to full call"
+    )
+    data_check_2 = fields.Selection(
+        [("yes", "Yes"), ("no", "No")], string="Date Entry Check"
+    )
+
+    stage_4_dispostion = fields.Selection(
+        [
+            # ("closed", "Sale Closed"),
+            ("approved_audit2", "Sale QA Approved - Audit 2"),
+
+            ("on_hold_audit2", "Sale QA Hold - Audit 2"),
+            ("failed_audit2", "Sale QA Failed - Audit 2"),
+        ],
+        string="Disposition by QA Team",
+    )
+    lost_reason_2 = fields.Char(string="Remarks")
+    qa_notes_2 = fields.Char("Notes by QA")
 
     # DODO POWER AND GAS
     dp_internal_dnc_checked = fields.Date(string="Internal DNC Checked")
@@ -3371,34 +3638,251 @@ class CrmLead(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        """On create, use default stage and compute lead_stage"""
+        """On create, use default stage and compute lead_stage, and auto-create contacts"""
         _logger.info("Creating new leads: %s", vals_list)
-        leads = super().create(vals_list)
-
+     
+        leads = super().create(vals_list)    
         return leads
+
+    def _is_call_center_agent(self):
+        """Check if current user is a Call Center Agent"""
+        agent_group = self.env.ref('vicidial.group_sales_agents', raise_if_not_found=False)
+        if agent_group:
+            return agent_group in self.env.user.groups_id
+        return False
+    
+    def read(self, fields=None, load='_classic_read'):
+        """
+        Override read to restrict access for call center agents, 
+        but allow necessary system flows and creation.
+        """
+        # 1. Bypass checks for non-agents (Admins, Managers, etc.)
+        if not self._is_call_center_agent():
+            return super().read(fields=fields, load=load)
+        
+        _logger.info("Agent read() - Records: %s, Fields count: %s, Context: %s", 
+                    len(self), len(fields) if fields else 'ALL', self.env.context.keys())
+        
+        # 2. Bypass if specific context is provided (e.g. from Server Actions or Save & Close)
+        if self.env.context.get("allow_agent_read"):
+            _logger.info("Bypassing read check: allow_agent_read context")
+            return super().read(fields=fields, load=load)
+
+        # 3. Bypass for List/Kanban views (reading multiple records)
+        if len(self) != 1:
+            _logger.info("Bypassing read check: multiple records")
+            return super().read(fields=fields, load=load)
+
+        # 4. Bypass for New/Virtual records (during creation)
+        if not self.id:
+            _logger.info("Bypassing read check: new record without ID")
+            return super().read(fields=fields, load=load)
+
+        # =========================================================
+        # 5. Check disposition status - Allow "new" disposition leads
+        # =========================================================
+        try:
+            # Use SQL to avoid infinite recursion of read() calls
+            self.env.cr.execute(
+                "SELECT create_uid, create_date, stage1_disposition, disposition FROM crm_lead WHERE id = %s", 
+                (self.id,)
+            )
+            result = self.env.cr.fetchone()
+            
+            if result:
+                create_uid = result[0]
+                create_date = result[1]
+                stage1_disposition = result[2]
+                disposition = result[3]
+                
+                # Allow if disposition is "new"
+                if stage1_disposition == 'new' or stage1_disposition == 'agent_call_back' or stage1_disposition == 'agent_follow_up':
+                    _logger.info("Bypassing read check: lead has 'new' disposition")
+                    return super().read(fields=fields, load=load)
+                
+                # If current user created it...
+                if create_uid == self.env.user.id:
+                    # ...and it was created just now (allow 60s buffer for save operations)
+                    if create_date:
+                        time_since_creation = datetime.now() - create_date
+                        if time_since_creation < timedelta(seconds=2):
+                            _logger.info("Bypassing read check: recently created by current user (%.2f seconds ago)", 
+                                    time_since_creation.total_seconds())
+                            return super().read(fields=fields, load=load)
+        except Exception as e:
+            # Fallback in case of DB errors
+            _logger.warning("Error in read override SQL check: %s", e)
+
+        # =========================================================
+        # 6. Allow small field requests (system operations, saves, etc.)
+        # =========================================================
+        # When saving, Odoo often reads just a few fields to validate
+        if fields and len(fields) <= 10:
+            _logger.info("Bypassing read check: small field request (system operation)")
+            return super().read(fields=fields, load=load)
+
+        # =========================================================
+        # 7. Blocking Logic - Only block large form view opens
+        # =========================================================
+        # If we reached here, it's a single existing record, not just created.
+        # Block if trying to load the full Form View (many fields or no field filter)
+        if fields is None or len(fields) > 25:
+            _logger.warning("Blocking form view access for agent on lead ID: %s", self.id)
+            raise UserError(_("You are not allowed to open lead details."))
+
+        return super().read(fields=fields, load=load)
+
+    # def read(self, fields=None, load='_classic_read'):
+    #     """
+    #     Override read to restrict access for call center agents, 
+    #     but allow necessary system flows and creation.
+    #     """
+    #     # 1. Bypass checks for non-agents (Admins, Managers, etc.)
+    #     if not self._is_call_center_agent():
+    #         return super().read(fields=fields, load=load)
+        
+    #     _logger.info("Agent read() - Records: %s, Fields count: %s, Context: %s", 
+    #                 len(self), len(fields) if fields else 'ALL', self.env.context.keys())
+        
+    #     # 2. Bypass if specific context is provided (e.g. from Server Actions or Save & Close)
+    #     if self.env.context.get("allow_agent_read"):
+    #         _logger.info("Bypassing read check: allow_agent_read context")
+    #         return super().read(fields=fields, load=load)
+
+    #     # 3. Bypass for List/Kanban views (reading multiple records)
+    #     if len(self) != 1:
+    #         _logger.info("Bypassing read check: multiple records")
+    #         return super().read(fields=fields, load=load)
+
+    #     # 4. Bypass for New/Virtual records (during creation)
+    #     if not self.id:
+    #         _logger.info("Bypassing read check: new record without ID")
+    #         return super().read(fields=fields, load=load)
+
+    #     try:
+    #         # Use SQL to avoid infinite recursion of read() calls
+    #         self.env.cr.execute(
+    #             "SELECT create_uid, create_date FROM crm_lead WHERE id = %s", 
+    #             (self.id,)
+    #         )
+    #         result = self.env.cr.fetchone()
+            
+    #         if result:
+    #             create_uid = result[0]
+    #             create_date = result[1]
+                
+    #             # If current user created it...
+    #             if create_uid == self.env.user.id:
+    #                 # ...and it was created just now (allow 60s buffer for save operations)
+    #                 if create_date:
+    #                     time_since_creation = datetime.now() - create_date
+    #                     if time_since_creation < timedelta(seconds=2):
+    #                         _logger.info("Bypassing read check: recently created by current user (%.2f seconds ago)", 
+    #                                 time_since_creation.total_seconds())
+    #                         return super().read(fields=fields, load=load)
+    #     except Exception as e:
+    #         # Fallback in case of DB errors
+    #         _logger.warning("Error in read override SQL check: %s", e)
+
+
+    #     if fields and len(fields) <= 10:
+    #         _logger.info("Bypassing read check: small field request (system operation)")
+    #         return super().read(fields=fields, load=load)
+
+    #     if fields is None or len(fields) > 25:
+    #         _logger.warning("Blocking form view access for agent on lead ID: %s", self.id)
+    #         raise UserError(_("You are not allowed to open lead details. Please work from the list view."))
+
+    #     return super().read(fields=fields, load=load)
+
+
+
+
+
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     """On create, use default stage and compute lead_stage"""
+    #     _logger.info("Creating new leads: %s", vals_list)
+    #     leads = super().create(vals_list)
+
+    #     return leads
 
     def action_save_and_close(self):
         """Save record and close the form view"""
         self.ensure_one()
-        _logger.info("Save & Close called for lead ID: %s", self.id)
+        
+        _logger.info("=== Save & Close called for lead ID: %s ===", self.id)
+        
+        try:
+            # Execute stage logic with sudo to avoid any read restrictions during save
+            qa_message = self.sudo()._handle_stage_logic()
+            _logger.info("Stage logic executed successfully")
+            
+            # Commit the transaction to ensure changes are saved
+            self.env.cr.commit()
+            
+            # Build message
+            messages = []
+            if qa_message:
+                messages.append(qa_message)
+            messages.append("Lead saved successfully.")
+            
+            
+            # Show notification and close
+            return {
+                "type": "ir.actions.client",
+                "tag": "close_lead_form",
+                "params": {
+                    "title": "Lead Update",
+                    "messages": messages,
+                },
+            }
+            
+        except Exception as e:
+            _logger.error("Error in action_save_and_close: %s", str(e), exc_info=True)
+            self.env.cr.rollback()
+            raise
 
-        # Execute stage logic and get optional message
-        qa_message = self._handle_stage_logic()
-
-        # Notify the UI and close the form
-        messages = []
-        if qa_message:
-            messages.append(qa_message)
-        messages.append("Lead saved successfully.")
-
-        return {
-            "type": "ir.actions.client",
-            "tag": "close_lead_form",
-            "params": {
-                "title": "Lead Update",
-                "messages": messages,
-            },
-        }
+    # def action_save_and_close(self):
+    #     """Save record and close the form view"""
+    #     self.ensure_one()
+        
+    #     _logger.info("=== Save & Close called for lead ID: %s ===", self.id)
+    #     _logger.info("Context before: %s", self.env.context)
+        
+    #     # Set context properly
+    #     self = self.with_context(allow_agent_read=True)
+        
+    #     _logger.info("Context after: %s", self.env.context)
+        
+    #     try:
+    #         # Execute stage logic and get optional message
+    #         qa_message = self._handle_stage_logic()
+    #         _logger.info("Stage logic executed successfully")
+            
+    #         # Build message
+    #         message = "Lead saved successfully."
+    #         if qa_message:
+    #             message = f"{qa_message}<br/>{message}"
+    #         return {'type': 'ir.actions.act_window_close'}
+    #         _logger.info("Returning notification and close action")
+            
+    #         # Use proper Odoo client action
+    #         return {
+    #             'type': 'ir.actions.client',
+    #             'tag': 'display_notification',
+    #             'params': {
+    #                 'title': 'Lead Update',
+    #                 'message': message,
+    #                 'type': 'success',
+    #                 'sticky': False,
+    #                 'next': {'type': 'ir.actions.act_window_close'},
+    #             }
+    #         }
+            
+    #     except Exception as e:
+    #         _logger.error("Error in action_save_and_close: %s", str(e), exc_info=True)
+    #         raise
 
     def _handle_stage_logic(self):
         Stage = self.env["crm.stage"]
@@ -3406,17 +3890,132 @@ class CrmLead(models.Model):
         # Pre-cache stages
         stages_cache = {}
         stage_definitions = [
-            ("Won", 12),
-            ("On Hold", 13),
-            ("Failed", 14),
-            ("Call Back", 11),
+            ("New", 1),
+            ("Qualified", 2),
+            ("Proposition", 3),
+            ("Lead Assigned", 5),
             ("Lost", 6),
             ("Sold-Pending Quality", 8),
-            ("Lead Assigned", 5),
+            ("Call Back", 30),
+            ("On Hold", 13),
+            ("Failed", 14),
+            ("Won", 12),
             ("Sale Closed", 15),
-            ("Sale QA Hold", 16),
-            ("Sale QA Failed", 17),
+            
+            ("Sale QA Hold - Audit 1", 16),
+            ("Sale QA Failed - Audit 1", 17),
+
+            # Vicidial dispositions
+            ("Answering Machine", 10),
+            ("Busy", 20),
+            ("Call Congestion", 40),
+            ("Disconnected", 50),
+            ("Dead Air", 60),
+            ("Declined Sale", 70),
+            ("DO NOT CALL", 80),
+            ("Don't want to change", 90),
+            ("Existing Customer", 100),
+            ("Foreign Language", 110),
+            ("Hung Up", 120),
+            ("Hung up after intro", 130),
+            ("Hung up before intro", 140),
+            ("No Answer", 150),
+            ("Not Authorized", 160),
+            ("Not Eligible", 170),
+            ("Not Interested", 180),
+            ("Not Available", 190),
+            ("No Pitch No Price", 200),
+            ("Over Age", 210),
+            ("Rates compared couldn't beat", 220),
+            ("Sale Made", 230),
+            ("On Solar with Better Rates", 240),
+            ("Scheduled Callback", 250),
+            ("Wrong Address", 260),
+            ("Wrong Info", 270),
+            ("Wrong Name", 280),
+            ("Call Transferred", 290),
+            ("Expert Follow Up", 291),
+            ("Overage", 292),
+            ("Do want to give ID proof",293),
+            ("Will speak to his retailer",294),
+            ("Do want to change",295),
+            ("Could not beat rates",296),
+            ("Will wait for his next bill",297),
+            ("Agent Call Back",298),
+            ("Agent Follow Up",299),
+            ("Expert Call Back",300),
+            ("Sale QA Approved - Audit 1",301),
+            ("Sale QA Approved - Audit 2",302),
+            ("Sale QA Hold - Audit 2", 303),
+            ("Sale QA Failed - Audit 2", 304),
+
         ]
+
+        # Map selection key -> human-readable stage name
+        selection_to_stage_name = dict([
+            ("new", "New"),
+            ("qualified", "Qualified"),
+            ("proposition", "Proposition"),
+            ("lead_assigned", "Lead Assigned"),
+            ("lost", "Lost"),
+            ("sold_pending_quality", "Sold-Pending Quality"),
+            ("agent_call_back", "Agent Call Back"),
+            ("agent_follow_up", "Agent Follow Up"),
+            ("expert_follow_up", "Expert Follow Up"),
+            ("expert_call_back", "Expert Call Back"),
+            ("approved_audit1","Sale QA Approved - Audit 1"),
+            ("approved_audit2","Sale QA Approved - Audit 2"),
+
+
+            # ("callback2", "Call Back"),
+            ("on_hold", "On Hold"),
+            ("failed", "Failed"),
+            ("won", "Won"),
+            ("sale_closed", "Sale Closed"),
+            ("on_hold_audit1", "Sale QA Hold - Audit 1"),
+            ("failed_audit1", "Sale QA Failed - Audit 1"),
+            ("on_hold_audit2", "Sale QA Hold - Audit 2"),
+            ("failed_audit2", "Sale QA Failed - Audit 2"),
+            ("answering_machine", "Answering Machine"),
+            ("busy", "Busy"),
+            ("call_congestion", "Call Congestion"),
+            ("disconnected", "Disconnected"),
+            ("dead_air", "Dead Air"),
+            ("declined_sale", "Declined Sale"),
+            ("dnc", "DO NOT CALL"),
+            ("dont_change", "Don't want to change"),
+            ("existing_customer", "Existing Customer"),
+            ("foreign_language", "Foreign Language"),
+            ("hung_up", "Hung Up"),
+            ("hung_after_intro", "Hung up after intro"),
+            ("hung_before_intro", "Hung up before intro"),
+            ("no_answer", "No Answer"),
+            ("not_authorized", "Not Authorized"),
+            ("not_eligible", "Not Eligible"),
+            ("not_interested", "Not Interested"),
+            ("not_available", "Not Available"),
+            ("no_pitch_price", "No Pitch No Price"),
+            ("over_age", "Over Age"),
+            ("rates_compared", "Rates compared couldn't beat"),
+            ("sale_made", "Sale Made"),
+            ("on_solar", "On Solar with Better Rates"),
+            ("call_back", "Scheduled Callback"),
+            ("wrong_address", "Wrong Address"),
+            ("wrong_info", "Wrong Info"),
+            ("wrong_name", "Wrong Name"),
+            ("call_transferred", "Call Transferred"),
+            ("follow_up", "Follow Up"),
+            # Stage 2 dispositions
+            ("could_not_beat_rates", "Could not beat rates"),
+            ("do_want_to_change", "Do want to change"),
+            ("will_speak_to_retailer", "Will speak to his retailer"),
+            ("do_want_to_give_id_proof", "Do want to give ID proof"),
+            ("overage", "Overage"),
+            ("will_wait_next_bill", "Will wait for his next bill"),
+ 
+        ])
+
+        # Ensure all stages exist in CRM
         for name, sequence in stage_definitions:
             stage = Stage.search([("name", "=", name)], limit=1)
             if not stage:
@@ -3427,234 +4026,107 @@ class CrmLead(models.Model):
         vals_to_write = {}
         qa_message = None
 
-        if lead.lead_stage == "4":
-            if (
-                lead.stage_3_dispostion == "closed"
-                and lead.lead_for in ("energy_website", "energy_call_center")
-                and lead.stage_2_campign_name == "momentum"
-            ):
-                lead._send_momentum_energy()
+        # ---------- Stage 1 logic ----------
+        if lead.lead_stage == "1":
+            if not lead.stage1_disposition:
+                raise ValidationError("Lead Disposition is required")
+            if lead.stage1_disposition:
+                stage_name = selection_to_stage_name.get(lead.stage1_disposition)
+                if not stage_name:
+                    raise ValidationError(f"No mapping for disposition '{lead.stage1_disposition}'")
 
-            if lead.stage_3_dispostion == "closed":
-                vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
-            elif lead.stage_3_dispostion == "on_hold":
-                vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
-            elif lead.stage_3_dispostion == "failed":
-                vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
+                if stage_name not in stages_cache:
+                    raise ValidationError(f"Stage '{stage_name}' not found in stage cache")
 
-        # Stage 3 → Stage 4
+                vals_to_write["stage_id"] = stages_cache[stage_name].id
 
-        elif lead.lead_stage == "3":
-            if not lead.stage_3_dispostion:
-                raise ValidationError("Lead Disposition by QA is required")
-            if lead.stage_3_dispostion == "closed":
-                vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
-                vals_to_write["lead_stage"] = "4"
-            elif lead.stage_3_dispostion == "on_hold":
-                vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
-            elif lead.stage_3_dispostion == "failed":
-                vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
+                # Only promote lead_stage if Lead Assigned
+                if stage_name == "Lead Assigned":
+                    vals_to_write["lead_stage"] = "2"
 
+            else:
+                # Fallback: default Lead Assigned
+                vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
+                vals_to_write["lead_stage"] = "2"
+
+        # ---------- Stage 2 logic ----------
         elif lead.lead_stage == "2":
             if not lead.disposition:
                 raise ValidationError("Lead Disposition is required")
-            if lead.disposition == "callback":
-                vals_to_write["stage_id"] = stages_cache["Call Back"].id
-            elif lead.disposition == "lost":
-                vals_to_write["stage_id"] = stages_cache["Lost"].id
-            elif lead.disposition == "sold_pending_quality":
-                vals_to_write["stage_id"] = stages_cache["Sold-Pending Quality"].id
+
+
+            selected_stage_name = selection_to_stage_name.get(lead.disposition)
+            if not selected_stage_name or selected_stage_name not in stages_cache:
+                raise ValidationError(
+                    f"No stage mapping found for disposition '{lead.disposition}'"
+                )
+
+            vals_to_write["stage_id"] = stages_cache[selected_stage_name].id
+
+            # Only advance lead_stage for QA transfer dispositions
+            if lead.disposition == "sold_pending_quality":
                 vals_to_write["lead_stage"] = "3"
                 qa_message = "✅ Lead has been transferred for QA Audit."
 
-        elif lead.lead_stage == "1":
-            if (
-                lead.en_name
-                or lead.en_contact_number
-                or lead.cc_prefix
-                or lead.cc_customer_name
-                or lead.in_name
-                or lead.in_contact_number
-            ):
-                vals_to_write["lead_stage"] = "2"
-                vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
+
+        # ---------- Stage 3 logic ----------
+        elif lead.lead_stage == "3":
+            if not lead.stage_3_dispostion:
+                raise ValidationError("Lead Disposition by QA is required")
+            selected_stage_name = selection_to_stage_name.get(lead.stage_3_dispostion)
+            if not selected_stage_name or selected_stage_name not in stages_cache:
+                raise ValidationError(
+                    f"No stage mapping found for disposition '{lead.disposition}'"
+                )
+            vals_to_write["stage_id"] = stages_cache[selected_stage_name].id
+
+            if lead.stage_3_dispostion == "approved_audit1":
+                vals_to_write["lead_stage"] = "4"
+
+        # ---------- Stage 4 logic ----------
+        elif lead.lead_stage == "4":
+            if not lead.stage_4_dispostion:
+                raise ValidationError("Lead Disposition by QA is required")
+            selected_stage_name = selection_to_stage_name.get(lead.stage_4_dispostion)
+            if not selected_stage_name or selected_stage_name not in stages_cache:
+                raise ValidationError(
+                    f"No stage mapping found for disposition '{lead.disposition}'"
+                )
+            vals_to_write["stage_id"] = stages_cache[selected_stage_name].id
+
+            if lead.stage_4_dispostion == "approved_audit2":
+                vals_to_write["lead_stage"] = "5"
+
+        elif lead.lead_stage == "5":
+                if (
+                    lead.stage_4_dispostion == "approved_audit2"
+                    and lead.lead_for in ("energy_website", "energy_call_center")
+                    and lead.stage_2_campign_name == "momentum"
+                ):
+                    lead._send_momentum_energy()
+                    _logger.info("Call Momentum API")
+
+            # if (
+            #     lead.stage_3_dispostion == "closed"
+            #     and lead.lead_for in ("energy_website", "energy_call_center")
+            #     and lead.stage_2_campign_name == "momentum"
+            # ):
+            #     # lead._send_momentum_energy()
+            #     _logger.info("Call Momentum API")
+
+            # if lead.stage_3_dispostion == "closed":
+            #     vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
+            # elif lead.stage_3_dispostion == "on_hold":
+            #     vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
+            # elif lead.stage_3_dispostion == "failed":
+            #     vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
 
         if vals_to_write:
             lead.with_context(skip_stage_assign=True).write(vals_to_write)
 
         return qa_message
 
-    # OLD WORKING CODE
 
-    # def action_save_and_close(self):
-    #     """Save record and close the form view"""
-    #     self.ensure_one()
-    #     _logger.info("Save & Close called for lead ID: %s", self.id)
-
-    #     # Execute your stage logic
-    #     self._handle_stage_logic()
-
-    #     # Notify the UI and close the form
-    #     return {
-    #         "type": "ir.actions.client",
-    #         "tag": "close_lead_form",
-    #         "params": {
-    #             "title": "Lead Saved ✅",
-    #             "message": "Lead saved successfully. Closing form...",
-
-    #         },
-    #     }
-
-    # def _handle_stage_logic(self):
-    #     """
-    #     Extracted from your write() to avoid recursion and handle
-    #     all stage transitions in one place.
-    #     """
-    #     Stage = self.env["crm.stage"]
-
-    #     # Pre-cache stages
-    #     stages_cache = {}
-    #     stage_definitions = [
-    #         ("Won", 12),
-    #         ("On Hold", 13),
-    #         ("Failed", 14),
-    #         ("Call Back", 11),
-    #         ("Lost", 6),
-    #         ("Sold-Pending Quality", 8),
-    #         ("Lead Assigned", 5),
-    #         ("Sale Closed", 15),
-    #         ("Sale QA Hold", 16),
-    #         ("Sale QA Failed", 17)
-    #     ]
-
-    #     for name, sequence in stage_definitions:
-    #         stage = Stage.search([("name", "=", name)], limit=1)
-    #         if not stage:
-    #             stage = Stage.create({"name": name, "sequence": sequence})
-    #         stages_cache[name] = stage
-
-    #     # Process the logic for this lead
-    #     lead = self
-    #     vals_to_write = {}
-
-    #     if lead.lead_stage == "3":
-    #         if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
-    #             lead._send_momentum_energy()
-
-    #         if lead.stage_3_dispostion == "closed":
-    #             vals_to_write["stage_id"] = stages_cache["Sale Closed"].id
-    #         elif lead.stage_3_dispostion == "on_hold":
-    #             vals_to_write["stage_id"] = stages_cache["Sale QA Hold"].id
-    #         elif lead.stage_3_dispostion == "failed":
-    #             vals_to_write["stage_id"] = stages_cache["Sale QA Failed"].id
-
-    #     elif lead.lead_stage == "2":
-    #         if lead.disposition == "callback":
-    #             vals_to_write["stage_id"] = stages_cache["Call Back"].id
-    #         elif lead.disposition == "lost":
-    #             vals_to_write["stage_id"] = stages_cache["Lost"].id
-    #         elif lead.disposition == "sold_pending_quality":
-    #             vals_to_write["stage_id"] = stages_cache["Sold-Pending Quality"].id
-    #             vals_to_write["lead_stage"] = "3"
-
-    #     elif lead.lead_stage == "1":
-    #         if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
-    #             vals_to_write["lead_stage"] = "2"
-    #             vals_to_write["stage_id"] = stages_cache["Lead Assigned"].id
-
-    #     if vals_to_write:
-    #         lead.with_context(skip_stage_assign=True).write(vals_to_write)
-
-    # def write(self, vals):
-    #     """Override write to handle stage assignment after field updates"""
-    #     _logger.info("Updating lead %s with values: %s", self.ids, vals)
-
-    #     res = super().write(vals)
-
-    #     # Skip stage assignment if context flag is set
-    #     if self.env.context.get("skip_stage_assign"):
-    #         return res
-
-    #     Stage = self.env["crm.stage"]
-
-    #     # Pre-fetch or create all possible stages ONCE before the loop
-    #     stages_cache = {}
-    #     stage_definitions = [
-    #         ("Won", 12),
-    #         ("On Hold", 13),
-    #         ("Failed", 14),
-    #         ("Call Back", 11),
-    #         ("Lost", 6),
-    #         ("Sold-Pending Quality", 8),
-    #         ("Lead Assigned", 5),
-    #         ("Sale Closed", 15),
-    #         ("Sale QA Hold", 16),
-    #         ("Sale QA Failed", 17)
-    #     ]
-
-    #     for stage_name, sequence in stage_definitions:
-    #         stage = Stage.search([("name", "=", stage_name)], limit=1)
-    #         if not stage:
-    #             stage = Stage.create({"name": stage_name, "sequence": sequence})
-    #         stages_cache[stage_name] = stage
-
-    #     # Process each lead
-    #     for lead in self:
-    #         _logger.info("Processing lead: %s, lead_for: %s", lead.id, lead.lead_for)
-
-    #         new_stage = None
-
-    #         # STAGE 3 DISPOSITIONS
-    #         if lead.lead_stage == "3":
-    #             if lead.stage_3_dispostion == "closed" and lead.lead_for == "energy" and lead.stage_2_campign_name == "momentum":
-    #                 lead._send_momentum_energy()
-
-    #             if lead.stage_3_dispostion == "closed":
-    #                 new_stage = stages_cache["Sale Closed"]
-    #                 _logger.info("Lead %s - Moving to Won stage", lead.id)
-    #             elif lead.stage_3_dispostion == "on_hold":
-    #                 new_stage = stages_cache["Sale QA Hold"]
-    #                 _logger.info("Lead %s - Moving to On Hold stage", lead.id)
-    #             elif lead.stage_3_dispostion == "failed":
-    #                 new_stage = stages_cache["Sale QA Failed"]
-    #                 _logger.info("Lead %s - Moving to Failed stage", lead.id)
-
-    #         # STAGE 2 DISPOSITIONS
-    #         elif lead.lead_stage == "2":
-    #             if lead.disposition == "callback":
-    #                 new_stage = stages_cache["Call Back"]
-    #                 _logger.info("Lead %s - Moving to Call Back stage", lead.id)
-    #             elif lead.disposition == "lost":
-    #                 new_stage = stages_cache["Lost"]
-    #                 _logger.info("Lead %s - Moving to Lost stage", lead.id)
-    #             elif lead.disposition == "sold_pending_quality":
-    #                 new_stage = stages_cache["Sold-Pending Quality"]
-    #                 lead.with_context(skip_stage_assign=True).write({"lead_stage":"3"})
-    #                 _logger.info("Lead %s - Moving to Sold-Pending Quality stage", lead.id)
-
-    #         elif lead.lead_stage == "1":
-    #             if lead.en_name or lead.en_contact_number or lead.cc_prefix or lead.cc_first_name or lead.in_current_address:
-    #                 lead.with_context(skip_stage_assign=True).write({"lead_stage":"2"})
-    #                 new_stage = stages_cache["Lead Assigned"]
-
-    #         # Apply stage update if needed
-    #         if new_stage:
-    #             if lead.stage_id.id != new_stage.id:
-    #                 _logger.info("Applying stage update for lead %s: %s -> %s",
-    #                         lead.id, lead.stage_id.name, new_stage.name)
-    #                 # Use SQL update to avoid recursion
-    #                 self.env.cr.execute(
-    #                     "UPDATE crm_lead SET stage_id = %s WHERE id = %s",
-    #                     (new_stage.id, lead.id)
-    #                 )
-    #                 # Invalidate cache to ensure fresh data
-    #                 lead.invalidate_recordset(['stage_id'])
-    #         else:
-    #             # Run normal stage assignment for other cases
-    #             _logger.info("Running normal stage assignment for lead %s", lead.id)
-    #             lead._assign_lead_assigned_stage()
-
-    #     return res
 
     def _assign_lead_assigned_stage(self):
         """Move to 'Lead Assigned' CRM stage when Stage 1 is complete."""

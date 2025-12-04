@@ -17,4 +17,5 @@ from . import vicidial_leads
 from . import upgrades
 from . import momentum_energy
 from . import export_lead_wizard
+from . import assign_leads_wizard
 # from . import discuss_channel

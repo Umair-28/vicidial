@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard Form View -->
+    <record id="view_assign_leads_wizard_form" model="ir.ui.view">
+        <field name="name">assign.leads.wizard.form</field>
+        <field name="model">assign.leads.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Assign Leads">
+                <group>
+                    <field name="lead_count" invisible="1"/>
+                    <div class="alert alert-info" role="alert" invisible="lead_count == 0">
+                        You are about to assign <strong><field name="lead_count" class="oe_inline"/></strong> lead(s) to a user.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="lead_count != 0">
+                        No leads selected. Please select leads from the list view first.
+                    </div>
+                    <field name="user_id" 
+                           placeholder="Select a user..."
+                           options="{'no_create': True, 'no_open': True}"/>
+                    <field name="lead_ids" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_assign_leads" 
+                            string="Assign" 
+                            type="object" 
+                            class="btn-primary" 
+                            data-hotkey="q"
+                            invisible="lead_count == 0"/>
+                    <button string="Cancel" 
+                            class="btn-secondary" 
+                            special="cancel" 
+                            data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Delete old action if exists -->
+    <delete id="action_assign_leads_wizard" model="ir.actions.act_window"/>
+    
+    <!-- Server Action to Open Wizard -->
+    <record id="action_assign_leads_wizard" model="ir.actions.server">
+        <field name="name">Assign Leads</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_model_id" ref="crm.model_crm_lead"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = {
+        'name': 'Assign Leads',
+        'type': 'ir.actions.act_window',
+        'res_model': 'assign.leads.wizard',
+        'view_mode': 'form',
+        'target': 'new',
+        'context': {
+            'active_ids': records.ids,
+            'active_model': 'crm.lead',
+        }
+    }
+        </field>
+    </record>
+
+</odoo>

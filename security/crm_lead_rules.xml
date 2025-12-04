@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    
+    <!-- Define the Sales Agents group -->
+    <record id="group_sales_agents" model="res.groups">
+        <field name="name">Call Center Agents</field>
+        <field name="category_id" ref="base.module_category_sales_sales"/>
+        <field name="implied_ids" eval="[(4, ref('sales_team.group_sale_salesman'))]"/>
+        <field name="comment">Sales agents who can create and view their leads but cannot open them</field>
+    </record>
+
+    <!-- Rule: Agents can see only their own leads -->
+    <record id="crm_lead_agent_visible" model="ir.rule">
+        <field name="name">CRM Lead - Agent Own Leads Only</field>
+        <field name="model_id" ref="crm.model_crm_lead"/>
+        <field name="groups" eval="[(4, ref('vicidial.group_sales_agents'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read">True</field>
+        <field name="perm_write">True</field>
+        <field name="perm_create">True</field>
+        <field name="perm_unlink">False</field>
+    </record>
+
+</odoo>

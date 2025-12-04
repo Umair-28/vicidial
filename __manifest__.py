@@ -1,14 +1,14 @@
 {
     'name': 'Vicidial Iframe Integration',
     'version': '1.0',
-    'depends': ['base', 'crm', 'web','mail','sales_team'],
+    'depends': ['base', 'crm', 'web'],
     'author': 'Tejaswi Dev',
     'installable': True,
     'application': True,
     'data': [
+        "security/crm_lead_rules.xml", 
         'security/ir.model.access.csv',
-        # 'data/res_groups.xml',
-        # 'security/ir_rule.xml',
+        'views/assign_leads_wizard_view.xml',
         'views/custom_iframe_view_copy.xml',
         'views/menu.xml',
         "views/export_lead_wizard_view.xml",
@@ -21,7 +21,9 @@
     'web.assets_backend': [
         "vicidial/static/src/css/custom_modal.css",
         'vicidial/static/src/js/custom_iframe_autoload.js',
+        'vicidial/static/src/js/crm_quick_create_data_capture.js',
         "vicidial/static/src/js/services_icon_widget_copy.js",
+        'vicidial/static/src/js/chatter_collapse.js',
         "vicidial/static/src/js/lead_form_close.js",
         # 'https://maps.googleapis.com/maps/api/js?key=AIzaSyB8_jft7R5en3Q4rrnLqsnuGEyg5_W7CHU&libraries=places',
         'vicidial/static/src/js/google_address_autocomplete.js',

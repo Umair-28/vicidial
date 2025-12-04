@@ -65,6 +65,9 @@ action = {
         </field>
     </record> -->
 
+
+
+
     <record id="view_crm_lead_form_inherit_export" model="ir.ui.view">
         <field name="name">crm.lead.form.export.dropdown</field>
         <field name="model">crm.lead</field>
@@ -132,7 +135,17 @@ action = {
         </field>
     </record>
 
-
+<!-- <record id="your_crm_lead_tree_view" model="ir.ui.view">
+    <field name="name">crm.lead.tree.agent</field>
+    <field name="model">crm.lead</field>
+    <field name="arch" type="xml">
+        <list string="Leads" no_open="1" create="1" edit="0" delete="0">
+            <field name="name"/>
+            <field name="contact_name"/>
+            <field name="stage_id"/>
+            </list>
+    </field>
+</record> -->
 
 
     <record id="vicidial.crm_lead_form_view_custom" model="ir.ui.view">
@@ -151,17 +164,18 @@ action = {
             </xpath>
 
             <!-- <xpath expr="//header" position="inside">
-                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle"/>
+                <button name="action_save_and_close" type="object" string="Save and Close" context="{'allow_agent_read': True}" class="btn-primary" icon="fa-check-circle"/>
             </xpath> -->
             <!-- <xpath expr="//page[@name='internal_notes']//field[@name='description']" position="before">
                 <field name="campaign_notes" widget="html" nolabel="1" placeholder="Campaign information will appear here..."/>
             </xpath> -->
             <xpath expr="//notebook" position="inside">
-                <page name="scripts_tab" string="Scripts">
+                <page name="scripts_tab" string="Quick Access links">
                     <group>
                         <field name="campaign_notes" widget="html" nolabel="1" />
 
                         <separator string="Script Viewer"/>
+                        <field name="selected_script"/>
                         <field name="campaign_script_iframe" widget="html" nolabel="1" />
                     </group>
                 </page>
@@ -176,14 +190,14 @@ action = {
                         <field name="id" invisible="True"/>
                     </group>
                     <group>
-                        <field name="services" />
+                        <field name="services" nolabel="1"/>
                     </group>
                     <group>
                         <field name="lead_stage"/>
                     </group>
                     <!-- Electricty and GAS CALL CENTER Stage 1 Form -->
 
-                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
+                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
@@ -224,10 +238,19 @@ action = {
                                 <group string="Service Requirements" colspan="1">
                                     <field name="en_rooftop_solar" widget="radio" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="en_require_life_support" widget="radio" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                    <div class="alert alert-danger mt-1" invisible="en_require_life_support != 'yes'">
+                                        ⚠️ Do not proceed with Momentum Energy.
+                                    </div>
                                     <field name="en_concesion_card_holder" widget="radio" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                     <field name="type_of_concession" invisible="en_concesion_card_holder != 'yes'" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                             </group>
+
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+
 
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
@@ -235,9 +258,9 @@ action = {
 
                             </group>
 
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- ELECRTRICY AND GAS CALL CENTER STAGE 1 FORM END -->
@@ -245,7 +268,7 @@ action = {
 
                     <!-- Electricty and GAS Stage WEBSITE 1 Form -->
 
-                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')">
+                    <group string="Stage 1 Form" class="stage-section stage-1" invisible="lead_for != 'energy_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')">
                         <sheet class="o_form_sheet_bg_gray">
                             <div class="oe_title">
                                 <h1>
@@ -303,14 +326,19 @@ action = {
                                 </group>
                             </group>
 
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
 
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
 
 
                         </sheet>
@@ -399,9 +427,9 @@ action = {
                             <group string="Notes By Expert">
                                 <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '2' and not unlock_stage_2"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '2'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '2'"/>
+                            </group>
                         </sheet>
                     </group>
 
@@ -571,7 +599,7 @@ action = {
 
 
                     <!-- Credit Card Call Center Stage 1 Form -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -599,17 +627,22 @@ action = {
 
                             </group>
 
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Credit Card Call Center Stage 1 Form END -->
                     <!-- Credit Card Website Stage 1 Form -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'credit_card_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -656,13 +689,18 @@ action = {
                                 </group>
                             </group>
 
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Credit Card Website Stage 1 Form END -->
@@ -720,16 +758,16 @@ action = {
                             <group string="Notes By Expert">
                                 <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '2' and not unlock_stage_2"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '2'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '2'"/>
+                            </group>
                         </sheet>
                     </group>
 
                     <!-- Credt Card Stage 2 Form End -->
 
                     <!-- Broadband Stage 1 CAll center Form Start -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_call_center' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -774,17 +812,22 @@ action = {
                                 <field name="in_request_callback" widget="radio" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 <field name="in_accept_terms" col="2" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Broadband Stage 1 CAll center Form End -->
                     <!-- Broadband Stage 1 Website Form Start -->
-                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4')" class="o_form_sheet_bg_gray stage-section stage-1">
+                    <group string="Stage 1 FORM" invisible="lead_for != 'optus_nbn_website' or (lead_stage != '1' and lead_stage != '2' and lead_stage != '3' and lead_stage != '4' and lead_stage != '5')" class="o_form_sheet_bg_gray stage-section stage-1">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -834,13 +877,18 @@ action = {
                             <group string="Agreement">
                                 <field name="in_accept_terms" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
+
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
                             <group string="Lead Agent Notes">
                                 <field name="lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Broadband Stage 1 Website Form End -->
@@ -895,19 +943,19 @@ action = {
                             <group string="Notes By Expert">
                                 <field name="stage_2_lead_agent_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '2' and not unlock_stage_2"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '2'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '2'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Broadband Stage 2 Form End -->
 
                     <!-- QA Stage FORM - Stage 3 -->
-                    <group string="Stage 3: Quality Audit" class="stage-section stage-3" data-stage="3" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('3', '4')))">
+                    <group string="Stage 3: Quality Audit - 1" class="stage-section stage-3" data-stage="3" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('3', '4', '5')))">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
-                                    <span class="o_form_label">Stage 3: Quality Audit</span>
+                                    <span class="o_form_label">Stage 3: Quality Audit - 1</span>
                                 </h1>
                             </div>
 
@@ -920,6 +968,8 @@ action = {
                             </div>
 
                             <group string="">
+                                <field name="stage_3_auditor_name" readonly="lead_stage != '3' and not unlock_stage_3"/>
+
                                 <field name="stage_3_new_dnc" readonly="lead_stage != '3' and not unlock_stage_3"/>
                                 <field name="listen_gen_call" widget="radio" readonly="lead_stage != '3' and not unlock_stage_3"/>
                                 <field name="listen_full_call" widget="radio" readonly="lead_stage != '3' and not unlock_stage_3"/>
@@ -930,16 +980,56 @@ action = {
 
                             <group string="Disposition">
                                 <field name="stage_3_dispostion" readonly="lead_stage != '3' and not unlock_stage_3"/>
-                                <field name="lost_reason" invisible="stage_3_dispostion != 'failed'" required="stage_3_dispostion == 'failed'" readonly="lead_stage != '3' and not unlock_stage_3"/>
+                                <field name="lost_reason" invisible="stage_3_dispostion != 'failed_audit1'" required="stage_3_dispostion == 'failed_audit1'" readonly="lead_stage != '3' and not unlock_stage_3"/>
                             </group>
 
                             <group string="Quality Audit Notes">
                                 <field name="qa_notes" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '3' and not unlock_stage_3"/>
 
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '3'"/>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '3'"/>
+                            </group>
+                        </sheet>
+                    </group>
+
+                    <!-- QA Stage FORM - Stage 4 -->
+                    <group string="Stage 4: Quality Audit - 2" class="stage-section stage-4" data-stage="4" invisible="not ((lead_for in ('credit_card_call_center', 'credit_card_website','optus_nbn_call_center','optus_nbn_website', 'energy_website', 'energy_call_center')) and (lead_stage in ('4','5')))">
+                        <sheet >
+                            <div class="oe_title">
+                                <h1>
+                                    <span class="o_form_label">Stage 4: Quality Audit - 4</span>
+                                </h1>
                             </div>
+
+                            <div class="o_row" invisible="lead_stage == '4' or unlock_stage_4">
+                                <button type="object" name="action_toggle_stage_lock" string="Edit Stage 4 Fields" context="{'stage_number': 4, 'unlock': True}" class="btn btn-primary"/>
+                            </div>
+
+                            <div class="o_row" invisible="lead_stage == '4' or not unlock_stage_4">
+                                <button type="object" name="action_toggle_stage_lock" string="Lock Stage 4 Fields" context="{'stage_number': 4, 'unlock': False}" class="btn btn-primary"/>
+                            </div>
+
+                            <group string="">
+                                <field name="stage_4_auditor_name" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                                <field name="stage_4_new_dnc" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                                <field name="listen_gen_call_2" widget="radio" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                                <field name="listen_full_call_2" widget="radio" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                                <field name="data_check_2" widget="radio" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                            </group>
+
+                            <group string="Disposition">
+                                <field name="stage_4_dispostion" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                                <field name="lost_reason_2" invisible="stage_4_dispostion != 'failed'" required="stage_4_dispostion == 'failed'" readonly="lead_stage != '4' and not unlock_stage_4"/>
+                            </group>
+
+                            <group string="Quality Audit Notes">
+                                <field name="qa_notes_2" nolabel="1" placeholder="Add notes about this lead..." widget="text" readonly="lead_stage != '4' and not unlock_stage_4"/>
+
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '4'"/>
+                            </group>
                         </sheet>
                     </group>
 
@@ -1024,9 +1114,13 @@ action = {
                                     <field name="hm_recaptcha_checked"/>
                                 </group>
                             </group> -->
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
 
                     </group>
@@ -1083,9 +1177,13 @@ action = {
                                     <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
 
@@ -1146,9 +1244,13 @@ action = {
                                     <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- HOME LOAN STAGE 1 END -->
@@ -1203,9 +1305,13 @@ action = {
                                     <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- HEALTH INSURNACE STAGE 1 END -->
@@ -1251,9 +1357,13 @@ action = {
                                     <field name="username" readonly="lead_stage != '1' and not unlock_stage_1"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '1'"/>
-                            </div>
+                            <group string="Disposition">
+                                <field name="stage1_disposition" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                                <field name="stage1_callback_date" invisible="stage1_disposition != 'call_back'" required="stage1_disposition == 'call_back'" readonly="lead_stage != '1' and not unlock_stage_1"/>
+                            </group>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '1'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- VICTORIA UPGARE STAGE 1 END -->
@@ -1262,7 +1372,7 @@ action = {
 
 
                     <!-- AMEX sales form start -->
-                    <group string="Stage 4: Amex Sales Form" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage == '4')" class="o_form_sheet_bg_gray">
+                    <group string="Stage 5: Amex Sales Form" invisible="not (lead_for in ('credit_card_call_center', 'credit_card_website') and lead_stage == '5')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -1314,16 +1424,16 @@ action = {
                             <group string="Additional Notes">
                                 <field name="amex_additional_info" nolabel="1" placeholder="Add notes or extra details..." widget="text"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
                         </sheet>
                     </group>
 
                     <!-- AMEX sales form end -->
 
                     <!-- DODO NBN FORM START -->
-                    <group string="DODO NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '4' and in_stage2_provider == 'dodo')" class="o_form_sheet_bg_gray">
+                    <group string="DODO NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '5' and in_stage2_provider == 'dodo')" class="o_form_sheet_bg_gray">
                         <sheet>
                             <div class="oe_title">
                                 <h1>
@@ -1373,16 +1483,16 @@ action = {
                                     <field name="do_audit_2"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
                         </sheet>
                     </group>
 
                     <!-- DODO NBN FORM END -->
 
                     <!-- OPTUS NBN START -->
-                    <group string="Optus NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '4' and in_stage2_provider == 'optus')" class="o_form_sheet_bg_gray">
+                    <group string="Optus NBN Sale Information" invisible="not (lead_for in ('optus_nbn_call_center', 'optus_nbn_website') and lead_stage == '5' and in_stage2_provider == 'optus')" class="o_form_sheet_bg_gray">
 
                         <sheet>
                             <div class="oe_title">
@@ -1422,16 +1532,16 @@ action = {
                                     <field name="optus_audit_2"/>
                                 </group>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
 
                         </sheet>
                     </group>
                     <!-- OPTUS NBN FORM END -->
 
                     <!-- Energy State 2 1st Energy Form -->
-                    <group string="Stage 4: Sales Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '4' and stage_2_campign_name == 'first_energy')">
+                    <group string="Stage 5: Sales Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '5' and stage_2_campign_name == 'first_energy')">
 
                         <sheet >
 
@@ -1619,16 +1729,16 @@ action = {
                                 <field name="welcome_call"/>
                             </group>
 
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
 
                         </sheet >
                     </group>
 
                     <!-- Energy State 2 1st Energy Form END-->
                     <!-- Energy State 2 - Momentum Energy Form -->
-                    <group string="Momentum Energy Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '4' and stage_2_campign_name == 'momentum')">
+                    <group string="Momentum Energy Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '5' and stage_2_campign_name == 'momentum')">
                         <sheet>
 
                             <!-- Transaction Info -->
@@ -1821,16 +1931,16 @@ action = {
                                 <field name="momentum_energy_conc_has_ms" readonly="is_momentum_submitted" help="Whether customer requires a medical cooling application form to be sent to apply for medical cooling concession"/>
                                 <field name="momentum_energy_conc_in_grp_home" readonly="is_momentum_submitted"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
 
                         </sheet>
                     </group>
                     <!-- Energy State 2 - Momentum Energy Form -->
 
                     <!-- Energy State 2 DODO Power and Gas Form -->
-                    <group string="DODO Power and Gas Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '4' and stage_2_campign_name == 'dodo_power_gas')">
+                    <group string="DODO Power and Gas Form" invisible="not (lead_for in ('energy_call_center', 'energy_website') and lead_stage == '5' and stage_2_campign_name == 'dodo_power_gas')">
                         <sheet >
                             <div class="oe_title">
                                 <h1>
@@ -1994,9 +2104,9 @@ action = {
                                 <field name="dp_audit_2"/>
                                 <field name="dp_welcome_call"/>
                             </group>
-                            <div class="o_form_buttons_view mt-2">
-                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary" icon="fa-check-circle" invisible="lead_stage != '4'"/>
-                            </div>
+                            <group>
+                                <button name="action_save_and_close" type="object" string="Save and Close" class="btn-primary oe_highlight" icon="fa-check-circle" invisible="lead_stage != '5'"/>
+                            </group>
                         </sheet>
                     </group>
                     <!-- Energy State 2 DODO Power and Gas Form END-->

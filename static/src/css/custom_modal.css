@@ -1,8 +1,6 @@
-/* Improve dropdown and many2one field visibility in Odoo 18 */
-
-/* Force form content to scroll inside sheet */
-
-/* Force column layout for form renderer */
+.o_chatter_toggle_btn {
+    margin-bottom: 10px;
+}
 .o_form_renderer {
     display: flex !important;
     flex-direction: column !important;
@@ -38,11 +36,11 @@
 }
 
 /* Print styles */
-@media print {
+/* @media print {
     .o_form_renderer {
         display: block !important;
     }
-}
+} */
 
 
 
